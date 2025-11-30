@@ -236,6 +236,7 @@
                 <div id="capital-setup-fields" class="hidden">
                     <div>
                         <label for="initial-capital" class="block text-sm font-medium text-gray-300">初始启动资金 (¥)</label>
+                        <!-- 这里的 input name='capital' 就是在之前报错的元素，现在它在 HTML 中是安全的 -->
                         <input type="number" id="initial-capital" name="capital" placeholder="输入初始资金额" required min="0" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
                     </div>
                 </div>
@@ -329,13 +330,27 @@
         </div>
     </div>
 
+    
+    <!-- ============================================== -->
+    <!-- 🔥 修复后的 JavaScript 模块化代码块 🔥         -->
+    <!-- ============================================== -->
 
     <script type="module">
+        // --- Firebase 配置 ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
+          authDomain: "jinmu-c0549.firebaseapp.com",
+          projectId: "jinmu-c0549",
+          storageBucket: "jinmu-c0549.firebasestorage.app",
+          messagingSenderId: "433198268542",
+          appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
+          measurementId: "G-YHBMGP6C6X"
+        };
+        
         // --- Firebase 导入 ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "firebase/app" ;
+        import { getAnalytics } from "firebase/analytics" ;
+        
         
         // 设置日志级别为 Debug，以便在控制台查看 Firestore 操作
         setLogLevel('Debug');
@@ -349,9 +364,8 @@
         let initialCapital = 0; // 初始资本
         let logFilter = { result: 'all', symbol: '' };
         
-        // 确保 __app_id 和 __firebase_config 可用
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // 使用 projectId 作为 app id
+        const appId = firebaseConfig.projectId; 
         const tradeForm = document.getElementById('trade-form');
         const editForm = document.getElementById('edit-form');
         const chartPlaceholder = document.querySelector('.chart-placeholder');
@@ -361,16 +375,12 @@
         const getIconSvg = (name, className = 'w-6 h-6') => {
             switch (name) {
                 case 'flash':
-                    // Lucide Flash (Lightning Bolt)
                     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M13 2H3l8 11h-4l6 9V11h5L13 2z"/></svg>`;
                 case 'target':
-                    // Lucide Target (Bullseye)
                     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
                 case 'trending-up':
-                    // Lucide Trending Up (Trend Line)
                     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`;
                 case 'data':
-                    // Lucide Database (Data Line/Chip)
                     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`;
                 default:
                     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -381,10 +391,13 @@
         // --- Firebase 初始化与身份验证 ---
         const firebaseInit = async () => {
             try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase 配置缺失。无法初始化 Firebase。");
+                // 1. 检查配置
+                if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.projectId) {
+                    console.error("Firebase 配置缺失。无法初始化 Firebase。请检查 firebaseConfig 对象。");
                     return;
                 }
+                
+                // 2. 初始化 App 和 Services
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
@@ -392,46 +405,77 @@
                 // 身份验证逻辑：使用自定义 token 或匿名登录
                 const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 
+                let authSuccess = false;
+
                 if (token) {
-                    await signInWithCustomToken(auth, token);
+                    try {
+                        // 尝试使用 custom token 登录
+                        await signInWithCustomToken(auth, token);
+                        console.log("Custom token 认证成功。");
+                        authSuccess = true;
+                    } catch (error) {
+                        // 捕获 custom token 错误，包括 auth/configuration-not-found
+                        console.warn(`Custom token 认证失败 (${error.code})，尝试匿名登录...`, error);
+                        // Fallback to anonymous sign-in
+                        await signInAnonymously(auth);
+                        console.log("匿名认证成功 (Custom Token 失败回退)。");
+                        authSuccess = true;
+                    }
                 } else {
+                    // 没有 token，直接使用匿名登录
                     await signInAnonymously(auth);
+                    console.log("匿名认证成功 (无 token)。");
+                    authSuccess = true;
+                }
+                
+                if (!authSuccess) {
+                     // 理论上不会走到这里，但作为安全措施
+                     throw new Error("未能通过任何方式进行身份验证。");
                 }
 
-                // 监听认证状态变化
+
+                // 3. 监听认证状态变化
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
+                        console.log(`认证成功，用户ID: ${userId}`);
                         // 认证完成后，开始监听数据
                         listenForCapitalUpdate();
                         listenForTrades();
                         document.getElementById('run-backtest-btn').disabled = false; // 允许启动回测
                     } else {
                         console.log("用户已登出或认证失败。");
-                        userId = null;
                     }
                 });
 
             } catch (error) {
                 console.error("Firebase 初始化或认证失败:", error);
+                // 移除 alert()，仅打印到控制台
             }
         };
 
         // --- Firestore 路径生成工具 ---
         const getPrivateDocRef = (collectionName, docId) => {
             if (!userId) return null;
+            // 遵循私有数据路径规则: /artifacts/{appId}/users/{userId}/{collectionName}/{docId}
             return doc(db, 'artifacts', appId, 'users', userId, collectionName, docId);
         };
         const getPrivateCollectionRef = (collectionName) => {
             if (!userId) return null;
+            // 遵循私有数据路径规则: /artifacts/{appId}/users/{userId}/{collectionName}
             return collection(db, 'artifacts', appId, 'users', userId, collectionName);
         };
 
         // --- 资本管理 ---
         const CAPITAL_DOC_ID = 'initial_capital';
         
-        const saveInitialCapital = async (capital) => {
+        const saveInitialCapital = async (event) => {
+            event.preventDefault();
             if (!userId) return console.error("用户ID不可用。");
+            
+            const capital = parseFloat(document.getElementById('initial-capital').value);
+            if (isNaN(capital)) return console.error("资本值无效。");
+
             const capitalRef = getPrivateDocRef('settings', CAPITAL_DOC_ID);
             
             try {
@@ -469,8 +513,7 @@
         const listenForTrades = () => {
             if (!userId) return;
             const tradesColRef = getPrivateCollectionRef('trades');
-            // 注意：Firestore 不支持在单个查询中按不同字段排序。
-            // 我们将获取所有数据并在客户端进行排序。
+            // 获取所有数据，客户端排序
             const q = query(tradesColRef);
 
             onSnapshot(q, (snapshot) => {
@@ -726,11 +769,7 @@
 
             // 更改表单提交事件以适应模式
             if (isCapital) {
-                tradeForm.onsubmit = (e) => {
-                    e.preventDefault();
-                    const capital = parseFloat(document.getElementById('initial-capital').value);
-                    if (!isNaN(capital)) saveInitialCapital(capital);
-                };
+                tradeForm.onsubmit = saveInitialCapital;
                 document.getElementById('initial-capital').value = initialCapital > 0 ? initialCapital : '';
             } else {
                 tradeForm.onsubmit = saveTrade;
@@ -993,52 +1032,15 @@
         window.deleteTrade = deleteTrade;
         
     </script>
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    
+    
+    <!-- 用于简单测试的输入框和按钮 (已从 <script> 标签内移出) -->
+    <div class="max-w-7xl mx-auto w-full p-4 component-bg mt-8 rounded-lg">
+        <h3 class="text-xl font-bold text-gray-400 mb-2">测试区 (可删除)</h3>
+        <input type="text" id="dataInput" placeholder="输入要存储的数据" class="p-2 rounded component-bg border border-gray-700">
+        <button onclick="alert('请通过右上角 记录新交易 按钮进行操作。')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">存储数据</button>
+    </div>
 
-<script>
-  // 1. 粘贴你从 Firebase 复制的配置信息
- const firebaseConfig = {
-  apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
-  authDomain: "jinmu-c0549.firebaseapp.com",
-  projectId: "jinmu-c0549",
-  storageBucket: "jinmu-c0549.firebasestorage.app",
-  messagingSenderId: "433198268542",
-  appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
-  measurementId: "G-YHBMGP6C6X"
-};
-
-  // 2. 初始化 Firebase
-  firebase.initializeApp(firebaseConfig);
-
-  // 3. 引用 Firestore 数据库服务
-  const db = firebase.firestore();
-
-  // 4. 定义一个简单的保存数据的函数
-  function saveTestData(inputData) {
-      db.collection("messages").add({
-          content: inputData,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp() // 记录写入时间
-      })
-      .then((docRef) => {
-          console.log("数据写入成功，文档 ID: ", docRef.id);
-          alert("数据已成功存储到 Firebase！请查看控制台。");
-      })
-      .catch((error) => {
-          console.error("写入数据时发生错误: ", error);
-          alert("数据存储失败，请检查浏览器控制台和 Firebase 规则。");
-      });
-  }
-
-  // 5. 示例：在页面加载后自动尝试写入一条数据
-  // 实际项目中你会把它绑定到按钮点击事件上
-  // saveTestData("网站首次自动测试写入数据"); 
-<input type="text" id="dataInput" placeholder="输入要存储的数据">
-<button onclick="saveTestData(document.getElementById('dataInput').value)">存储数据</button>
-</script>
 
 </body>
 </html>
-
-
-
