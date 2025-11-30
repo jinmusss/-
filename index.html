@@ -1093,8 +1093,10 @@
   // 5. 示例：在页面加载后自动尝试写入一条数据
   // 实际项目中你会把它绑定到按钮点击事件上
   // saveTestData("网站首次自动测试写入数据"); 
-
+<input type="text" id="dataInput" placeholder="输入要存储的数据">
+<button onclick="saveTestData(document.getElementById('dataInput').value)">存储数据</button>
 </script>
 
 </body>
 </html>
+
