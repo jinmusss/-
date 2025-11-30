@@ -1053,5 +1053,48 @@
         window.applyLogFilter = applyLogFilter; // New
         
     </script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+
+<script>
+  // 1. 粘贴你从 Firebase 复制的配置信息
+ const firebaseConfig = {
+  apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
+  authDomain: "jinmu-c0549.firebaseapp.com",
+  projectId: "jinmu-c0549",
+  storageBucket: "jinmu-c0549.firebasestorage.app",
+  messagingSenderId: "433198268542",
+  appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
+  measurementId: "G-YHBMGP6C6X"
+};
+
+  // 2. 初始化 Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // 3. 引用 Firestore 数据库服务
+  const db = firebase.firestore();
+
+  // 4. 定义一个简单的保存数据的函数
+  function saveTestData(inputData) {
+      db.collection("messages").add({
+          content: inputData,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp() // 记录写入时间
+      })
+      .then((docRef) => {
+          console.log("数据写入成功，文档 ID: ", docRef.id);
+          alert("数据已成功存储到 Firebase！请查看控制台。");
+      })
+      .catch((error) => {
+          console.error("写入数据时发生错误: ", error);
+          alert("数据存储失败，请检查浏览器控制台和 Firebase 规则。");
+      });
+  }
+
+  // 5. 示例：在页面加载后自动尝试写入一条数据
+  // 实际项目中你会把它绑定到按钮点击事件上
+  // saveTestData("网站首次自动测试写入数据"); 
+
+</script>
+
 </body>
 </html>
