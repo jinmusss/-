@@ -3,1005 +3,1030 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>金木常胜日志 - 赛博交易分析</title>
+    <title>金木常胜日志 - 交易分析</title>
     <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome for futuristic icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- 引入 Chart.js 及其日期适配器用于图表绘制 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     
     <style>
-        /* --- 赛博霓虹主题颜色定义 --- */
-        :root {
-            --bg-main: #0d0d17; /* 深黑/紫 */
-            --bg-comp: #1a1a2e; /* 稍亮的深紫/蓝，用于组件背景 */
-            --neon-cyan: #22d3ee; /* cyan-400 */
-            --neon-fuchsia: #e879f9; /* fuchsia-500 */
-            --text-color: #e2e8f0;
-        }
-
-        /* 全局样式 */
+        /* 使用 Inter 字体并设置深色背景，符合前卫设计 */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-color);
+            background-color: #0d0d18; /* 极深蓝黑 */
+            color: #e2e8f0; /* 默认文字颜色 */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 1rem;
-            padding-bottom: 2rem;
         }
 
-        /* 组件背景 */
+        /* 核心动画效果：霓虹光晕 */
+        .neon-glow {
+            box-shadow: 0 0 10px rgba(0, 220, 255, 0.6), 0 0 20px rgba(0, 220, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .neon-glow:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6);
+        }
+
+        /* 突出按钮的渐变与动态效果 */
+        .cyber-button {
+            background-image: linear-gradient(90deg, #00d4ff, #8338ec);
+            color: white;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cyber-button:hover {
+            box-shadow: 0 0 15px rgba(131, 56, 236, 0.8);
+            transform: translateY(-2px);
+        }
+
+        /* 动画组件的背景 */
         .component-bg {
-            background-color: var(--bg-comp);
+            background-color: #1a1a2e; /* 深紫蓝 */
+            border: 1px solid #2d2d4c;
         }
 
-        /* 1. 霓虹卡片样式 (neon-card) */
-        .neon-card {
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 0 5px rgba(232, 121, 249, 0.2), 0 0 10px rgba(34, 211, 238, 0.2);
-            border: 1px solid rgba(34, 211, 238, 0.1);
-        }
-
-        .neon-card:hover {
-            box-shadow: 0 0 15px var(--neon-fuchsia), 0 0 25px var(--neon-cyan);
-            transform: translateY(-3px);
-            border-color: var(--neon-cyan);
-            z-index: 5; /* 提升层级，防止被遮挡 */
+        /* 突出显示盈利（绿色/青色）和亏损（粉色/红色） */
+        .metric-profit { border-bottom: 4px solid #10b981; }
+        .metric-drawdown { border-bottom: 4px solid #ec4899; }
+        .metric-neutral { border-bottom: 4px solid #06b6d4; }
+        
+        /* 模态框背景 */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
         }
         
-        /* 2. 霓虹脉冲动画 (animate-pulse-neon) */
-        @keyframes pulse-neon {
-            0%, 100% {
-                box-shadow: 0 0 10px var(--neon-fuchsia), 0 0 20px var(--neon-cyan);
-                filter: brightness(1);
-            }
-            50% {
-                box-shadow: 0 0 20px var(--neon-fuchsia), 0 0 40px var(--neon-cyan);
-                filter: brightness(1.2);
-            }
-        }
-
-        .animate-pulse-neon {
-            animation: pulse-neon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        /* 6. 图表区域容器样式 */
-        #chart-container {
-            position: relative;
-            /* 深色渐变背景 */
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(13, 13, 23, 0.9)); 
-            border: 1px solid rgba(232, 121, 249, 0.3);
-            min-height: 300px; /* 确保占位符可见 */
-        }
-
-        /* 6. 数据矩阵待激活 占位符样式 */
-        .chart-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            font-size: 1.5rem;
-            text-align: center;
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        /* 覆盖 Chart.js 工具提示的默认白色背景，使其融入黑暗主题 */
-        .chartjs-tooltip {
-            background: var(--bg-comp) !important;
-            border: 1px solid var(--neon-cyan) !important;
-            color: var(--text-color) !important;
-            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5) !important;
-        }
     </style>
-    
 </head>
-<body class="p-4 md:p-8">
+<body class="selection:bg-cyan-600 selection:text-black">
 
-    <div class="max-w-7xl mx-auto w-full space-y-8">
-        <!-- 头部/标题区域 -->
-        <header class="text-center pb-4">
-            <h1 class="text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 shadow-lg">
-                金木常胜日志 🌌
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">赛博交易分析终端 V2.0 运行中</p>
+    <!-- 主容器 -->
+    <div id="app" class="p-4 md:p-8 max-w-7xl mx-auto w-full flex-grow">
+
+        <!-- 头部 - 品牌与状态 -->
+        <header class="mb-8 border-b border-cyan-400/30 pb-4 flex justify-between items-center flex-wrap gap-4">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-book-open text-4xl text-cyan-400 neon-glow"></i>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-wider text-white">
+                    <span class="text-cyan-400">JINMU</span> ALWAYS WIN
+                </h1>
+            </div>
+            <div class="flex items-center space-x-3 text-sm">
+                <!-- 新增初始资金输入框 -->
+                <div class="flex items-center space-x-2 bg-[#252542] p-2 rounded-lg">
+                    <label for="initial-capital" class="text-xs text-gray-400">初始资金 ($):</label>
+                    <input type="number" id="initial-capital" value="10000" min="1" step="100" 
+                           class="w-24 p-0.5 text-right rounded bg-transparent border-none text-white focus:ring-0 focus:outline-none" 
+                           onchange="saveInitialCapital(this.value)" />
+                </div>
+                
+                <span id="user-id-display" class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8338ec] text-white">用户ID: 载入中...</span>
+                <i class="fas fa-user-circle text-2xl text-gray-500"></i>
+            </div>
         </header>
 
-        <!-- 初始资本设置/回测启动按钮 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <!-- 初始资本卡片 (使用 neon-card 样式) -->
-            <div id="capital-display" class="md:col-span-2 p-6 rounded-xl component-bg neon-card flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 md:space-x-4">
-                <div class="text-lg font-bold">初始启动资金: <span id="initial-capital-value" class="text-cyan-400">￥0.00</span></div>
-                <button onclick="openTradeModal('capital-setup')" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                    <span class="text-sm">🌌 配置初始资本</span>
-                </button>
-            </div>
-            
-            <!-- 启动回测按钮 (使用 animate-pulse-neon 样式) -->
-            <button id="run-backtest-btn" class="w-full h-full bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-3 px-4 rounded-xl shadow-lg transition duration-300 animate-pulse-neon text-lg uppercase" disabled>
-                启动回测模拟 ⚡
-            </button>
-        </div>
+        <!-- 主仪表板 -->
+        <main id="dashboard-view">
+            <h2 class="text-2xl font-bold mb-6 text-gray-100 border-l-4 border-emerald-400 pl-3">
+                <i class="fas fa-tachometer-alt mr-2 text-emerald-400"></i>
+                交易性能分析仪表板
+            </h2>
 
-        <!-- 3. 指标卡片区域 -->
-        <section id="metrics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4" aria-label="交易指标概览">
-            <!-- Metrics will be rendered here by JavaScript -->
-        </section>
-
-        <!-- 4. 图表/可视化区域 (使用 neon-card 样式) -->
-        <section class="p-6 rounded-xl component-bg neon-card shadow-lg" aria-label="盈亏曲线图">
-            <h2 class="text-xl font-bold mb-4 text-cyan-400 border-b border-cyan-400/20 pb-2">数据矩阵: 盈亏曲线</h2>
-            <div id="chart-controls" class="flex flex-wrap gap-4 mb-4 text-sm">
-                 <button data-filter="all" class="chart-filter-btn text-fuchsia-500 border border-fuchsia-500/50 hover:bg-fuchsia-900 px-3 py-1 rounded-full transition duration-150">所有记录</button>
-                 <button data-filter="last-30" class="chart-filter-btn text-gray-400 border border-gray-600 hover:bg-gray-800 px-3 py-1 rounded-full transition duration-150">近 30 天</button>
-                 <button data-filter="year-to-date" class="chart-filter-btn text-gray-400 border border-gray-600 hover:bg-gray-800 px-3 py-1 rounded-full transition duration-150">今年至今</button>
-            </div>
-
-            <!-- Chart Canvas Container -->
-            <div id="chart-container" class="rounded-lg overflow-hidden relative">
-                <!-- 6. 数据矩阵待激活 占位符 -->
-                <div class="chart-placeholder">
-                    <div class="text-4xl mb-2">👾</div>
-                    数据矩阵待激活: 正在等待交易数据加载...
+            <!-- 仪表板顶部操作区 (包含交易日志筛选) -->
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                <!-- 交易日志筛选区域 -->
+                <div class="flex items-center space-x-4 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <label for="month-year-filter" class="text-sm text-gray-400">交易日志筛选:</label>
+                        <select id="month-year-filter" class="px-3 py-2 rounded-lg bg-[#252542] text-gray-300 border border-[#44447a] focus:ring-cyan-400 focus:border-cyan-400 text-sm" onchange="applyLogFilter(this.value)">
+                            <option value="all">显示全部记录</option>
+                            <!-- Options will be generated by JS -->
+                        </select>
+                    </div>
+                    <button class="px-4 py-2 rounded-lg bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition">
+                        <i class="fas fa-tag mr-1"></i> 按模型筛选 (待开发)
+                    </button>
                 </div>
-                <canvas id="profitChart" class="w-full h-full"></canvas>
-            </div>
-        </section>
-
-        <!-- 交易日志/表格区域 (使用 neon-card 样式) -->
-        <section class="p-6 rounded-xl component-bg neon-card shadow-lg" aria-label="交易记录日志">
-            <div class="flex justify-between items-center mb-4 border-b border-fuchsia-500/20 pb-2">
-                <h2 class="text-xl font-bold text-fuchsia-500">交易记录日志</h2>
-                <button onclick="openTradeModal('trade-entry')" class="bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition duration-200">
-                    <span class="text-sm">⊕ 记录新交易</span>
+                <!-- 新增交易按钮 -->
+                <button onclick="openTradeModal()" class="cyber-button px-6 py-2 rounded-full text-md shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>
+                    记录新交易
                 </button>
             </div>
+
+            <!-- 核心性能指标卡片 (TradeZella Metrics) -->
+            <div id="metrics-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+                <!-- 指标卡片将通过 JS 动态生成 -->
+            </div>
             
-            <!-- 交易日志过滤器 -->
-            <div id="log-filters" class="flex flex-wrap gap-4 mb-4 text-sm">
-                <select id="log-filter-result" class="p-2 rounded component-bg border border-gray-700 text-gray-300">
-                    <option value="all">所有结果</option>
-                    <option value="win">盈利 (WIN)</option>
-                    <option value="loss">亏损 (LOSS)</option>
-                </select>
-                <input type="text" id="log-filter-symbol" placeholder="按资产代码过滤 (如: BTC)" class="p-2 rounded component-bg border border-gray-700 text-gray-300 placeholder-gray-500">
-                <button onclick="applyLogFilter()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded transition duration-150">应用筛选</button>
+            <!-- 资产净值曲线图表 (Equity Curve Chart) -->
+            <div class="p-6 rounded-xl component-bg shadow-2xl mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-100 border-l-2 border-pink-500 pl-2">
+                    <i class="fas fa-chart-area mr-1 text-pink-500"></i> 账户资产净值曲线 (Equity Curve)
+                </h3>
+                
+                <!-- 时间过滤器 -->
+                <div class="flex space-x-2 mb-4 text-sm flex-wrap gap-2" id="time-filters">
+                    <button data-filter="all" class="filter-button px-3 py-1 rounded-full bg-cyan-600/70 text-white font-semibold shadow-md transition">
+                        <i class="fas fa-history mr-1"></i> 全部记录
+                    </button>
+                    <button data-filter="year" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition">
+                        <i class="fas fa-calendar-alt mr-1"></i> 今年
+                    </button>
+                    <button data-filter="month" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition">
+                        <i class="fas fa-calendar-day mr-1"></i> 本月
+                    </button>
+                    <button data-filter="week" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition">
+                        <i class="fas fa-calendar-week mr-1"></i> 本周
+                    </button>
+                </div>
+
+                <div class="h-96">
+                    <canvas id="equity-chart"></canvas>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-700">
-                    <thead>
-                        <tr class="uppercase text-xs tracking-wider text-gray-400 bg-gray-900/50">
-                            <th class="px-4 py-3 text-left">日期</th>
-                            <th class="px-4 py-3 text-left">代码</th>
-                            <th class="px-4 py-3 text-left">方向</th>
-                            <th class="px-4 py-3 text-right">盈亏额 (¥)</th>
-                            <th class="px-4 py-3 text-center">结果</th>
-                            <th class="px-4 py-3 text-center">操作</th>
+            <!-- 交易日志区域 -->
+            <div class="p-6 rounded-xl component-bg shadow-2xl overflow-x-auto">
+                <h3 class="text-xl font-semibold mb-4 text-gray-100 border-l-2 border-cyan-400 pl-2">
+                    <i class="fas fa-clipboard-list mr-1"></i> 交易记录 (Total: <span id="trade-count">0</span>)
+                </h3>
+                
+                <table class="min-w-full divide-y divide-[#44447a]">
+                    <thead class="bg-[#252542] text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-medium text-gray-300">时间</th>
+                            <th class="px-6 py-3 text-left font-medium text-gray-300">交易对</th>
+                            <th class="px-6 py-3 text-left font-medium text-gray-300">方向</th>
+                            <th class="px-6 py-3 text-left font-medium text-gray-300">R值 (风险回报)</th>
+                            <th class="px-6 py-3 text-right font-medium text-gray-300">绝对盈亏 ($)</th>
+                            <th class="px-6 py-3 text-left font-medium text-gray-300">图表/日志</th>
                         </tr>
                     </thead>
-                    <tbody id="trade-log-body" class="divide-y divide-gray-800">
-                        <!-- Trade logs will be inserted here -->
-                        <tr class="text-gray-500"><td colspan="6" class="p-4 text-center">正在加载数据核心...</td></tr>
+                    <tbody id="trade-log-body" class="divide-y divide-[#44447a] text-sm">
+                        <!-- 交易数据将通过 JS 动态加载 -->
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-gray-500 italic" id="log-status">
+                                <i class="fas fa-circle-notch fa-spin mr-2"></i> 正在从数据矩阵载入交易数据...
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
+
+        </main>
+        
     </div>
 
-
-    <!-- 模态框: 交易录入/资本配置 (使用 neon-card 样式) -->
-    <div id="trade-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div id="trade-modal-content" class="w-full max-w-lg p-6 rounded-xl component-bg neon-card shadow-2xl space-y-6">
-            <h3 id="trade-modal-title" class="text-2xl font-bold border-b border-fuchsia-500/50 pb-2 text-fuchsia-500">记录新交易</h3>
+    <!-- 模态框: 记录新交易 -->
+    <div id="trade-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="component-bg p-8 rounded-xl shadow-neon-lg w-full max-w-xl mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-cyan-400 border-b border-cyan-400/50 pb-2">
+                <i class="fas fa-clipboard-check mr-2"></i> 记录新交易日志
+            </h3>
             <form id="trade-form" class="space-y-4">
-                <div id="trade-form-fields">
-                    <!-- 交易录入字段 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 交易对 -->
                     <div>
-                        <label for="trade-date" class="block text-sm font-medium text-gray-300">日期</label>
-                        <input type="date" id="trade-date" name="date" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+                        <label for="symbol" class="block text-sm font-medium mb-1 text-gray-300">交易对 (Symbol)</label>
+                        <input type="text" id="symbol" value="BTC/USDT" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
                     </div>
+                    <!-- 日期 -->
                     <div>
-                        <label for="trade-symbol" class="block text-sm font-medium text-gray-300">资产代码 (如: BTC, NASDAQ)</label>
-                        <input type="text" id="trade-symbol" name="symbol" placeholder="输入代码" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+                        <label for="trade-date" class="block text-sm font-medium mb-1 text-gray-300">日期</label>
+                        <input type="date" id="trade-date" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
                     </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- 方向 -->
                     <div>
-                        <label for="trade-direction" class="block text-sm font-medium text-gray-300">方向</label>
-                        <select id="trade-direction" name="direction" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                            <option value="Long">做多 (Long)</option>
-                            <option value="Short">做空 (Short)</option>
+                        <label for="side" class="block text-sm font-medium mb-1 text-gray-300">方向</label>
+                        <select id="side" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
+                            <option value="LONG">多头 (LONG)</option>
+                            <option value="SHORT">空头 (SHORT)</option>
                         </select>
                     </div>
+                    <!-- R值 -->
                     <div>
-                        <label for="trade-pnl" class="block text-sm font-medium text-gray-300">盈亏金额 (¥)</label>
-                        <input type="number" id="trade-pnl" name="pnl" placeholder="输入盈利或亏损金额" required step="0.01" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+                        <label for="r-multiple" class="block text-sm font-medium mb-1 text-gray-300">R值 (例如: 2.5)</label>
+                        <input type="number" step="0.1" id="r-multiple" required placeholder="1.0" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
                     </div>
+                    <!-- 绝对盈亏 -->
                     <div>
-                        <label for="trade-notes" class="block text-sm font-medium text-gray-300">备注/心得</label>
-                        <textarea id="trade-notes" name="notes" rows="3" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"></textarea>
+                        <label for="pnl-amount" class="block text-sm font-medium mb-1 text-gray-300">绝对盈亏 ($)</label>
+                        <input type="number" step="0.01" id="pnl-amount" required placeholder="500.00" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                    </div>
+                </div>
+
+                <!-- 裸K模型标签 (模拟 TradeZella Tagging) -->
+                <div>
+                    <label for="model-tag" class="block text-sm font-medium mb-1 text-gray-300">裸K模型标签 (e.g., Fractal Breakout)</label>
+                    <input type="text" id="model-tag" placeholder="分形突破" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                </div>
+                
+                <!-- TradingView 图表链接/ID (核心功能) -->
+                <div>
+                    <label for="chart-link" class="block text-sm font-medium mb-1 text-gray-300">TradingView 图表链接/ID</label>
+                    <input type="url" id="chart-link" placeholder="https://www.tradingview.com/chart/..." class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                    <p class="text-xs text-gray-500 mt-1">方便您回顾裸K结构和入场位置。</p>
+                </div>
+                
+                <!-- 心理/总结日志 -->
+                <div>
+                    <label for="notes" class="block text-sm font-medium mb-1 text-gray-300">交易心理/总结 (Journaling)</label>
+                    <textarea id="notes" rows="3" placeholder="入场时感觉过于自信，但按计划执行，R值计算准确。" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeTradeModal()" class="px-6 py-2 rounded-full border border-gray-600 text-gray-300 hover:border-pink-500 hover:text-pink-500 transition">
+                        取消
+                    </button>
+                    <button type="submit" class="cyber-button px-6 py-2 rounded-full">
+                        <i class="fas fa-save mr-1"></i> 保存交易
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 模态框: 交易详情 (Read-Only View) -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="component-bg p-8 rounded-xl shadow-neon-lg w-full max-w-3xl mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-emerald-400 border-b border-emerald-400/50 pb-2">
+                <i class="fas fa-eye mr-2"></i> 交易详情和日志
+            </h3>
+            <div id="detail-content" class="space-y-4 text-gray-200">
+                <!-- 详情内容将通过 JS 动态填充 -->
+            </div>
+            <div class="flex justify-end pt-6">
+                <!-- 按钮区域，包含 '编辑' 和 '关闭' 按钮 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 模态框: 编辑交易 (Editable View) -->
+    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="component-bg p-8 rounded-xl shadow-neon-lg w-full max-w-xl mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-emerald-400 border-b border-emerald-400/50 pb-2">
+                <i class="fas fa-edit mr-2"></i> 修改交易日志
+            </h3>
+            <form id="edit-form" class="space-y-4">
+                <!-- Hidden ID field to know which doc to update -->
+                <input type="hidden" id="edit-trade-id" /> 
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 交易对 -->
+                    <div>
+                        <label for="edit-symbol" class="block text-sm font-medium mb-1 text-gray-300">交易对 (Symbol)</label>
+                        <input type="text" id="edit-symbol" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                    </div>
+                    <!-- 日期 -->
+                    <div>
+                        <label for="edit-trade-date" class="block text-sm font-medium mb-1 text-gray-300">日期</label>
+                        <input type="date" id="edit-trade-date" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
                     </div>
                 </div>
                 
-                <!-- 资本配置字段 (初始隐藏) -->
-                <div id="capital-setup-fields" class="hidden">
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- 方向 -->
                     <div>
-                        <label for="initial-capital" class="block text-sm font-medium text-gray-300">初始启动资金 (¥)</label>
-                        <!-- 这里的 input name='capital' 就是在之前报错的元素，现在它在 HTML 中是安全的 -->
-                        <input type="number" id="initial-capital" name="capital" placeholder="输入初始资金额" required min="0" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+                        <label for="edit-side" class="block text-sm font-medium mb-1 text-gray-300">方向</label>
+                        <select id="edit-side" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
+                            <option value="LONG">多头 (LONG)</option>
+                            <option value="SHORT">空头 (SHORT)</option>
+                        </select>
+                    </div>
+                    <!-- R值 -->
+                    <div>
+                        <label for="edit-r-multiple" class="block text-sm font-medium mb-1 text-gray-300">R值 (例如: 2.5)</label>
+                        <input type="number" step="0.1" id="edit-r-multiple" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                    </div>
+                    <!-- 绝对盈亏 -->
+                    <div>
+                        <label for="edit-pnl-amount" class="block text-sm font-medium mb-1 text-gray-300">绝对盈亏 ($)</label>
+                        <input type="number" step="0.01" id="edit-pnl-amount" required class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeTradeModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                <!-- 裸K模型标签 -->
+                <div>
+                    <label for="edit-model-tag" class="block text-sm font-medium mb-1 text-gray-300">裸K模型标签</label>
+                    <input type="text" id="edit-model-tag" placeholder="分形突破" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                </div>
+                
+                <!-- TradingView 图表链接/ID -->
+                <div>
+                    <label for="edit-chart-link" class="block text-sm font-medium mb-1 text-gray-300">TradingView 图表链接/ID</label>
+                    <input type="url" id="edit-chart-link" placeholder="https://www.tradingview.com/chart/..." class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400" />
+                </div>
+                
+                <!-- 心理/总结日志 -->
+                <div>
+                    <label for="edit-notes" class="block text-sm font-medium mb-1 text-gray-300">交易心理/总结 (Journaling)</label>
+                    <textarea id="edit-notes" rows="3" placeholder="入场时感觉过于自信，但按计划执行，R值计算准确。" class="w-full p-2 rounded-lg bg-[#252542] border border-[#44447a] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeEditModal()" class="px-6 py-2 rounded-full border border-gray-600 text-gray-300 hover:border-pink-500 hover:text-pink-500 transition">
                         取消
                     </button>
-                    <button type="submit" id="modal-submit-btn" class="bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition duration-200">
-                        确认录入
+                    <button type="submit" class="cyber-button px-6 py-2 rounded-full bg-emerald-500 hover:bg-emerald-600">
+                        <i class="fas fa-save mr-1"></i> 更新交易
                     </button>
                 </div>
             </form>
         </div>
     </div>
-    
-    <!-- 模态框: 交易详情 (使用 neon-card 样式) -->
-    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="w-full max-w-lg p-6 rounded-xl component-bg neon-card shadow-2xl space-y-4">
-            <h3 class="text-2xl font-bold border-b border-cyan-400/50 pb-2 text-cyan-400">交易数据详情</h3>
-            <div id="detail-content" class="space-y-3">
-                <!-- Details will be loaded here -->
-            </div>
-            <div class="flex justify-end space-x-4">
-                 <button onclick="openEditModal(window.currentDetailTradeId)" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                    编辑
-                </button>
-                <button onclick="closeDetailModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                    关闭
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 模态框: 编辑交易 (使用 neon-card 样式) -->
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="w-full max-w-lg p-6 rounded-xl component-bg neon-card shadow-2xl space-y-6">
-            <h3 class="text-2xl font-bold border-b border-fuchsia-500/50 pb-2 text-fuchsia-500">编辑交易记录</h3>
-            <form id="edit-form" class="space-y-4">
-                <input type="hidden" id="edit-trade-id">
-                <!-- 交易录入字段 (用于编辑) -->
-                <div>
-                    <label for="edit-trade-date" class="block text-sm font-medium text-gray-300">日期</label>
-                    <input type="date" id="edit-trade-date" name="date" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                </div>
-                <div>
-                    <label for="edit-trade-symbol" class="block text-sm font-medium text-gray-300">资产代码</label>
-                    <input type="text" id="edit-trade-symbol" name="symbol" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                </div>
-                <div>
-                    <label for="edit-trade-direction" class="block text-sm font-medium text-gray-300">方向</label>
-                    <select id="edit-trade-direction" name="direction" required class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="Long">做多 (Long)</option>
-                        <option value="Short">做空 (Short)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="edit-trade-pnl" class="block text-sm font-medium text-gray-300">盈亏金额 (¥)</label>
-                    <input type="number" id="edit-trade-pnl" name="pnl" required step="0.01" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                </div>
-                <div>
-                    <label for="edit-trade-notes" class="block text-sm font-medium text-gray-300">备注/心得</label>
-                    <textarea id="edit-trade-notes" name="notes" rows="3" class="mt-1 block w-full p-2 rounded component-bg border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"></textarea>
-                </div>
 
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeEditModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                        取消
-                    </button>
-                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition duration-200">
-                        保存更改
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- 模态框: 确认删除 (使用 neon-card 样式) -->
-    <div id="confirm-delete-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="w-full max-w-sm p-6 rounded-xl component-bg neon-card space-y-4">
-            <h3 class="text-xl font-bold text-fuchsia-500">确认删除</h3>
-            <p class="text-gray-300">您确定要删除这条交易记录吗？此操作无法撤销。</p>
-            <div class="flex justify-end space-x-4">
-                <button onclick="closeConfirmDeleteModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                    取消
-                </button>
-                <button id="execute-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                    确认删除
-                </button>
-            </div>
-        </div>
-    </div>
-
-    
-    <!-- ============================================== -->
-    <!-- 🔥 修复后的 JavaScript 模块化代码块 🔥         -->
-    <!-- ============================================== -->
 
     <script type="module">
-        // --- Firebase 配置 ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
-          authDomain: "jinmu-c0549.firebaseapp.com",
-          projectId: "jinmu-c0549",
-          storageBucket: "jinmu-c0549.firebasestorage.app",
-          messagingSenderId: "433198268542",
-          appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
-          measurementId: "G-YHBMGP6C6X"
-        };
+        // --- Firestore & Firebase Configuration ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // --- Firebase 导入 ---
-        import { initializeApp } from "firebase/app" ;
-        import { getAnalytics } from "firebase/analytics" ;
-        
-        
-        // 设置日志级别为 Debug，以便在控制台查看 Firestore 操作
-        setLogLevel('Debug');
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-cyber-logbook';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // --- 全局变量 ---
-        let app, db, auth;
+        let db;
+        let auth;
         let userId = null;
-        let allTrades = []; // 存储所有交易数据
-        let tradesByDate = {}; // 存储按日期分组的交易数据
-        let profitChart;
-        let initialCapital = 0; // 初始资本
-        let logFilter = { result: 'all', symbol: '' };
+        let isAuthReady = false;
+        let trades = [];
+        let INITIAL_CAPITAL = 10000; // 初始模拟资金 (现在是动态的)
+        let currentLogFilter = 'all'; // 当前交易日志筛选值
         
-        // 使用 projectId 作为 app id
-        const appId = firebaseConfig.projectId; 
+        // Charting variables
+        let equityChartInstance = null;
+
+        // UI Elements
+        const tradeModal = document.getElementById('trade-modal');
+        const detailModal = document.getElementById('detail-modal');
+        const editModal = document.getElementById('edit-modal'); // New: Edit modal
         const tradeForm = document.getElementById('trade-form');
-        const editForm = document.getElementById('edit-form');
-        const chartPlaceholder = document.querySelector('.chart-placeholder');
+        const editForm = document.getElementById('edit-form'); // New: Edit form
+        const tradeLogBody = document.getElementById('trade-log-body');
+        const logStatus = document.getElementById('log-status');
+        const tradeCountSpan = document.getElementById('trade-count');
+        const metricsContainer = document.getElementById('metrics-container');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const initialCapitalInput = document.getElementById('initial-capital'); // New: Initial Capital Input
 
-
-        // --- 工具函数: Lucide SVG 图标生成 ---
-        const getIconSvg = (name, className = 'w-6 h-6') => {
-            switch (name) {
-                case 'flash':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M13 2H3l8 11h-4l6 9V11h5L13 2z"/></svg>`;
-                case 'target':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
-                case 'trending-up':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`;
-                case 'data':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`;
-                default:
-                    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-            }
-        };
-
-
-        // --- Firebase 初始化与身份验证 ---
-        const firebaseInit = async () => {
+        // --- Firebase Initialization and Authentication ---
+        async function firebaseInit() {
             try {
-                // 1. 检查配置
-                if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.projectId) {
-                    console.error("Firebase 配置缺失。无法初始化 Firebase。请检查 firebaseConfig 对象。");
-                    return;
-                }
-                
-                // 2. 初始化 App 和 Services
-                app = initializeApp(firebaseConfig);
+                const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // 身份验证逻辑：使用自定义 token 或匿名登录
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                
-                let authSuccess = false;
-
-                if (token) {
-                    try {
-                        // 尝试使用 custom token 登录
-                        await signInWithCustomToken(auth, token);
-                        console.log("Custom token 认证成功。");
-                        authSuccess = true;
-                    } catch (error) {
-                        // 捕获 custom token 错误，包括 auth/configuration-not-found
-                        console.warn(`Custom token 认证失败 (${error.code})，尝试匿名登录...`, error);
-                        // Fallback to anonymous sign-in
-                        await signInAnonymously(auth);
-                        console.log("匿名认证成功 (Custom Token 失败回退)。");
-                        authSuccess = true;
-                    }
-                } else {
-                    // 没有 token，直接使用匿名登录
-                    await signInAnonymously(auth);
-                    console.log("匿名认证成功 (无 token)。");
-                    authSuccess = true;
-                }
-                
-                if (!authSuccess) {
-                     // 理论上不会走到这里，但作为安全措施
-                     throw new Error("未能通过任何方式进行身份验证。");
-                }
-
-
-                // 3. 监听认证状态变化
-                onAuthStateChanged(auth, (user) => {
+                // Set up authentication listener
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        console.log(`认证成功，用户ID: ${userId}`);
-                        // 认证完成后，开始监听数据
-                        listenForCapitalUpdate();
-                        listenForTrades();
-                        document.getElementById('run-backtest-btn').disabled = false; // 允许启动回测
+                        isAuthReady = true;
+                        userIdDisplay.textContent = `用户ID: ${userId}`;
+                        console.log("Firebase Auth Ready. User ID:", userId);
+                        await loadInitialCapital(); // 1. 加载初始资金
+                        loadTrades(); // 2. 加载交易记录
                     } else {
-                        console.log("用户已登出或认证失败。");
+                        // Attempt to sign in with custom token or anonymously
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
                     }
                 });
-
             } catch (error) {
-                console.error("Firebase 初始化或认证失败:", error);
-                // 移除 alert()，仅打印到控制台
+                console.error("Firebase initialization failed:", error);
+                logStatus.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> 数据库连接失败: ${error.message}`;
             }
-        };
+        }
 
-        // --- Firestore 路径生成工具 ---
-        const getPrivateDocRef = (collectionName, docId) => {
-            if (!userId) return null;
-            // 遵循私有数据路径规则: /artifacts/{appId}/users/{userId}/{collectionName}/{docId}
-            return doc(db, 'artifacts', appId, 'users', userId, collectionName, docId);
-        };
-        const getPrivateCollectionRef = (collectionName) => {
-            if (!userId) return null;
-            // 遵循私有数据路径规则: /artifacts/{appId}/users/{userId}/{collectionName}
-            return collection(db, 'artifacts', appId, 'users', userId, collectionName);
-        };
-
-        // --- 资本管理 ---
-        const CAPITAL_DOC_ID = 'initial_capital';
-        
-        const saveInitialCapital = async (event) => {
-            event.preventDefault();
-            if (!userId) return console.error("用户ID不可用。");
+        // --- Initial Capital Persistence ---
+        async function loadInitialCapital() {
+            if (!isAuthReady || !userId) return INITIAL_CAPITAL;
             
-            const capital = parseFloat(document.getElementById('initial-capital').value);
-            if (isNaN(capital)) return console.error("资本值无效。");
-
-            const capitalRef = getPrivateDocRef('settings', CAPITAL_DOC_ID);
-            
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'initial_balance');
             try {
-                await setDoc(capitalRef, { value: capital, lastUpdated: new Date() }, { merge: true });
-                initialCapital = capital;
-                document.getElementById('initial-capital-value').textContent = formatCurrency(initialCapital);
-                closeTradeModal(); // 关闭模态框
-            } catch (error) {
-                console.error("保存初始资本失败:", error);
-            }
-        };
-        
-        const listenForCapitalUpdate = () => {
-             if (!userId) return;
-             const capitalRef = getPrivateDocRef('settings', CAPITAL_DOC_ID);
-             onSnapshot(capitalRef, (docSnap) => {
-                 if (docSnap.exists()) {
-                     const data = docSnap.data();
-                     initialCapital = data.value || 0;
-                     document.getElementById('initial-capital-value').textContent = formatCurrency(initialCapital);
-                     renderMetrics(); // 资本更新后重新渲染指标
-                     updateChart(); // 资本更新后重新绘制图表
-                 } else {
-                     initialCapital = 0;
-                     document.getElementById('initial-capital-value').textContent = formatCurrency(initialCapital);
-                     renderMetrics();
-                     updateChart();
-                 }
-             }, (error) => {
-                 console.error("监听初始资本失败:", error);
-             });
-        };
-
-        // --- 交易数据监听 ---
-        const listenForTrades = () => {
-            if (!userId) return;
-            const tradesColRef = getPrivateCollectionRef('trades');
-            // 获取所有数据，客户端排序
-            const q = query(tradesColRef);
-
-            onSnapshot(q, (snapshot) => {
-                allTrades = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    date: doc.data().date instanceof Date ? doc.data().date : (doc.data().date?.toDate() || new Date(doc.data().date)), // 确保是 Date 对象
-                    pnl: parseFloat(doc.data().pnl) || 0,
-                }));
-                
-                // 按日期排序 (最新在前)
-                allTrades.sort((a, b) => b.date.getTime() - a.date.getTime());
-                
-                processTradesData();
-                renderLogTable();
-                renderMetrics();
-                updateChart();
-            }, (error) => {
-                console.error("监听交易数据失败:", error);
-                document.getElementById('trade-log-body').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">数据同步失败：${error.message}</td></tr>`;
-            });
-        };
-
-        // --- 数据处理 ---
-        const processTradesData = () => {
-            tradesByDate = {};
-            // 确保交易按时间顺序处理 (最旧在前)
-            const sortedTrades = [...allTrades].sort((a, b) => a.date.getTime() - b.date.getTime());
-
-            let cumulativePnL = initialCapital;
-
-            sortedTrades.forEach(trade => {
-                // 计算累计盈亏
-                cumulativePnL += trade.pnl;
-                trade.cumulativePnL = cumulativePnL; 
-
-                // 按日期分组
-                const dateStr = trade.date.toISOString().split('T')[0];
-                if (!tradesByDate[dateStr]) {
-                    tradesByDate[dateStr] = [];
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().capital) {
+                    const storedCapital = docSnap.data().capital;
+                    INITIAL_CAPITAL = storedCapital;
+                    initialCapitalInput.value = storedCapital;
+                    return storedCapital;
                 }
-                tradesByDate[dateStr].push(trade);
-            });
-        };
-        
-        // --- 格式化工具 ---
-        const formatCurrency = (amount) => {
-            const formatter = new Intl.NumberFormat('zh-CN', {
-                style: 'currency',
-                currency: 'CNY',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            });
-            return formatter.format(amount);
-        };
+            } catch (error) {
+                console.error("Error loading initial capital:", error);
+            }
+            initialCapitalInput.value = INITIAL_CAPITAL; // Fallback to default
+            return INITIAL_CAPITAL;
+        }
 
-        // --- 指标计算与渲染 (Metric Cards) ---
-        const calculateMetrics = () => {
-            const totalTrades = allTrades.length;
-            const totalWins = allTrades.filter(t => t.pnl > 0).length;
-            const totalLosses = allTrades.filter(t => t.pnl < 0).length;
-            const totalPnL = allTrades.reduce((sum, t) => sum + t.pnl, 0);
+        async function saveInitialCapital(newCapital) {
+            if (!isAuthReady || !userId) return;
+
+            newCapital = parseFloat(newCapital);
+            if (isNaN(newCapital) || newCapital <= 0) {
+                // If invalid input, reset the input field to the current valid value
+                initialCapitalInput.value = INITIAL_CAPITAL;
+                return;
+            }
             
-            const winRate = totalTrades > 0 ? ((totalWins / totalTrades) * 100).toFixed(1) + '%' : '0.0%';
-            const totalPnLFormatted = formatCurrency(totalPnL);
-            const initialCapitalFormatted = formatCurrency(initialCapital);
+            INITIAL_CAPITAL = newCapital;
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'initial_balance');
+            try {
+                await setDoc(docRef, { capital: newCapital, timestamp: serverTimestamp() }, { merge: false });
+                console.log("Initial capital saved:", newCapital);
+                // 重新计算并渲染所有数据
+                updateChartAndMetrics(trades); 
+            } catch (error) {
+                console.error("Error saving initial capital:", error);
+                // 可以在 UI 上显示一个临时的错误提示
+            }
+        }
+
+        // --- Modal Control Functions (New/Detail/Edit) ---
+        function openTradeModal() {
+            // Set current date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('trade-date').value = today;
+            tradeForm.reset();
+            tradeModal.classList.remove('hidden');
+        }
+
+        function closeTradeModal() {
+            tradeModal.classList.add('hidden');
+        }
+
+        function openEditModal(tradeData) {
+            let trade;
+            if (typeof tradeData === 'string') {
+                try {
+                    trade = JSON.parse(tradeData);
+                } catch(e) {
+                    console.error("Failed to parse trade JSON string for edit:", tradeData, e);
+                    return;
+                }
+            } else {
+                trade = tradeData;
+            }
+
+            // 填充编辑模态框
+            document.getElementById('edit-trade-id').value = trade.id;
+            document.getElementById('edit-symbol').value = trade.symbol;
+            document.getElementById('edit-trade-date').value = trade.date;
+            document.getElementById('edit-side').value = trade.side;
+            // 确保 R 值和 PnL 是数字类型并保留两位小数
+            document.getElementById('edit-r-multiple').value = parseFloat(trade.rMultiple).toFixed(2);
+            document.getElementById('edit-pnl-amount').value = parseFloat(trade.pnlAmount).toFixed(2);
+            document.getElementById('edit-model-tag').value = trade.modelTag || '';
+            document.getElementById('edit-chart-link').value = trade.chartLink || '';
+            document.getElementById('edit-notes').value = trade.notes || '';
             
-            return { totalTrades, winRate, totalPnL, totalPnLFormatted, initialCapitalFormatted };
-        };
+            closeDetailModal(); // 关闭详情视图
+            editModal.classList.remove('hidden');
+        }
 
-        const renderMetrics = () => {
-            const { totalTrades, winRate, totalPnL, totalPnLFormatted, initialCapitalFormatted } = calculateMetrics();
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+        }
 
-            // 3. 定义新的指标数据结构，使用 Lucide-style icons 和 neon colors
-            const metricData = [
-                { 
-                    label: '总交易次数', 
-                    value: totalTrades, 
-                    icon: 'flash', 
-                    borderColor: 'var(--neon-cyan)', 
-                    textColor: 'text-cyan-400',
-                    bgColor: 'bg-cyan-900/50'
-                },
-                { 
-                    label: '胜率 (🎯)', 
-                    value: winRate, 
-                    icon: 'target', 
-                    borderColor: 'var(--neon-fuchsia)', 
-                    textColor: 'text-fuchsia-400',
-                    bgColor: 'bg-fuchsia-900/50'
-                },
-                { 
-                    label: '总盈亏 (P&L)', 
-                    value: totalPnLFormatted, 
-                    icon: 'trending-up', 
-                    // PnL 颜色动态变化
-                    borderColor: totalPnL >= 0 ? 'var(--neon-cyan)' : '#ef4444', 
-                    textColor: totalPnL >= 0 ? 'text-cyan-400' : 'text-red-500',
-                    bgColor: totalPnL >= 0 ? 'bg-cyan-900/50' : 'bg-red-900/50'
-                },
-                { 
-                    label: '初始资本 (₿)', 
-                    value: initialCapitalFormatted, 
-                    icon: 'data', 
-                    borderColor: '#94a3b8', 
-                    textColor: 'text-gray-400',
-                    bgColor: 'bg-gray-700/50'
-                },
-            ];
+        function openDetailModal(tradeData) {
+            let trade;
+            // Check if input is a string (came from HTML attribute, browser unescaped)
+            if (typeof tradeData === 'string') {
+                try {
+                    trade = JSON.parse(tradeData);
+                } catch(e) {
+                    console.error("Failed to parse trade JSON string in openDetailModal:", tradeData, e);
+                    return;
+                }
+            } else {
+                // It's already the trade object (came from JS event handler: tradeRow.onclick)
+                trade = tradeData;
+            }
 
-            const container = document.getElementById('metrics-container');
+            const content = document.getElementById('detail-content');
             
-            // 渲染为数据芯片风格
-            container.innerHTML = metricData.map(m => `
-                <div class="p-4 rounded-xl component-bg shadow-xl neon-card transition-all duration-300 transform hover:scale-[1.02]" 
-                     style="border: 1px solid ${m.borderColor};">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 rounded-full ${m.bgColor}" style="color: ${m.borderColor};">
-                            ${getIconSvg(m.icon, 'w-6 h-6')}
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-xs uppercase text-gray-400">${m.label}</div>
-                            <div class="text-2xl font-extrabold ${m.textColor}">${m.value}</div>
-                        </div>
-                    </div>
+            const pnlColor = trade.pnlAmount >= 0 ? 'text-emerald-400' : 'text-pink-500';
+            const rColor = trade.rMultiple >= 0 ? 'text-emerald-400' : 'text-pink-500';
+            const chartLinkHtml = trade.chartLink 
+                ? `<p><strong><i class="fas fa-chart-area mr-2"></i> TradingView 图表:</strong> <a href="${trade.chartLink}" target="_blank" class="text-cyan-400 hover:underline">点击查看图表</a></p>`
+                : `<p><strong><i class="fas fa-chart-area mr-2"></i> TradingView 图表:</strong> 未记录</p>`;
+
+            content.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 border-b border-[#44447a] pb-4">
+                    <p><strong><i class="fas fa-calendar-alt mr-2"></i> 日期:</strong> ${trade.date}</p>
+                    <p><strong><i class="fas fa-coins mr-2"></i> 交易对:</strong> ${trade.symbol}</p>
+                    <p><strong><i class="fas fa-exchange-alt mr-2"></i> 方向:</strong> <span class="${trade.side === 'LONG' ? 'text-emerald-400' : 'text-pink-500'}">${trade.side}</span></p>
+                    <p><strong><i class="fas fa-tag mr-2"></i> 模型标签:</strong> ${trade.modelTag || 'N/A'}</p>
                 </div>
-            `).join('');
-        };
+                <div class="grid grid-cols-2 gap-4 border-b border-[#44447a] py-4">
+                    <p><strong><i class="fas fa-money-bill-wave mr-2"></i> 绝对盈亏:</strong> <span class="text-lg font-bold ${pnlColor}">$${parseFloat(trade.pnlAmount).toFixed(2)}</span></p>
+                    <p><strong><i class="fas fa-trophy mr-2"></i> R值:</strong> <span class="text-lg font-bold ${rColor}">${parseFloat(trade.rMultiple).toFixed(2)}R</span></p>
+                </div>
+                <div class="py-4 border-b border-[#44447a]">
+                    ${chartLinkHtml}
+                </div>
+                <div class="pt-4">
+                    <h4 class="text-lg font-semibold text-cyan-400 mb-2"><i class="fas fa-brain mr-2"></i> 交易心理与总结 (Journal)</h4>
+                    <p class="component-bg p-3 rounded-lg border border-[#44447a] whitespace-pre-wrap">${trade.notes || '用户未记录总结。'}</p>
+                </div>
+            `;
+            // 修改按钮区域，添加编辑按钮。使用 HTML 实体转义确保 JSON 字符串能安全嵌入 onclick 属性中。
+            const tradeJsonForHtml = JSON.stringify(trade).replace(/"/g, '&quot;');
+            document.querySelector('#detail-modal .flex.justify-end.pt-6').innerHTML = `
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="openEditModal('${tradeJsonForHtml}')" 
+                            class="px-6 py-2 rounded-full border border-emerald-600 text-emerald-400 hover:bg-emerald-600/20 transition">
+                        <i class="fas fa-edit mr-1"></i> 编辑
+                    </button>
+                    <button type="button" onclick="closeDetailModal()" class="px-6 py-2 rounded-full border border-gray-600 text-gray-300 hover:border-cyan-400 hover:text-cyan-400 transition">
+                        关闭
+                    </button>
+                </div>
+            `;
+            detailModal.classList.remove('hidden');
+        }
         
-        // --- 交易日志表格渲染 ---
-        const renderLogTable = () => {
-            const tableBody = document.getElementById('trade-log-body');
-            
-            // 筛选数据
-            let filteredTrades = allTrades.filter(trade => {
-                const resultMatch = logFilter.result === 'all' || 
-                                    (logFilter.result === 'win' && trade.pnl > 0) ||
-                                    (logFilter.result === 'loss' && trade.pnl < 0);
-                
-                const symbolMatch = logFilter.symbol === '' || 
-                                    trade.symbol.toLowerCase().includes(logFilter.symbol.toLowerCase());
-                
-                return resultMatch && symbolMatch;
-            });
-            
-            if (filteredTrades.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">未找到匹配的交易记录。</td></tr>`;
+        function closeDetailModal() {
+            detailModal.classList.add('hidden');
+        }
+
+
+        // --- Data Persistence (Firestore) ---
+        async function saveTrade(e) {
+            e.preventDefault();
+
+            if (!isAuthReady) {
+                console.error("Authentication not ready. Cannot save trade.");
                 return;
             }
 
-            tableBody.innerHTML = filteredTrades.map(trade => {
-                const resultText = trade.pnl > 0 ? 'WIN' : (trade.pnl < 0 ? 'LOSS' : 'FLAT');
-                const resultClass = trade.pnl > 0 ? 'bg-green-700/50 text-green-300' : (trade.pnl < 0 ? 'bg-red-700/50 text-red-300' : 'bg-gray-700/50 text-gray-400');
-                const pnlClass = trade.pnl >= 0 ? 'text-cyan-400' : 'text-red-500';
-                
-                return `
-                    <tr class="hover:bg-gray-800/50 transition duration-150">
-                        <td class="px-4 py-3 text-sm">${trade.date.toISOString().split('T')[0]}</td>
-                        <td class="px-4 py-3 text-sm font-medium">${trade.symbol}</td>
-                        <td class="px-4 py-3 text-sm">${trade.direction}</td>
-                        <td class="px-4 py-3 text-right text-sm font-mono ${pnlClass}">${formatCurrency(trade.pnl)}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${resultClass}">${resultText}</span>
-                        </td>
-                        <td class="px-4 py-3 text-center text-sm space-x-2">
-                            <button onclick="openDetailModal('${trade.id}')" class="text-fuchsia-400 hover:text-fuchsia-300">详情</button>
-                            <button onclick="openConfirmDeleteModal('${trade.id}')" class="text-red-500 hover:text-red-400">删除</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        };
-        
-        // --- 交易日志筛选 ---
-        window.applyLogFilter = () => {
-            logFilter.result = document.getElementById('log-filter-result').value;
-            logFilter.symbol = document.getElementById('log-filter-symbol').value.trim();
-            renderLogTable();
-        };
-
-        // --- CRUD 操作函数 ---
-        const saveTrade = async (event) => {
-            event.preventDefault();
-            if (!userId) return console.error("用户ID不可用。");
-            
-            const formData = new FormData(event.target);
-            const newTrade = {
-                date: new Date(formData.get('date')),
-                symbol: formData.get('symbol').toUpperCase(),
-                direction: formData.get('direction'),
-                pnl: parseFloat(formData.get('pnl')),
-                notes: formData.get('notes') || '',
+            const tradeData = {
+                symbol: document.getElementById('symbol').value,
+                date: document.getElementById('trade-date').value,
+                side: document.getElementById('side').value,
+                rMultiple: parseFloat(document.getElementById('r-multiple').value),
+                pnlAmount: parseFloat(document.getElementById('pnl-amount').value),
+                modelTag: document.getElementById('model-tag').value,
+                chartLink: document.getElementById('chart-link').value,
+                notes: document.getElementById('notes').value,
+                timestamp: serverTimestamp(),
+                userId: userId,
             };
-            
-            try {
-                const tradesColRef = getPrivateCollectionRef('trades');
-                await addDoc(tradesColRef, newTrade);
-                closeTradeModal();
-                event.target.reset(); // 清空表单
-            } catch (error) {
-                console.error("保存交易失败:", error);
-            }
-        };
 
-        const updateTrade = async (event) => {
-            event.preventDefault();
-            if (!userId) return console.error("用户ID不可用。");
-            
+            closeTradeModal(); // Immediately close modal
+            logStatus.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 正在将交易数据存入矩阵...`;
+
+            try {
+                // Private collection path
+                const tradesCollection = collection(db, 'artifacts', appId, 'users', userId, 'trade_logs');
+                await addDoc(tradesCollection, tradeData);
+                console.log("Trade saved successfully.");
+                tradeForm.reset();
+            } catch (error) {
+                console.error("Error saving trade:", error);
+                // Simple error display instead of alert
+                logStatus.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> 保存失败: ${error.message}`;
+            }
+        }
+        
+        // New: Update Trade Function
+        async function updateTrade(e) {
+            e.preventDefault();
+
+            if (!isAuthReady) {
+                console.error("Authentication not ready. Cannot update trade.");
+                return;
+            }
+
             const tradeId = document.getElementById('edit-trade-id').value;
-            const formData = new FormData(event.target);
-            
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'trade_logs', tradeId);
+
             const updatedData = {
-                date: new Date(formData.get('date')),
-                symbol: formData.get('symbol').toUpperCase(),
-                direction: formData.get('direction'),
-                pnl: parseFloat(formData.get('pnl')),
-                notes: formData.get('notes') || '',
+                symbol: document.getElementById('edit-symbol').value,
+                date: document.getElementById('edit-trade-date').value,
+                side: document.getElementById('edit-side').value,
+                rMultiple: parseFloat(document.getElementById('edit-r-multiple').value),
+                pnlAmount: parseFloat(document.getElementById('edit-pnl-amount').value),
+                modelTag: document.getElementById('edit-model-tag').value,
+                chartLink: document.getElementById('edit-chart-link').value,
+                notes: document.getElementById('edit-notes').value,
             };
 
+            closeEditModal(); // Immediately close modal
+            logStatus.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 正在更新交易数据...`;
+
             try {
-                const tradeRef = getPrivateDocRef('trades', tradeId);
-                await updateDoc(tradeRef, updatedData);
-                closeEditModal();
+                await updateDoc(docRef, updatedData);
+                console.log("Trade updated successfully:", tradeId);
             } catch (error) {
-                console.error("更新交易失败:", error);
+                console.error("Error updating trade:", error);
+                logStatus.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> 更新失败: ${error.message}`;
             }
-        };
+        }
 
-        const deleteTrade = async (tradeId) => {
-            if (!userId) return console.error("用户ID不可用。");
-            try {
-                const tradeRef = getPrivateDocRef('trades', tradeId);
-                await deleteDoc(tradeRef);
-                closeConfirmDeleteModal();
-            } catch (error) {
-                console.error("删除交易失败:", error);
-            }
-        };
 
-        // --- 模态框控制 ---
-        const tradeModal = document.getElementById('trade-modal');
-        const detailModal = document.getElementById('detail-modal');
-        const editModal = document.getElementById('edit-modal');
-        const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+        function loadTrades() {
+            if (!isAuthReady) return;
 
-        const openTradeModal = (mode = 'trade-entry') => {
-            const isCapital = mode === 'capital-setup';
-            document.getElementById('trade-form-fields').classList.toggle('hidden', isCapital);
-            document.getElementById('capital-setup-fields').classList.toggle('hidden', !isCapital);
+            const tradesCollection = collection(db, 'artifacts', appId, 'users', userId, 'trade_logs');
+            const q = query(tradesCollection);
+
+            // Listen for real-time updates
+            onSnapshot(q, (snapshot) => {
+                const fetchedTrades = [];
+                snapshot.forEach((doc) => {
+                    fetchedTrades.push({ id: doc.id, ...doc.data() });
+                });
+                
+                trades = fetchedTrades;
+                
+                // 1. 更新图表和指标（使用全部数据）
+                updateChartAndMetrics(trades); 
+                // 2. 生成日志筛选器选项（使用全部数据）
+                generateLogFilterOptions(trades);
+                // 3. 更新交易日志列表（应用当前筛选）
+                applyLogFilter(currentLogFilter);
+
+            }, (error) => {
+                console.error("Error fetching trades:", error);
+                logStatus.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> 载入数据失败: ${error.message}`;
+            });
+        }
+        
+        // --- Trade Log Filter Logic ---
+        
+        function generateLogFilterOptions(trades) {
+            const filterSelect = document.getElementById('month-year-filter');
+            filterSelect.innerHTML = '<option value="all">显示全部记录</option>';
             
-            document.getElementById('trade-modal-title').textContent = isCapital ? '配置初始启动资金' : '记录新交易';
-            document.getElementById('modal-submit-btn').textContent = isCapital ? '确认设置' : '确认录入';
+            const uniqueMonths = new Set();
+            trades.forEach(trade => {
+                if (trade.date) {
+                    const yearMonth = trade.date.substring(0, 7); 
+                    uniqueMonths.add(yearMonth);
+                }
+            });
 
-            // 更改表单提交事件以适应模式
-            if (isCapital) {
-                tradeForm.onsubmit = saveInitialCapital;
-                document.getElementById('initial-capital').value = initialCapital > 0 ? initialCapital : '';
+            // 按时间倒序排序 (最新月份在前)
+            const sortedMonths = Array.from(uniqueMonths).sort().reverse(); 
+
+            sortedMonths.forEach(yearMonth => {
+                const year = yearMonth.substring(0, 4);
+                const month = yearMonth.substring(5, 7);
+                const option = document.createElement('option');
+                option.value = yearMonth;
+                option.textContent = `${year}年${month}月`;
+                filterSelect.appendChild(option);
+            });
+
+            // 恢复/设置选中的筛选值
+            filterSelect.value = currentLogFilter;
+        }
+
+        function applyLogFilter(filterValue) {
+            currentLogFilter = filterValue;
+            
+            let filteredTrades = trades;
+            
+            if (filterValue !== 'all') {
+                // 筛选出日期以 'YYYY-MM' 开头的交易
+                filteredTrades = trades.filter(trade => trade.date && trade.date.startsWith(filterValue));
+            }
+            
+            // 按时间倒序排序 (最新交易在前)
+            const logTrades = [...filteredTrades].sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+            updateTradeLogUI(logTrades);
+        }
+
+        // --- Equity Curve Charting Logic ---
+
+        function calculateEquityCurve(trades) {
+            // 确保交易数据按日期/时间戳升序排列
+            const sortedTrades = [...trades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            let currentEquity = INITIAL_CAPITAL;
+            const equityData = [];
+
+            // 1. 添加初始资金点
+            if (sortedTrades.length > 0) {
+                // 使用第一笔交易的日期作为初始点
+                equityData.push({
+                    date: new Date(sortedTrades[0].date).toISOString().split('T')[0],
+                    equity: INITIAL_CAPITAL
+                });
             } else {
-                tradeForm.onsubmit = saveTrade;
-                // 确保日期字段有默认值
-                document.getElementById('trade-date').value = new Date().toISOString().split('T')[0];
+                // 如果没有交易，使用今天日期显示初始资金
+                equityData.push({ 
+                    date: new Date().toISOString().split('T')[0], 
+                    equity: INITIAL_CAPITAL 
+                });
+            }
+
+            // 2. 计算累积资产净值
+            sortedTrades.forEach(trade => {
+                currentEquity += trade.pnlAmount;
+                equityData.push({
+                    date: trade.date,
+                    equity: currentEquity
+                });
+            });
+            
+            return equityData;
+        }
+
+        function filterEquityData(equityCurve, filterType) {
+            // ... (Chart filtering logic remains the same, using the global INITIAL_CAPITAL)
+            const today = new Date();
+            let startDate = new Date(0); // Epoch - Default for 'all'
+
+            const year = today.getFullYear();
+            const month = today.getMonth(); // 0-11
+            const dayOfWeek = today.getDay(); // 0=Sunday, 6=Saturday
+
+            switch (filterType) {
+                case 'year':
+                    startDate = new Date(year, 0, 1); // 今年1月1日
+                    break;
+                case 'month':
+                    startDate = new Date(year, month, 1); // 本月1日
+                    break;
+                case 'week':
+                    // 计算本周一的日期
+                    const firstDayOfWeek = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                    startDate = new Date(today.getFullYear(), today.getMonth(), firstDayOfWeek);
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'all':
+                default:
+                    return equityCurve; 
             }
             
-            tradeModal.classList.replace('hidden', 'flex');
-        };
-
-        const closeTradeModal = () => {
-            tradeModal.classList.replace('flex', 'hidden');
-        };
-
-        const openDetailModal = (tradeId) => {
-            window.currentDetailTradeId = tradeId; // Store ID for edit button
-            const trade = allTrades.find(t => t.id === tradeId);
-            if (!trade) return;
-
-            const detailContent = document.getElementById('detail-content');
-            const resultText = trade.pnl > 0 ? '盈利 (WIN) 🎉' : (trade.pnl < 0 ? '亏损 (LOSS) 📉' : '持平 (FLAT) 😐');
-            const pnlClass = trade.pnl >= 0 ? 'text-cyan-400' : 'text-red-500';
-
-            detailContent.innerHTML = `
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                    <div class="text-gray-400">日期:</div><div class="font-medium">${trade.date.toISOString().split('T')[0]}</div>
-                    <div class="text-gray-400">资产代码:</div><div class="font-medium">${trade.symbol}</div>
-                    <div class="text-gray-400">方向:</div><div class="font-medium">${trade.direction}</div>
-                    <div class="text-gray-400">结果:</div><div class="font-medium">${resultText}</div>
-                    <div class="text-gray-400">盈亏金额 (¥):</div><div class="font-extrabold ${pnlClass}">${formatCurrency(trade.pnl)}</div>
-                </div>
-                <div class="border-t border-gray-700 pt-3 mt-3">
-                    <div class="text-gray-400 text-sm mb-1">备注/心得:</div>
-                    <div class="p-3 rounded component-bg border border-gray-700 whitespace-pre-wrap text-sm">${trade.notes || '无'}</div>
-                </div>
-            `;
-            detailModal.classList.replace('hidden', 'flex');
-        };
-
-        const closeDetailModal = () => {
-            detailModal.classList.replace('flex', 'hidden');
-        };
-        
-        const openEditModal = (tradeId) => {
-            closeDetailModal(); // Close detail modal first if open
-            const trade = allTrades.find(t => t.id === tradeId);
-            if (!trade) return;
-
-            document.getElementById('edit-trade-id').value = trade.id;
-            document.getElementById('edit-trade-date').value = trade.date.toISOString().split('T')[0];
-            document.getElementById('edit-trade-symbol').value = trade.symbol;
-            document.getElementById('edit-trade-direction').value = trade.direction;
-            document.getElementById('edit-trade-pnl').value = trade.pnl;
-            document.getElementById('edit-trade-notes').value = trade.notes;
-
-            editModal.classList.replace('hidden', 'flex');
-        };
-
-        const closeEditModal = () => {
-            editModal.classList.replace('flex', 'hidden');
-        };
-        
-        const openConfirmDeleteModal = (tradeId) => {
-            closeDetailModal(); // Close detail modal first if open
-            document.getElementById('execute-delete-btn').onclick = () => deleteTrade(tradeId);
-            confirmDeleteModal.classList.replace('hidden', 'flex');
-        };
-
-        const closeConfirmDeleteModal = () => {
-            confirmDeleteModal.classList.replace('flex', 'hidden');
-        };
-
-
-        // --- 图表渲染与更新 (Chart.js) ---
-        const setupChart = () => {
-            const ctx = document.getElementById('profitChart').getContext('2d');
+            let filteredData = equityCurve.filter(data => new Date(data.date).getTime() >= startDate.getTime());
             
-            // Neon Gradient for Chart Fill
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(34, 211, 238, 0.5)'); // cyan-400
-            gradient.addColorStop(1, 'rgba(13, 13, 23, 0.1)'); // near-black
+            // 如果过滤后的数据不包含初始点，则在开始处添加初始资本点
+            if (filteredData.length > 0 && new Date(filteredData[0].date).getTime() > startDate.getTime()) {
+                filteredData.unshift({
+                    date: new Date(startDate).toISOString().split('T')[0],
+                    equity: INITIAL_CAPITAL
+                });
+            } else if (filteredData.length === 0) {
+                 // 如果该周期内没有交易，则只显示当前日期的初始资本
+                filteredData.push({ date: today.toISOString().split('T')[0], equity: INITIAL_CAPITAL });
+            }
+            
+            return filteredData;
+        }
 
-            profitChart = new Chart(ctx, {
+
+        function renderEquityChart(equityData) {
+            // ... (Chart rendering logic remains the same)
+            const labels = equityData.map(d => d.date);
+            const dataPoints = equityData.map(d => d.equity);
+            
+            const ctx = document.getElementById('equity-chart').getContext('2d');
+
+            if (equityChartInstance) {
+                // Update existing chart instance
+                equityChartInstance.data.labels = labels;
+                equityChartInstance.data.datasets[0].data = dataPoints;
+                equityChartInstance.update();
+                return;
+            }
+            
+            // Initialize new chart instance
+            equityChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [], // Dates
+                    labels: labels,
                     datasets: [{
-                        label: '累计盈亏曲线 (¥)',
-                        data: [], // Cumulative PnL values
-                        borderColor: 'var(--neon-fuchsia)', // 霓虹紫红色线条
-                        backgroundColor: gradient, // 霓虹渐变填充
-                        tension: 0.4, // 曲线平滑
+                        label: '账户资产净值 ($)',
+                        data: dataPoints,
+                        borderColor: '#00d4ff', // Cyan color
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
                         fill: true,
-                        pointRadius: 3,
-                        pointBackgroundColor: 'var(--neon-cyan)',
-                        pointBorderColor: 'var(--bg-main)',
-                        pointHoverRadius: 6,
+                        tension: 0.3, // Curve smoothing
+                        pointRadius: 4,
+                        pointBackgroundColor: '#8338ec',
+                        borderWidth: 2,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeInOutQuad'
-                    },
                     scales: {
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'day',
-                                tooltipFormat: 'yyyy/MM/dd',
-                                displayFormats: { day: 'MM/dd' }
+                                unit: 'day', // 默认单位
+                                displayFormats: {
+                                    day: 'MM-dd',
+                                    week: 'yyyy-MM',
+                                    month: 'yyyy-MM',
+                                    year: 'yyyy'
+                                }
                             },
-                            ticks: { color: 'gray' },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, // 更暗的网格线
-                            title: { display: true, text: '日期', color: 'gray' }
+                            ticks: {
+                                color: '#94a3b8',
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            },
+                            grid: {
+                                color: '#2d2d4c',
+                                drawBorder: false
+                            }
                         },
                         y: {
-                            ticks: { color: 'gray', callback: formatCurrency },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            title: { display: true, text: '累计金额 (¥)', color: 'gray' }
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: '资产净值 ($)',
+                                color: '#e2e8f0'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: '#2d2d4c',
+                                drawBorder: false
+                            }
                         }
                     },
                     plugins: {
                         legend: {
-                            labels: { color: 'var(--neon-cyan)' }
+                            display: false,
                         },
                         tooltip: {
                             callbacks: {
+                                title: function(context) {
+                                    return `日期: ${context[0].label}`;
+                                },
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                    return `资产净值: $${context.parsed.y.toFixed(2)}`;
                                 }
-                            }
+                            },
+                            backgroundColor: '#1a1a2e',
+                            titleColor: '#00d4ff',
+                            bodyColor: '#e2e8f0',
+                            borderColor: '#00d4ff',
+                            borderWidth: 1
                         }
                     }
                 }
             });
-        };
-        
-        const updateChart = (filterKey = 'all') => {
-            if (!profitChart) return;
+        }
 
-            // 隐藏或显示占位符
-            if (allTrades.length === 0) {
-                chartPlaceholder.classList.remove('hidden');
-                profitChart.data.labels = [];
-                profitChart.data.datasets[0].data = [];
-                profitChart.update();
-                return;
-            } else {
-                chartPlaceholder.classList.add('hidden');
-            }
+        function updateChartAndMetrics(allTrades) {
+            // 1. Calculate the full equity curve (always based on all trades)
+            const fullEquityCurve = calculateEquityCurve(allTrades);
+
+            // 2. Determine current filter and filter data for the chart
+            const activeFilterButton = document.querySelector('#time-filters .filter-button.bg-cyan-600\\/70');
+            const activeFilter = activeFilterButton ? activeFilterButton.dataset.filter : 'all';
+            const filteredEquityData = filterEquityData(fullEquityCurve, activeFilter);
+
+            // 3. Render the chart
+            renderEquityChart(filteredEquityData);
             
-            const now = new Date();
-            let startDate = new Date(0); // 默认从头开始
+            // 4. Update metrics (always use ALL trades for the main dashboard metrics)
+            calculateAndDisplayMetrics(allTrades); 
+        }
 
-            if (filterKey === 'last-30') {
-                startDate = new Date(now.setDate(now.getDate() - 30));
-            } else if (filterKey === 'year-to-date') {
-                startDate = new Date(now.getFullYear(), 0, 1);
-            }
-            
-            // 确保交易按时间顺序处理 (最旧在前)
-            const sortedTrades = [...allTrades].sort((a, b) => a.date.getTime() - b.date.getTime());
-
-            // 过滤和准备数据
-            let chartLabels = [];
-            let chartData = [];
-            let lastCapital = initialCapital;
-            
-            // 找到过滤起始日期前的最后一个累计资本值
-            const tradesBeforeStart = sortedTrades.filter(t => t.date < startDate);
-            if (tradesBeforeStart.length > 0) {
-                 lastCapital = tradesBeforeStart[tradesBeforeStart.length - 1].cumulativePnL;
-            }
-
-            // 添加初始资本点（如果过滤了日期）
-            if (filterKey !== 'all') {
-                chartLabels.push(startDate.toISOString().split('T')[0]);
-                chartData.push(lastCapital);
-            }
-            
-            // 累积计算从过滤日期开始
-            let cumulativePnL = lastCapital;
-
-            sortedTrades.forEach(trade => {
-                if (trade.date >= startDate) {
-                    // 确保每天只记录一个最终累计值，避免图表过于密集
-                    const dateStr = trade.date.toISOString().split('T')[0];
-                    cumulativePnL = trade.cumulativePnL; // 使用已经计算好的累计值
-                    
-                    if (chartLabels[chartLabels.length - 1] !== dateStr) {
-                         chartLabels.push(dateStr);
-                         chartData.push(cumulativePnL);
-                    } else {
-                         // 覆盖当天最后一个值
-                         chartData[chartData.length - 1] = cumulativePnL;
-                    }
-                }
-            });
-
-            // 如果没有数据，且有初始资本，则只显示一个点
-            if (chartLabels.length === 0 && initialCapital > 0) {
-                chartLabels.push(new Date().toISOString().split('T')[0]);
-                chartData.push(initialCapital);
-            }
-            
-            profitChart.data.labels = chartLabels;
-            profitChart.data.datasets[0].data = chartData;
-            profitChart.update();
-        };
-        
-        const setupChartFilters = () => {
-            const btns = document.querySelectorAll('.chart-filter-btn');
-            btns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // 更新按钮激活状态的霓虹效果
-                    btns.forEach(b => {
-                        b.classList.remove('bg-fuchsia-900', 'text-fuchsia-500', 'border-fuchsia-500/50');
-                        b.classList.add('text-gray-400', 'border-gray-600', 'hover:bg-gray-800');
+        function setupChartFilters() {
+            const filterButtons = document.querySelectorAll('#time-filters .filter-button');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-cyan-600/70', 'text-white', 'font-semibold', 'shadow-md');
+                        btn.classList.add('bg-[#252542]', 'text-gray-300');
                     });
-                    this.classList.add('bg-fuchsia-900', 'text-fuchsia-500', 'border-fuchsia-500/50');
-                    this.classList.remove('text-gray-400', 'border-gray-600', 'hover:bg-gray-800');
+
+                    // Add active class to clicked button
+                    this.classList.add('bg-cyan-600/70', 'text-white', 'font-semibold', 'shadow-md');
+                    this.classList.remove('bg-[#252542]', 'text-gray-300');
                     
-                    updateChart(this.dataset.filter);
+                    // Re-render chart with new filter
+                    updateChartAndMetrics(trades);
                 });
             });
-            // 默认激活第一个按钮
-            btns[0].classList.add('bg-fuchsia-900', 'text-fuchsia-500', 'border-fuchsia-500/50');
-            btns[0].classList.remove('text-gray-400', 'border-gray-600', 'hover:bg-gray-800');
-        };
+        }
+        
+        // --- UI Rendering ---
+        function updateTradeLogUI(sortedTrades) {
+            tradeLogBody.innerHTML = '';
+            tradeCountSpan.textContent = sortedTrades.length;
+
+            if (sortedTrades.length === 0) {
+                tradeLogBody.innerHTML = `
+                    <tr><td colspan="6" class="p-6 text-center text-gray-500 italic">
+                        <i class="fas fa-box-open mr-2"></i> 当前筛选条件下没有交易记录。
+                    </td></tr>
+                `;
+                return;
+            }
+
+            sortedTrades.forEach(trade => {
+                const pnlColor = trade.pnlAmount >= 0 ? 'text-emerald-400' : 'text-pink-500';
+                const rColor = trade.rMultiple >= 0 ? 'text-emerald-400' : 'text-pink-500';
+                const sideIcon = trade.side === 'LONG' ? 'fa-chevron-up' : 'fa-chevron-down';
+                
+                const tradeRow = document.createElement('tr');
+                tradeRow.className = 'hover:bg-[#1f1f3a] transition cursor-pointer';
+                
+                // 【修复点 1】：为 HTML 属性转义 JSON 字符串 (必须转义引号)
+                const tradeJsonForHtml = JSON.stringify(trade).replace(/"/g, '&quot;'); 
+
+                tradeRow.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${trade.date || 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${trade.symbol || 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap ${pnlColor}">${trade.side} <i class="fas ${sideIcon} text-xs ml-1"></i></td>
+                    <td class="px-6 py-4 whitespace-nowrap ${rColor} font-medium">${parseFloat(trade.rMultiple).toFixed(2)}R</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right ${pnlColor} font-semibold">$${parseFloat(trade.pnlAmount).toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <!-- 按钮使用转义后的 JSON 字符串 -->
+                        <button onclick="event.stopPropagation(); openDetailModal('${tradeJsonForHtml}')" 
+                                class="text-cyan-400 hover:text-cyan-300 transition">
+                            <i class="fas fa-search-plus mr-1"></i> 查看日志
+                        </button>
+                    </td>
+                `;
+                // 【修复点 2】：行点击事件直接传递原始对象，避免 JSON.parse 错误
+                tradeRow.onclick = () => openDetailModal(trade);
+                tradeLogBody.appendChild(tradeRow);
+            });
+        }
+
+        // --- Metrics Calculation (TradeZella Analysis) ---
+        function calculateAndDisplayMetrics(trades) {
+            if (trades.length === 0) {
+                metricsContainer.innerHTML = '';
+                return;
+            }
+
+            const totalTrades = trades.length;
+            const winningTrades = trades.filter(t => t.pnlAmount > 0);
+            const losingTrades = trades.filter(t => t.pnlAmount < 0);
+            
+            const totalPnL = trades.reduce((sum, t) => sum + t.pnlAmount, 0);
+            const returnPercent = (totalPnL / INITIAL_CAPITAL) * 100; 
+
+            const winRate = totalTrades > 0 ? (winningTrades.length / totalTrades) * 100 : 0;
+            const avgWin = winningTrades.length > 0 ? winningTrades.reduce((sum, t) => sum + t.pnlAmount, 0) / winningTrades.length : 0;
+            const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((sum, t) => sum + t.pnlAmount, 0) / losingTrades.length : 0;
+
+            const expectancy = totalTrades > 0 ? totalPnL / totalTrades : 0;
+
+            let maxDrawdown = 0;
+            let currentEquity = INITIAL_CAPITAL;
+            let peakEquity = INITIAL_CAPITAL;
+            // Recalculate Drawdown using the sorted trades
+            const sortedTradesByDate = [...trades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            sortedTradesByDate.forEach(t => {
+                currentEquity += t.pnlAmount;
+                if (currentEquity > peakEquity) {
+                    peakEquity = currentEquity;
+                }
+                const drawdown = peakEquity > 0 ? (peakEquity - currentEquity) / peakEquity : 0;
+                if (drawdown > maxDrawdown) {
+                    maxDrawdown = drawdown;
+                }
+            });
+            maxDrawdown = maxDrawdown * 100;
+
+            const metricsData = [
+                { label: '总回报率', value: `${totalPnL >= 0 ? '+' : ''}${returnPercent.toFixed(1)}%`, color: 'emerald-400', icon: 'fa-chart-line', borderClass: 'metric-profit' },
+                { label: '总盈亏 ($)', value: `${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`, color: 'emerald-400', icon: 'fa-dollar-sign', borderClass: 'metric-profit' },
+                { label: '最大回撤 (MDD)', value: `${maxDrawdown.toFixed(1)}%`, color: 'pink-500', icon: 'fa-arrow-down', borderClass: 'metric-drawdown' },
+                { label: '胜率 (Win Rate)', value: `${winRate.toFixed(1)}%`, color: 'cyan-400', icon: 'fa-thumbs-up', borderClass: 'metric-neutral' },
+                { label: '期望收益 ($/Trade)', value: `${expectancy >= 0 ? '+' : ''}$${expectancy.toFixed(2)}`, color: 'yellow-400', icon: 'fa-star', borderClass: 'metric-neutral' },
+                { label: '平均盈利', value: `$${avgWin.toFixed(2)}`, color: 'emerald-400', icon: 'fa-arrow-up', borderClass: 'metric-profit' },
+            ];
+
+            metricsContainer.innerHTML = metricsData.map(m => `
+                <div class="p-3 rounded-xl component-bg text-center shadow-lg ${m.borderClass}">
+                    <i class="fas ${m.icon} text-xl text-${m.color} mb-1"></i>
+                    <div class="text-xs uppercase text-gray-400">${m.label}</div>
+                    <div class="text-xl font-bold text-${m.color}">${m.value}</div>
+                </div>
+            `).join('');
+        }
 
 
         // --- Event Listeners and Initial Load ---
@@ -1011,9 +1036,8 @@
              document.getElementById('trade-date').value = today;
              
              tradeForm.addEventListener('submit', saveTrade);
-             editForm.addEventListener('submit', updateTrade); // Listener for edit form
+             editForm.addEventListener('submit', updateTrade); // New: Listener for edit form
              
-             setupChart(); // 初始化图表
              setupChartFilters(); // Setup chart filtering logic
              firebaseInit();
         };
@@ -1023,24 +1047,34 @@
         window.closeTradeModal = closeTradeModal;
         window.openDetailModal = openDetailModal;
         window.closeDetailModal = closeDetailModal;
-        window.openEditModal = openEditModal; 
-        window.closeEditModal = closeEditModal; 
-        window.openConfirmDeleteModal = openConfirmDeleteModal;
-        window.closeConfirmDeleteModal = closeConfirmDeleteModal;
-        window.saveInitialCapital = saveInitialCapital; 
-        window.applyLogFilter = applyLogFilter; 
-        window.deleteTrade = deleteTrade;
+        window.openEditModal = openEditModal; // New
+        window.closeEditModal = closeEditModal; // New
+        window.saveInitialCapital = saveInitialCapital; // New
+        window.applyLogFilter = applyLogFilter; // New
         
     </script>
-    
-    
-    <!-- 用于简单测试的输入框和按钮 (已从 <script> 标签内移出) -->
-    <div class="max-w-7xl mx-auto w-full p-4 component-bg mt-8 rounded-lg">
-        <h3 class="text-xl font-bold text-gray-400 mb-2">测试区 (可删除)</h3>
-        <input type="text" id="dataInput" placeholder="输入要存储的数据" class="p-2 rounded component-bg border border-gray-700">
-        <button onclick="alert('请通过右上角 记录新交易 按钮进行操作。')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">存储数据</button>
-    </div>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
+    authDomain: "jinmu-c0549.firebaseapp.com",
+    projectId: "jinmu-c0549",
+    storageBucket: "jinmu-c0549.firebasestorage.app",
+    messagingSenderId: "433198268542",
+    appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
+    measurementId: "G-YHBMGP6C6X"
+  };
 
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
