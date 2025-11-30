@@ -66,9 +66,56 @@
             </div>
         </main>
     </div>
-    <!-- 模态框、JS脚本等可继续扩展 -->
+
+    <!-- 模态框 JS 逻辑 -->
+    <div id="trade-modal" class="fixed inset-0 hidden justify-center items-center modal-overlay">
+        <div class="bg-[#1a1a2e] p-6 rounded-xl w-96">
+            <h3 class="text-xl font-bold mb-4">记录新交易</h3>
+            <label class="block mb-2 text-gray-300">交易对</label>
+            <input id="trade-pair" type="text" class="w-full mb-4 p-2 rounded bg-[#252542] text-white" />
+            <label class="block mb-2 text-gray-300">方向</label>
+            <select id="trade-direction" class="w-full mb-4 p-2 rounded bg-[#252542] text-white">
+                <option value="buy">买入</option>
+                <option value="sell">卖出</option>
+            </select>
+            <label class="block mb-2 text-gray-300">金额 ($)</label>
+            <input id="trade-amount" type="number" class="w-full mb-4 p-2 rounded bg-[#252542] text-white" />
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeTradeModal()" class="px-4 py-2 rounded bg-gray-500 hover:bg-gray-600">取消</button>
+                <button onclick="submitTrade()" class="px-4 py-2 rounded bg-cyan-600 hover:bg-cyan-700">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTradeModal() {
+            document.getElementById('trade-modal').classList.remove('hidden');
+            document.getElementById('trade-modal').classList.add('flex');
+        }
+        function closeTradeModal() {
+            document.getElementById('trade-modal').classList.add('hidden');
+            document.getElementById('trade-modal').classList.remove('flex');
+        }
+        function submitTrade() {
+            alert('交易已提交（示例）');
+            closeTradeModal();
+        }
+        function saveInitialCapital(value) {
+            console.log('初始资金已更新:', value);
+        }
+        function applyLogFilter(value) {
+            console.log('交易日志筛选:', value);
+        }
+
+        // 示例用户ID加载
+        setTimeout(()=>{
+            document.getElementById('user-id-display').textContent = '用户ID: 123456';
+        }, 500);
+    </script>
 </body>
 </html>
+
+
 
 
 
