@@ -15,11 +15,11 @@
         .cyber-button:hover { box-shadow: 0 0 15px rgba(131,56,236,0.6); transform: translateY(-1px); }
         .component-bg { background-color: #1a1a2e; border: 1px solid #2d2d4c; }
         .modal-overlay { background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 50; }
-        input, select, textarea { border: 1px solid #3f3f6e !important; }
+        input, select, textarea { border: 1px solid #3f3f6e !important; border-radius: 0.75rem; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0d0d18; }
         ::-webkit-scrollbar-thumb { background: #2d2d4c; border-radius: 10px; }
-        .error-toast { background: #ef4444; color: white; padding: 12px 24px; border-radius: 8px; position: fixed; bottom: 20px; right: 20px; z-index: 100; display: none; }
+        .error-toast { background: #ef4444; color: white; padding: 12px 24px; border-radius: 8px; position: fixed; bottom: 20px; right: 20px; z-index: 100; display: none; max-width: 300px; }
     </style>
 </head>
 <body class="selection:bg-cyan-600 selection:text-black">
@@ -34,7 +34,7 @@
                 <i class="fas fa-microchip text-4xl text-cyan-400 neon-glow"></i>
                 <div>
                     <h1 class="text-3xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> ALWAYS WIN</h1>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Trading Analytics System v2.0</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Trading Analytics System v2.1</p>
                 </div>
             </div>
             <div class="flex items-center space-x-4 text-sm">
@@ -46,13 +46,15 @@
                     </div>
                 </div>
                 <div id="user-info" class="flex flex-col items-end">
-                    <span id="user-id-display" class="text-xs font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">UID: 等待连接...</span>
+                    <span id="user-id-display" class="text-xs font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">UID: 正在连接...</span>
+                    <span id="connection-status" class="text-[10px] text-gray-500 mt-1 uppercase">Checking Status</span>
                 </div>
             </div>
         </header>
 
         <main>
             <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"></div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <div class="lg:col-span-2 p-6 rounded-2xl component-bg shadow-2xl">
                     <div class="flex justify-between items-center mb-6">
@@ -64,6 +66,7 @@
                         <canvas id="equity-chart"></canvas>
                     </div>
                 </div>
+                
                 <div class="p-6 rounded-2xl component-bg shadow-2xl flex flex-col justify-between">
                     <div>
                         <h3 class="text-lg font-bold mb-4 text-gray-100 flex items-center">
@@ -73,7 +76,18 @@
                             <i class="fas fa-plus-circle"></i>
                             <span>记录新交易记录</span>
                         </button>
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button onclick="window.exportData()" class="bg-gray-800 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-300 uppercase font-bold tracking-tighter">
+                                <i class="fas fa-download mr-1"></i> 导出数据
+                            </button>
+                            <button onclick="window.triggerImport()" class="bg-gray-800 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-300 uppercase font-bold tracking-tighter">
+                                <i class="fas fa-upload mr-1"></i> 导入数据
+                            </button>
+                            <input type="file" id="import-file" class="hidden" accept=".json" onchange="window.importData(event)" />
+                        </div>
                     </div>
+                    
                     <div class="border-t border-gray-700 pt-4 mt-4">
                         <div class="flex justify-between text-sm mb-2">
                             <span class="text-gray-400">总盈利交易</span>
@@ -124,7 +138,7 @@
     <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center modal-overlay">
         <div class="bg-[#1a1a2e] border border-[#2d2d4c] p-8 rounded-2xl w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-title" class="text-xl font-bold">记录新交易</h3>
+                <h3 id="modal-title" class="text-xl font-bold text-white">记录新交易</h3>
                 <button onclick="window.closeModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
             <form id="trade-form" class="space-y-4">
@@ -132,11 +146,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block">交易对</label>
-                        <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                        <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 bg-[#0d0d18] text-white focus:outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 mb-1 block">交易方向</label>
-                        <select id="trade-direction" class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none">
+                        <label class="text-xs text-gray-400 mb-1 block">方向</label>
+                        <select id="trade-direction" class="w-full p-3 bg-[#0d0d18] text-white focus:outline-none">
                             <option value="Long">做多 (Buy)</option>
                             <option value="Short">做空 (Sell)</option>
                         </select>
@@ -145,18 +159,18 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block">盈亏金额 ($)</label>
-                        <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                        <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#0d0d18] text-white focus:outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 mb-1 block">风险回报 (R)</label>
-                        <input id="trade-r" type="number" step="0.1" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                        <label class="text-xs text-gray-400 mb-1 block">风险比 (R)</label>
+                        <input id="trade-r" type="number" step="0.1" required class="w-full p-3 bg-[#0d0d18] text-white focus:outline-none" />
                     </div>
                 </div>
                 <div>
                     <label class="text-xs text-gray-400 mb-1 block">交易日期</label>
-                    <input id="trade-date" type="datetime-local" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                    <input id="trade-date" type="datetime-local" required class="w-full p-3 bg-[#0d0d18] text-white focus:outline-none" />
                 </div>
-                <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold mt-4">保存交易数据</button>
+                <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold mt-4">确认保存</button>
             </form>
         </div>
     </div>
@@ -176,195 +190,264 @@
             measurementId: "G-YHBMGP6C6X"
         };
         
-        const customAppId = 'jinmu-production-app';
-
-        // 指数退避重试函数
-        async function withRetry(fn, retries = 5, delay = 1000) {
-            try {
-                return await fn();
-            } catch (err) {
-                if (retries === 0) throw err;
-                await new Promise(r => setTimeout(r, delay));
-                return withRetry(fn, retries - 1, delay * 2);
-            }
-        }
+        const appId = 'jinmu-trading-v2';
 
         function showError(msg) {
             const toast = document.getElementById('error-toast');
             document.getElementById('error-message').textContent = msg;
             toast.style.display = 'flex';
-            setTimeout(() => { toast.style.display = 'none'; }, 5000);
+            setTimeout(() => { toast.style.display = 'none'; }, 6000);
         }
 
-        // 主逻辑
         const init = async () => {
+            let trades = [];
+            let chartInstance = null;
+            let db = null;
+            let currentUser = null;
+            let useLocalStorageFallback = false;
+
+            // 自动降级逻辑
+            const activateLocalStorage = () => {
+                useLocalStorageFallback = true;
+                currentUser = { uid: 'local-session' };
+                document.getElementById('user-id-display').textContent = `UID: LOCAL_USER`;
+                document.getElementById('connection-status').textContent = "LocalStorage Mode";
+                document.getElementById('connection-status').className = "text-[10px] text-yellow-500 mt-1 uppercase";
+                loadLocalTrades();
+            };
+
             try {
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
-                const db = getFirestore(app);
+                db = getFirestore(app);
 
-                let trades = [];
-                let chartInstance = null;
-                let currentUser = null;
-
-                // 认证监听
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
                         document.getElementById('user-id-display').textContent = `UID: ${user.uid}`;
-                        setupDataListener(db, user.uid);
+                        document.getElementById('connection-status').textContent = "Cloud Active";
+                        document.getElementById('connection-status').className = "text-[10px] text-emerald-400 mt-1 uppercase";
+                        setupFirestoreListener(user.uid);
                     } else {
-                        withRetry(() => signInAnonymously(auth))
-                            .catch(err => {
-                                console.error(err);
-                                showError("身份认证失败，请检查网络或 Firebase 配置。");
-                            });
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (err) {
+                            console.error("Auth Failed, falling back:", err);
+                            activateLocalStorage();
+                        }
                     }
                 });
-
-                function setupDataListener(db, uid) {
-                    const tradesRef = collection(db, 'artifacts', customAppId, 'users', uid, 'trades');
-                    onSnapshot(tradesRef, 
-                        (snapshot) => {
-                            trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            trades.sort((a, b) => new Date(a.date) - new Date(b.date));
-                            updateUI(trades);
-                        },
-                        (err) => {
-                            console.error("Firestore Error:", err);
-                            showError("获取数据失败，请确认 Firestore 权限规则已开启。");
-                        }
-                    );
-                }
-
-                function updateUI(tradeList) {
-                    const initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
-                    const logBody = document.getElementById('trade-log-body');
-                    logBody.innerHTML = '';
-                    
-                    if (tradeList.length === 0) document.getElementById('empty-state').classList.remove('hidden');
-                    else document.getElementById('empty-state').classList.add('hidden');
-
-                    let currentEquity = initialCapital;
-                    let wins = 0, losses = 0;
-                    const equityData = [{ x: new Date(tradeList[0]?.date || Date.now()), y: initialCapital }];
-
-                    tradeList.forEach(trade => {
-                        const tr = document.createElement('tr');
-                        const isProfit = trade.profit >= 0;
-                        tr.className = "hover:bg-white/5 transition";
-                        tr.innerHTML = `
-                            <td class="px-4 py-4 text-gray-400 font-mono text-xs">${new Date(trade.date).toLocaleString()}</td>
-                            <td class="px-4 py-4 font-bold text-white">${trade.pair}</td>
-                            <td class="px-4 py-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${trade.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${trade.direction}</span></td>
-                            <td class="px-4 py-4 font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">${isProfit ? '+' : ''}${trade.profit.toFixed(2)}</td>
-                            <td class="px-4 py-4 text-gray-300">${trade.r} R</td>
-                            <td class="px-4 py-4 text-right">
-                                <button onclick="window.editTrade('${trade.id}')" class="text-gray-500 hover:text-cyan-400 mr-3"><i class="fas fa-edit"></i></button>
-                                <button onclick="window.deleteTrade('${trade.id}')" class="text-gray-500 hover:text-rose-500"><i class="fas fa-trash"></i></button>
-                            </td>
-                        `;
-                        logBody.appendChild(tr);
-
-                        currentEquity += trade.profit;
-                        equityData.push({ x: new Date(trade.date), y: currentEquity });
-                        if (isProfit) wins++; else losses++;
-                    });
-
-                    const winRate = tradeList.length > 0 ? (wins / tradeList.length * 100) : 0;
-                    renderMetrics([
-                        { label: '账户总额', value: `$${currentEquity.toFixed(2)}`, color: 'text-white' },
-                        { label: '胜率', value: `${winRate.toFixed(1)}%`, color: 'text-cyan-400' },
-                        { label: '盈亏', value: `$${(currentEquity - initialCapital).toFixed(2)}`, color: (currentEquity - initialCapital) >= 0 ? 'text-emerald-400' : 'text-rose-400' }
-                    ]);
-                    document.getElementById('stat-wins').textContent = wins;
-                    document.getElementById('stat-losses').textContent = losses;
-                    document.getElementById('winrate-bar').style.width = `${winRate}%`;
-                    updateChart(equityData);
-                }
-
-                function renderMetrics(items) {
-                    document.getElementById('metrics-grid').innerHTML = items.map(item => `
-                        <div class="p-4 rounded-xl component-bg border-l-4 border-cyan-500/30 shadow-lg">
-                            <p class="text-[10px] uppercase text-gray-500 tracking-wider font-bold mb-1">${item.label}</p>
-                            <p class="text-xl font-black ${item.color}">${item.value}</p>
-                        </div>`).join('');
-                }
-
-                function updateChart(data) {
-                    const ctx = document.getElementById('equity-chart').getContext('2d');
-                    if (chartInstance) chartInstance.destroy();
-                    chartInstance = new Chart(ctx, {
-                        type: 'line',
-                        data: { datasets: [{ data: data, borderColor: '#00d4ff', borderWidth: 2, fill: false, tension: 0.1 }] },
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false, 
-                            plugins: { legend: { display: false } }, 
-                            scales: { x: { type: 'time', grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } 
-                        }
-                    });
-                }
-
-                // 将方法挂载到 window，确保 HTML onclick 可用
-                window.openModal = () => { 
-                    document.getElementById('trade-form').reset(); 
-                    document.getElementById('edit-id').value = ''; 
-                    document.getElementById('trade-modal').classList.remove('hidden'); 
-                };
-                window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
-                
-                window.deleteTrade = async (id) => { 
-                    if (!confirm('确认删除此交易记录？')) return;
-                    try {
-                        await withRetry(() => deleteDoc(doc(db, 'artifacts', customAppId, 'users', currentUser.uid, 'trades', id)));
-                    } catch (e) { showError("删除失败，请重试。"); }
-                };
-
-                window.editTrade = (id) => {
-                    const t = trades.find(x => x.id === id);
-                    if (!t) return;
-                    document.getElementById('edit-id').value = t.id;
-                    document.getElementById('trade-pair').value = t.pair;
-                    document.getElementById('trade-direction').value = t.direction;
-                    document.getElementById('trade-profit').value = t.profit;
-                    document.getElementById('trade-r').value = t.r;
-                    document.getElementById('trade-date').value = t.date;
-                    document.getElementById('trade-modal').classList.remove('hidden');
-                };
-
-                document.getElementById('trade-form').onsubmit = async (e) => {
-                    e.preventDefault();
-                    if (!currentUser) return;
-                    const tradeData = {
-                        pair: document.getElementById('trade-pair').value.toUpperCase(),
-                        direction: document.getElementById('trade-direction').value,
-                        profit: parseFloat(document.getElementById('trade-profit').value),
-                        r: parseFloat(document.getElementById('trade-r').value),
-                        date: document.getElementById('trade-date').value,
-                        updatedAt: Date.now()
-                    };
-                    const editId = document.getElementById('edit-id').value;
-                    const path = ['artifacts', customAppId, 'users', currentUser.uid, 'trades'];
-                    try {
-                        if (editId) await withRetry(() => updateDoc(doc(db, ...path, editId), tradeData));
-                        else await withRetry(() => addDoc(collection(db, ...path), tradeData));
-                        window.closeModal();
-                    } catch (err) { showError("保存失败，请检查网络连接。"); }
-                };
-
-                document.getElementById('initial-capital').oninput = () => updateUI(trades);
-
             } catch (err) {
-                console.error("Initialization Failed:", err);
-                showError("应用初始化失败，请检查网络环境。");
+                activateLocalStorage();
             }
+
+            function setupFirestoreListener(uid) {
+                const tradesRef = collection(db, 'artifacts', appId, 'users', uid, 'trades');
+                onSnapshot(tradesRef, (snapshot) => {
+                    trades = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    trades.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    updateUI(trades);
+                }, (err) => {
+                    console.error("Firestore error:", err);
+                    activateLocalStorage(); // 数据库不可用也降级
+                });
+            }
+
+            function loadLocalTrades() {
+                const saved = localStorage.getItem('jinmu_trades');
+                trades = saved ? JSON.parse(saved) : [];
+                trades.sort((a, b) => new Date(a.date) - new Date(b.date));
+                updateUI(trades);
+            }
+
+            function saveLocalTrades() {
+                localStorage.setItem('jinmu_trades', JSON.stringify(trades));
+                updateUI(trades);
+            }
+
+            function updateUI(tradeList) {
+                const initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
+                const logBody = document.getElementById('trade-log-body');
+                const tradeCountBadge = document.getElementById('trade-count-badge');
+                
+                logBody.innerHTML = '';
+                tradeCountBadge.textContent = `${tradeList.length} 条记录`;
+                
+                if (tradeList.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+                else document.getElementById('empty-state').classList.add('hidden');
+
+                let currentEquity = initialCapital;
+                let wins = 0, losses = 0;
+                const equityData = [{ x: tradeList.length > 0 ? new Date(tradeList[0].date) : new Date(), y: initialCapital }];
+
+                tradeList.forEach(trade => {
+                    const isProfit = trade.profit >= 0;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-white/5 transition border-b border-gray-800/50";
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 text-gray-500 font-mono text-[10px]">${new Date(trade.date).toLocaleString()}</td>
+                        <td class="px-4 py-4 font-bold text-white">${trade.pair}</td>
+                        <td class="px-4 py-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${trade.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${trade.direction}</span></td>
+                        <td class="px-4 py-4 font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">${isProfit ? '+' : ''}${trade.profit.toFixed(2)}</td>
+                        <td class="px-4 py-4 text-gray-400">${trade.r} R</td>
+                        <td class="px-4 py-4 text-right">
+                            <button onclick="window.editTrade('${trade.id}')" class="text-gray-500 hover:text-cyan-400 mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="window.deleteTrade('${trade.id}')" class="text-gray-500 hover:text-rose-500"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    logBody.appendChild(tr);
+
+                    currentEquity += trade.profit;
+                    equityData.push({ x: new Date(trade.date), y: currentEquity });
+                    if (isProfit) wins++; else losses++;
+                });
+
+                const winRate = tradeList.length > 0 ? (wins / tradeList.length * 100) : 0;
+                renderMetrics([
+                    { label: '账户总额', value: `$${currentEquity.toFixed(2)}`, color: 'text-white' },
+                    { label: '胜率', value: `${winRate.toFixed(1)}%`, color: 'text-cyan-400' },
+                    { label: '总盈亏', value: `$${(currentEquity - initialCapital).toFixed(2)}`, color: (currentEquity - initialCapital) >= 0 ? 'text-emerald-400' : 'text-rose-400' }
+                ]);
+
+                document.getElementById('stat-wins').textContent = wins;
+                document.getElementById('stat-losses').textContent = losses;
+                document.getElementById('winrate-bar').style.width = `${winRate}%`;
+                updateChart(equityData);
+            }
+
+            function renderMetrics(items) {
+                document.getElementById('metrics-grid').innerHTML = items.map(item => `
+                    <div class="p-4 rounded-xl component-bg border-l-4 border-cyan-500/30">
+                        <p class="text-[10px] uppercase text-gray-500 tracking-widest font-bold mb-1">${item.label}</p>
+                        <p class="text-xl font-black ${item.color}">${item.value}</p>
+                    </div>`).join('');
+            }
+
+            function updateChart(data) {
+                const ctx = document.getElementById('equity-chart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: [{ data: data, borderColor: '#00d4ff', borderWidth: 2, fill: true, backgroundColor: 'rgba(0,212,255,0.05)', tension: 0.1, pointRadius: 2 }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { type: 'time', grid: { display: false }, ticks: { color: '#444', font: { size: 10 } } }, 
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#444', font: { size: 10 } } } 
+                        }
+                    }
+                });
+            }
+
+            // 数据导出
+            window.exportData = () => {
+                const dataStr = JSON.stringify(trades, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `jinmu_trades_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+            };
+
+            window.triggerImport = () => document.getElementById('import-file').click();
+
+            window.importData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (!Array.isArray(imported)) throw new Error();
+                        
+                        if (confirm(`准备导入 ${imported.length} 条数据，是否覆盖当前所有记录？`)) {
+                            if (useLocalStorageFallback) {
+                                trades = imported;
+                                saveLocalTrades();
+                            } else {
+                                // 云端批量导入暂不实现，提示手动操作
+                                showError("云端模式暂不支持一键导入，已切换至本地存储并保存。");
+                                trades = imported;
+                                saveLocalTrades();
+                                useLocalStorageFallback = true;
+                            }
+                        }
+                    } catch (err) { showError("导入失败：无效的 JSON 文件内容。"); }
+                };
+                reader.readAsText(file);
+            };
+
+            window.openModal = () => {
+                document.getElementById('trade-form').reset();
+                document.getElementById('edit-id').value = '';
+                document.getElementById('modal-title').textContent = '记录新交易';
+                document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('trade-modal').classList.remove('hidden');
+            };
+
+            window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+
+            window.deleteTrade = async (id) => {
+                if (!confirm('确定删除吗？')) return;
+                if (useLocalStorageFallback) {
+                    trades = trades.filter(t => t.id !== id);
+                    saveLocalTrades();
+                } else {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'trades', id));
+                }
+            };
+
+            window.editTrade = (id) => {
+                const t = trades.find(x => x.id === id);
+                if (!t) return;
+                document.getElementById('edit-id').value = t.id;
+                document.getElementById('trade-pair').value = t.pair;
+                document.getElementById('trade-direction').value = t.direction;
+                document.getElementById('trade-profit').value = t.profit;
+                document.getElementById('trade-r').value = t.r;
+                document.getElementById('trade-date').value = t.date;
+                document.getElementById('modal-title').textContent = '修改交易记录';
+                document.getElementById('trade-modal').classList.remove('hidden');
+            };
+
+            document.getElementById('trade-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const tradeData = {
+                    pair: document.getElementById('trade-pair').value.toUpperCase(),
+                    direction: document.getElementById('trade-direction').value,
+                    profit: parseFloat(document.getElementById('trade-profit').value),
+                    r: parseFloat(document.getElementById('trade-r').value),
+                    date: document.getElementById('trade-date').value,
+                };
+                const editId = document.getElementById('edit-id').value;
+                try {
+                    if (useLocalStorageFallback) {
+                        if (editId) {
+                            const idx = trades.findIndex(t => t.id === editId);
+                            trades[idx] = { ...tradeData, id: editId };
+                        } else {
+                            trades.push({ ...tradeData, id: Date.now().toString() });
+                        }
+                        saveLocalTrades();
+                    } else {
+                        const path = ['artifacts', appId, 'users', currentUser.uid, 'trades'];
+                        if (editId) await updateDoc(doc(db, ...path, editId), tradeData);
+                        else await addDoc(collection(db, ...path), tradeData);
+                    }
+                    window.closeModal();
+                } catch (err) { showError("保存失败，已自动转为本地存储。"); activateLocalStorage(); }
+            };
+
+            document.getElementById('initial-capital').addEventListener('input', () => updateUI(trades));
         };
 
-        window.addEventListener('load', init);
+        window.onload = init;
     </script>
 </body>
 </html>
+
 
 
 
