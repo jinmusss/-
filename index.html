@@ -3,117 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>金木常胜日志 - 交易分析</title>
+    <title>JINMU ALWAYS WIN - 交易分析系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0d0d18; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
-        .neon-glow { box-shadow: 0 0 10px rgba(0,220,255,0.6),0 0 20px rgba(0,220,255,0.4); transition: all 0.3s ease; }
-        .neon-glow:hover { box-shadow:0 0 15px rgba(0,255,255,0.8),0 0 30px rgba(0,255,255,0.6); }
-        .cyber-button { background-image: linear-gradient(90deg, #00d4ff,#8338ec); color: white; font-weight:bold; letter-spacing:0.05em; transition: transform 0.2s, box-shadow 0.2s; }
-        .cyber-button:hover { box-shadow:0 0 15px rgba(131,56,236,0.8); transform: translateY(-2px); }
-        .component-bg { background-color: #1a1a2e; border:1px solid #2d2d4c; }
-        .metric-profit { border-bottom:4px solid #10b981; }
-        .metric-drawdown { border-bottom:4px solid #ec4899; }
-        .metric-neutral { border-bottom:4px solid #06b6d4; }
-        .modal-overlay { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #0d0d18; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+        .neon-glow { box-shadow: 0 0 10px rgba(0,220,255,0.4); }
+        .cyber-button { background-image: linear-gradient(90deg, #00d4ff,#8338ec); color: white; transition: all 0.2s; }
+        .cyber-button:hover { box-shadow: 0 0 15px rgba(131,56,236,0.6); transform: translateY(-1px); }
+        .component-bg { background-color: #1a1a2e; border: 1px solid #2d2d4c; }
+        .modal-overlay { background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 50; }
+        input, select, textarea { border: 1px solid #3f3f6e !important; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d0d18; }
+        ::-webkit-scrollbar-thumb { background: #2d2d4c; border-radius: 10px; }
+        .error-toast { background: #ef4444; color: white; padding: 12px 24px; border-radius: 8px; position: fixed; bottom: 20px; right: 20px; z-index: 100; display: none; }
     </style>
 </head>
 <body class="selection:bg-cyan-600 selection:text-black">
+    <div id="error-toast" class="error-toast shadow-2xl items-center space-x-2">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="error-message">网络连接失败，正在重试...</span>
+    </div>
+
     <div id="app" class="p-4 md:p-8 max-w-7xl mx-auto w-full flex-grow">
-        <header class="mb-8 border-b border-cyan-400/30 pb-4 flex justify-between items-center flex-wrap gap-4">
+        <header class="mb-8 border-b border-cyan-400/20 pb-6 flex justify-between items-center flex-wrap gap-4">
             <div class="flex items-center space-x-4">
-                <i class="fas fa-book-open text-4xl text-cyan-400 neon-glow"></i>
-                <h1 class="text-3xl md:text-4xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> ALWAYS WIN</h1>
-            </div>
-            <div class="flex items-center space-x-3 text-sm">
-                <div class="flex items-center space-x-2 bg-[#252542] p-2 rounded-lg">
-                    <label for="initial-capital" class="text-xs text-gray-400">初始资金 ($):</label>
-                    <input type="number" id="initial-capital" value="10000" min="1" step="100" class="w-24 p-0.5 text-right rounded bg-transparent border-none text-white focus:ring-0 focus:outline-none" onchange="saveInitialCapital(this.value)" />
+                <i class="fas fa-microchip text-4xl text-cyan-400 neon-glow"></i>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> ALWAYS WIN</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Trading Analytics System v2.0</p>
                 </div>
-                <span id="user-id-display" class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8338ec] text-white">用户ID: 载入中...</span>
-                <i class="fas fa-user-circle text-2xl text-gray-500"></i>
+            </div>
+            <div class="flex items-center space-x-4 text-sm">
+                <div class="bg-[#1a1a2e] px-4 py-2 rounded-xl border border-[#2d2d4c] flex flex-col">
+                    <label class="text-[10px] text-gray-400 uppercase">初始资金</label>
+                    <div class="flex items-center">
+                        <span class="text-cyan-400 mr-1">$</span>
+                        <input type="number" id="initial-capital" value="10000" class="w-20 bg-transparent border-none p-0 text-white font-bold focus:ring-0" />
+                    </div>
+                </div>
+                <div id="user-info" class="flex flex-col items-end">
+                    <span id="user-id-display" class="text-xs font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">UID: 等待连接...</span>
+                </div>
             </div>
         </header>
-        <main id="dashboard-view">
-            <h2 class="text-2xl font-bold mb-6 text-gray-100 border-l-4 border-emerald-400 pl-3"><i class="fas fa-tachometer-alt mr-2 text-emerald-400"></i>交易性能分析仪表板</h2>
-            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-                <div class="flex items-center space-x-4 text-sm">
-                    <div class="flex items-center space-x-2">
-                        <label for="month-year-filter" class="text-sm text-gray-400">交易日志筛选:</label>
-                        <select id="month-year-filter" class="px-3 py-2 rounded-lg bg-[#252542] text-gray-300 border border-[#44447a] focus:ring-cyan-400 focus:border-cyan-400 text-sm" onchange="applyLogFilter(this.value)"><option value="all">显示全部记录</option></select>
+
+        <main>
+            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <div class="lg:col-span-2 p-6 rounded-2xl component-bg shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-100 flex items-center">
+                            <i class="fas fa-chart-line mr-2 text-pink-500"></i>资产净值曲线
+                        </h3>
                     </div>
-                    <button class="px-4 py-2 rounded-lg bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition"><i class="fas fa-tag mr-1"></i>按模型筛选</button>
+                    <div class="h-80 w-full">
+                        <canvas id="equity-chart"></canvas>
+                    </div>
                 </div>
-                <button onclick="openTradeModal()" class="cyber-button px-6 py-2 rounded-full text-md shadow-lg"><i class="fas fa-plus mr-2"></i>记录新交易</button>
-            </div>
-            <div id="metrics-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
-            <div class="p-6 rounded-xl component-bg shadow-2xl mb-8">
-                <h3 class="text-xl font-semibold mb-4 text-gray-100 border-l-2 border-pink-500 pl-2"><i class="fas fa-chart-area mr-1 text-pink-500"></i>账户资产净值曲线 (Equity Curve)</h3>
-                <div class="flex space-x-2 mb-4 text-sm flex-wrap gap-2" id="time-filters">
-                    <button data-filter="all" class="filter-button px-3 py-1 rounded-full bg-cyan-600/70 text-white font-semibold shadow-md transition"><i class="fas fa-history mr-1"></i>全部记录</button>
-                    <button data-filter="year" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition"><i class="fas fa-calendar-alt mr-1"></i>今年</button>
-                    <button data-filter="month" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition"><i class="fas fa-calendar-day mr-1"></i>本月</button>
-                    <button data-filter="week" class="filter-button px-3 py-1 rounded-full bg-[#252542] text-gray-300 hover:bg-cyan-600/50 transition"><i class="fas fa-calendar-week mr-1"></i>本周</button>
+                <div class="p-6 rounded-2xl component-bg shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-gray-100 flex items-center">
+                            <i class="fas fa-bolt mr-2 text-yellow-400"></i>操作中心
+                        </h3>
+                        <button onclick="openModal()" class="cyber-button w-full py-4 rounded-xl font-bold flex items-center justify-center space-x-2 mb-4">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>记录新交易记录</span>
+                        </button>
+                    </div>
+                    <div class="border-t border-gray-700 pt-4 mt-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-400">总盈利交易</span>
+                            <span id="stat-wins" class="text-emerald-400 font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between text-sm mb-4">
+                            <span class="text-gray-400">总亏损交易</span>
+                            <span id="stat-losses" class="text-rose-400 font-bold">0</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2">
+                            <div id="winrate-bar" class="bg-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="h-96"><canvas id="equity-chart"></canvas></div>
             </div>
-            <div class="p-6 rounded-xl component-bg shadow-2xl overflow-x-auto">
-                <h3 class="text-xl font-semibold mb-4 text-gray-100 border-l-2 border-cyan-400 pl-2"><i class="fas fa-clipboard-list mr-1"></i>交易记录 (Total: <span id="trade-count">0</span>)</h3>
-                <table class="min-w-full divide-y divide-[#44447a]"><thead class="bg-[#252542] text-xs uppercase tracking-wider"><tr><th class="px-6 py-3 text-left font-medium text-gray-300">时间</th><th class="px-6 py-3 text-left font-medium text-gray-300">交易对</th><th class="px-6 py-3 text-left font-medium text-gray-300">方向</th><th class="px-6 py-3 text-left font-medium text-gray-300">R值 (风险回报)</th><th class="px-6 py-3 text-right font-medium text-gray-300">绝对盈亏 ($)</th><th class="px-6 py-3 text-left font-medium text-gray-300">图表/日志</th></tr></thead><tbody id="trade-log-body" class="divide-y divide-[#44447a] text-sm"><tr><td colspan="6" class="p-6 text-center text-gray-500 italic" id="log-status"><i class="fas fa-circle-notch fa-spin mr-2"></i>正在从数据矩阵载入交易数据...</td></tr></tbody></table>
+
+            <div class="p-6 rounded-2xl component-bg shadow-2xl overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-100 flex items-center">
+                        <i class="fas fa-list-ul mr-2 text-cyan-400"></i>交易日志矩阵
+                        <span id="trade-count-badge" class="ml-3 text-xs bg-[#252542] text-gray-400 px-2 py-1 rounded-md">0 条记录</span>
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="text-left text-xs uppercase text-gray-500 border-b border-gray-800">
+                                <th class="px-4 py-3">日期</th>
+                                <th class="px-4 py-3">交易对</th>
+                                <th class="px-4 py-3">方向</th>
+                                <th class="px-4 py-3">盈亏 ($)</th>
+                                <th class="px-4 py-3">R 风险比</th>
+                                <th class="px-4 py-3 text-right">管理</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trade-log-body" class="divide-y divide-gray-800/50 text-sm"></tbody>
+                    </table>
+                    <div id="empty-state" class="py-20 text-center text-gray-600 hidden">
+                        <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                        没有发现交易数据。
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- 模态框 JS 逻辑 -->
-    <div id="trade-modal" class="fixed inset-0 hidden justify-center items-center modal-overlay">
-        <div class="bg-[#1a1a2e] p-6 rounded-xl w-96">
-            <h3 class="text-xl font-bold mb-4">记录新交易</h3>
-            <label class="block mb-2 text-gray-300">交易对</label>
-            <input id="trade-pair" type="text" class="w-full mb-4 p-2 rounded bg-[#252542] text-white" />
-            <label class="block mb-2 text-gray-300">方向</label>
-            <select id="trade-direction" class="w-full mb-4 p-2 rounded bg-[#252542] text-white">
-                <option value="buy">买入</option>
-                <option value="sell">卖出</option>
-            </select>
-            <label class="block mb-2 text-gray-300">金额 ($)</label>
-            <input id="trade-amount" type="number" class="w-full mb-4 p-2 rounded bg-[#252542] text-white" />
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeTradeModal()" class="px-4 py-2 rounded bg-gray-500 hover:bg-gray-600">取消</button>
-                <button onclick="submitTrade()" class="px-4 py-2 rounded bg-cyan-600 hover:bg-cyan-700">提交</button>
+    <!-- Modal -->
+    <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center modal-overlay">
+        <div class="bg-[#1a1a2e] border border-[#2d2d4c] p-8 rounded-2xl w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-xl font-bold">记录新交易</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
+            <form id="trade-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">交易对</label>
+                        <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">交易方向</label>
+                        <select id="trade-direction" class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none">
+                            <option value="Long">做多 (Buy)</option>
+                            <option value="Short">做空 (Sell)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">盈亏金额 ($)</label>
+                        <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">风险回报 (R)</label>
+                        <input id="trade-r" type="number" step="0.1" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">交易日期</label>
+                    <input id="trade-date" type="datetime-local" required class="w-full p-3 rounded-xl bg-[#0d0d18] text-white focus:outline-none" />
+                </div>
+                <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold mt-4">保存交易数据</button>
+            </form>
         </div>
     </div>
 
-    <script>
-        function openTradeModal() {
-            document.getElementById('trade-modal').classList.remove('hidden');
-            document.getElementById('trade-modal').classList.add('flex');
-        }
-        function closeTradeModal() {
-            document.getElementById('trade-modal').classList.add('hidden');
-            document.getElementById('trade-modal').classList.remove('flex');
-        }
-        function submitTrade() {
-            alert('交易已提交（示例）');
-            closeTradeModal();
-        }
-        function saveInitialCapital(value) {
-            console.log('初始资金已更新:', value);
-        }
-        function applyLogFilter(value) {
-            console.log('交易日志筛选:', value);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        /** * GitHub 上线配置步骤：
+         * 1. 去 Firebase Console (console.firebase.google.com) 获取你的配置
+         * 2. 注意：请务必替换下方的占位符字符串，否则会导致 network-request-failed 错误
+         */
+        const firebaseConfig = {
+            apiKey: "你的API_KEY", // <--- 必须替换为真实的密钥
+            authDomain: "你的项目.firebaseapp.com",
+            projectId: "你的项目ID",
+            storageBucket: "你的项目.appspot.com",
+            messagingSenderId: "你的发送者ID",
+            appId: "你的APP_ID"
+        };
+        
+        const customAppId = 'jinmu-production-app';
+
+        // 初始化标志位
+        let initialized = false;
+
+        // 指数退避重试函数
+        async function withRetry(fn, retries = 5, delay = 1000) {
+            try {
+                return await fn();
+            } catch (err) {
+                if (retries === 0) throw err;
+                await new Promise(r => setTimeout(r, delay));
+                return withRetry(fn, retries - 1, delay * 2);
+            }
         }
 
-        // 示例用户ID加载
-        setTimeout(()=>{
-            document.getElementById('user-id-display').textContent = '用户ID: 123456';
-        }, 500);
+        function showError(msg) {
+            const toast = document.getElementById('error-toast');
+            document.getElementById('error-message').textContent = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 5000);
+        }
+
+        // 主逻辑
+        const init = async () => {
+            try {
+                // 验证配置是否已填写
+                if (firebaseConfig.apiKey.includes("你的")) {
+                    showError("Firebase 配置尚未正确设置，请在代码中填写真实的配置信息。");
+                    return;
+                }
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                let trades = [];
+                let chartInstance = null;
+                let currentUser = null;
+
+                // 认证监听
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        document.getElementById('user-id-display').textContent = `UID: ${user.uid}`;
+                        setupDataListener(db, user.uid);
+                    } else {
+                        // 使用带重试的匿名登录
+                        withRetry(() => signInAnonymously(auth))
+                            .catch(err => {
+                                console.error(err);
+                                showError("身份认证失败，请检查网络或 Firebase 配置。");
+                            });
+                    }
+                });
+
+                // 设置数据监听
+                function setupDataListener(db, uid) {
+                    const tradesRef = collection(db, 'artifacts', customAppId, 'users', uid, 'trades');
+                    onSnapshot(tradesRef, 
+                        (snapshot) => {
+                            trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            trades.sort((a, b) => new Date(a.date) - new Date(b.date));
+                            updateUI(trades);
+                        },
+                        (err) => {
+                            console.error("Firestore Error:", err);
+                            showError("获取数据失败，请确认 Firestore 权限规则已开启。");
+                        }
+                    );
+                }
+
+                // UI 更新函数
+                function updateUI(tradeList) {
+                    const initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
+                    const logBody = document.getElementById('trade-log-body');
+                    logBody.innerHTML = '';
+                    
+                    if (tradeList.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+                    else document.getElementById('empty-state').classList.add('hidden');
+
+                    let currentEquity = initialCapital;
+                    let wins = 0, losses = 0;
+                    const equityData = [{ x: new Date(tradeList[0]?.date || Date.now()), y: initialCapital }];
+
+                    tradeList.forEach(trade => {
+                        const tr = document.createElement('tr');
+                        const isProfit = trade.profit >= 0;
+                        tr.className = "hover:bg-white/5 transition";
+                        tr.innerHTML = `
+                            <td class="px-4 py-4 text-gray-400 font-mono text-xs">${new Date(trade.date).toLocaleString()}</td>
+                            <td class="px-4 py-4 font-bold text-white">${trade.pair}</td>
+                            <td class="px-4 py-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${trade.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${trade.direction}</span></td>
+                            <td class="px-4 py-4 font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">${isProfit ? '+' : ''}${trade.profit.toFixed(2)}</td>
+                            <td class="px-4 py-4 text-gray-300">${trade.r} R</td>
+                            <td class="px-4 py-4 text-right">
+                                <button onclick="window.editTrade('${trade.id}')" class="text-gray-500 hover:text-cyan-400 mr-3"><i class="fas fa-edit"></i></button>
+                                <button onclick="window.deleteTrade('${trade.id}')" class="text-gray-500 hover:text-rose-500"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        logBody.appendChild(tr);
+
+                        currentEquity += trade.profit;
+                        equityData.push({ x: new Date(trade.date), y: currentEquity });
+                        if (isProfit) wins++; else losses++;
+                    });
+
+                    const winRate = tradeList.length > 0 ? (wins / tradeList.length * 100) : 0;
+                    renderMetrics([
+                        { label: '账户总额', value: `$${currentEquity.toFixed(2)}`, color: 'text-white' },
+                        { label: '胜率', value: `${winRate.toFixed(1)}%`, color: 'text-cyan-400' },
+                        { label: '盈亏', value: `$${(currentEquity - initialCapital).toFixed(2)}`, color: (currentEquity - initialCapital) >= 0 ? 'text-emerald-400' : 'text-rose-400' }
+                    ]);
+                    document.getElementById('stat-wins').textContent = wins;
+                    document.getElementById('stat-losses').textContent = losses;
+                    document.getElementById('winrate-bar').style.width = `${winRate}%`;
+                    updateChart(equityData);
+                }
+
+                function renderMetrics(items) {
+                    document.getElementById('metrics-grid').innerHTML = items.map(item => `
+                        <div class="p-4 rounded-xl component-bg border-l-4 border-cyan-500/30 shadow-lg">
+                            <p class="text-[10px] uppercase text-gray-500 tracking-wider font-bold mb-1">${item.label}</p>
+                            <p class="text-xl font-black ${item.color}">${item.value}</p>
+                        </div>`).join('');
+                }
+
+                function updateChart(data) {
+                    const ctx = document.getElementById('equity-chart').getContext('2d');
+                    if (chartInstance) chartInstance.destroy();
+                    chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: { datasets: [{ data: data, borderColor: '#00d4ff', borderWidth: 2, fill: false, tension: 0.1 }] },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { legend: { display: false } }, 
+                            scales: { x: { type: 'time', grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } 
+                        }
+                    });
+                }
+
+                // 挂载全局方法
+                window.openModal = () => { document.getElementById('trade-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('trade-modal').classList.remove('hidden'); };
+                window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+                
+                window.deleteTrade = async (id) => { 
+                    if (!confirm('确认删除此交易记录？')) return;
+                    try {
+                        await withRetry(() => deleteDoc(doc(db, 'artifacts', customAppId, 'users', currentUser.uid, 'trades', id)));
+                    } catch (e) { showError("删除失败，请重试。"); }
+                };
+
+                window.editTrade = (id) => {
+                    const t = trades.find(x => x.id === id);
+                    if (!t) return;
+                    document.getElementById('edit-id').value = t.id;
+                    document.getElementById('trade-pair').value = t.pair;
+                    document.getElementById('trade-profit').value = t.profit;
+                    document.getElementById('trade-r').value = t.r;
+                    document.getElementById('trade-date').value = t.date;
+                    document.getElementById('trade-modal').classList.remove('hidden');
+                };
+
+                document.getElementById('trade-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+                    const tradeData = {
+                        pair: document.getElementById('trade-pair').value.toUpperCase(),
+                        direction: document.getElementById('trade-direction').value,
+                        profit: parseFloat(document.getElementById('trade-profit').value),
+                        r: parseFloat(document.getElementById('trade-r').value),
+                        date: document.getElementById('trade-date').value,
+                        updatedAt: Date.now()
+                    };
+                    const editId = document.getElementById('edit-id').value;
+                    const path = ['artifacts', customAppId, 'users', currentUser.uid, 'trades'];
+                    try {
+                        if (editId) await withRetry(() => updateDoc(doc(db, ...path, editId), tradeData));
+                        else await withRetry(() => addDoc(collection(db, ...path), tradeData));
+                        closeModal();
+                    } catch (err) { showError("保存失败，请检查网络连接。"); }
+                };
+
+                document.getElementById('initial-capital').onchange = () => updateUI(trades);
+
+            } catch (err) {
+                console.error("Initialization Failed:", err);
+                showError("应用初始化失败，请检查网络环境。");
+            }
+        };
+
+        // 启动应用
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
+
 
 
 
