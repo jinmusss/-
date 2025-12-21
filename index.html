@@ -162,24 +162,22 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "firebase/app";
+        import { getAnalytics } from "firebase/analytics";
 
-        /** * GitHub 上线配置步骤：
-         * 1. 去 Firebase Console (console.firebase.google.com) 获取你的配置
-         * 2. 注意：请务必替换下方的占位符字符串，否则会导致 network-request-failed 错误
-         */
+
         const firebaseConfig = {
-            apiKey: "你的API_KEY", // <--- 必须替换为真实的密钥
-            authDomain: "你的项目.firebaseapp.com",
-            projectId: "你的项目ID",
-            storageBucket: "你的项目.appspot.com",
-            messagingSenderId: "你的发送者ID",
-            appId: "你的APP_ID"
+            apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
+            authDomain: "jinmu-c0549.firebaseapp.com",
+            projectId: "jinmu-c0549",
+            storageBucket: "jinmu-c0549.firebasestorage.app",
+            messagingSenderId: "433198268542",
+            appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f",
+            measurementId: "G-YHBMGP6C6X"
         };
         
-        const customAppId = 'jinmu-production-app';
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
 
         // 初始化标志位
         let initialized = false;
@@ -376,6 +374,7 @@
     </script>
 </body>
 </html>
+
 
 
 
