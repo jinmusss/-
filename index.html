@@ -69,7 +69,7 @@
                         <h3 class="text-lg font-bold mb-4 text-gray-100 flex items-center">
                             <i class="fas fa-bolt mr-2 text-yellow-400"></i>操作中心
                         </h3>
-                        <button onclick="openModal()" class="cyber-button w-full py-4 rounded-xl font-bold flex items-center justify-center space-x-2 mb-4">
+                        <button onclick="window.openModal()" class="cyber-button w-full py-4 rounded-xl font-bold flex items-center justify-center space-x-2 mb-4">
                             <i class="fas fa-plus-circle"></i>
                             <span>记录新交易记录</span>
                         </button>
@@ -125,7 +125,7 @@
         <div class="bg-[#1a1a2e] border border-[#2d2d4c] p-8 rounded-2xl w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="modal-title" class="text-xl font-bold">记录新交易</h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="window.closeModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
             <form id="trade-form" class="space-y-4">
                 <input type="hidden" id="edit-id">
@@ -162,9 +162,9 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getAnalytics } from "firebase/analytics";
-
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
@@ -176,11 +176,7 @@
             measurementId: "G-YHBMGP6C6X"
         };
         
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-
-        // 初始化标志位
-        let initialized = false;
+        const customAppId = 'jinmu-production-app';
 
         // 指数退避重试函数
         async function withRetry(fn, retries = 5, delay = 1000) {
@@ -203,12 +199,6 @@
         // 主逻辑
         const init = async () => {
             try {
-                // 验证配置是否已填写
-                if (firebaseConfig.apiKey.includes("你的")) {
-                    showError("Firebase 配置尚未正确设置，请在代码中填写真实的配置信息。");
-                    return;
-                }
-
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
                 const db = getFirestore(app);
@@ -224,7 +214,6 @@
                         document.getElementById('user-id-display').textContent = `UID: ${user.uid}`;
                         setupDataListener(db, user.uid);
                     } else {
-                        // 使用带重试的匿名登录
                         withRetry(() => signInAnonymously(auth))
                             .catch(err => {
                                 console.error(err);
@@ -233,7 +222,6 @@
                     }
                 });
 
-                // 设置数据监听
                 function setupDataListener(db, uid) {
                     const tradesRef = collection(db, 'artifacts', customAppId, 'users', uid, 'trades');
                     onSnapshot(tradesRef, 
@@ -249,7 +237,6 @@
                     );
                 }
 
-                // UI 更新函数
                 function updateUI(tradeList) {
                     const initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
                     const logBody = document.getElementById('trade-log-body');
@@ -319,8 +306,12 @@
                     });
                 }
 
-                // 挂载全局方法
-                window.openModal = () => { document.getElementById('trade-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('trade-modal').classList.remove('hidden'); };
+                // 将方法挂载到 window，确保 HTML onclick 可用
+                window.openModal = () => { 
+                    document.getElementById('trade-form').reset(); 
+                    document.getElementById('edit-id').value = ''; 
+                    document.getElementById('trade-modal').classList.remove('hidden'); 
+                };
                 window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
                 
                 window.deleteTrade = async (id) => { 
@@ -335,6 +326,7 @@
                     if (!t) return;
                     document.getElementById('edit-id').value = t.id;
                     document.getElementById('trade-pair').value = t.pair;
+                    document.getElementById('trade-direction').value = t.direction;
                     document.getElementById('trade-profit').value = t.profit;
                     document.getElementById('trade-r').value = t.r;
                     document.getElementById('trade-date').value = t.date;
@@ -357,11 +349,11 @@
                     try {
                         if (editId) await withRetry(() => updateDoc(doc(db, ...path, editId), tradeData));
                         else await withRetry(() => addDoc(collection(db, ...path), tradeData));
-                        closeModal();
+                        window.closeModal();
                     } catch (err) { showError("保存失败，请检查网络连接。"); }
                 };
 
-                document.getElementById('initial-capital').onchange = () => updateUI(trades);
+                document.getElementById('initial-capital').oninput = () => updateUI(trades);
 
             } catch (err) {
                 console.error("Initialization Failed:", err);
@@ -369,11 +361,11 @@
             }
         };
 
-        // 启动应用
         window.addEventListener('load', init);
     </script>
 </body>
 </html>
+
 
 
 
