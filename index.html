@@ -3,195 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JINMU PRO ANALYTICS - 账户登录</title>
+    <title>JINMU PRO ULTIMATE - 交易分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #0d0d18; color: #e2e8f0; min-height: 100vh; }
-        .neon-glow { box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+        .neon-glow { box-shadow: 0 0 15px rgba(0,212,255,0.2); }
         .cyber-button { background-image: linear-gradient(90deg, #00d4ff,#8338ec); color: white; transition: all 0.2s; cursor: pointer; border: none; }
-        .cyber-button:hover { box-shadow: 0 0 20px rgba(131,56,236,0.5); transform: translateY(-1px); }
+        .cyber-button:hover { box-shadow: 0 0 20px rgba(131,56,236,0.4); transform: translateY(-1px); }
         .component-bg { background-color: #1a1a2e; border: 1px solid #2d2d4c; }
         .input-dark { background-color: #0d0d18 !important; border: 1px solid #2d2d4c !important; color: white !important; }
         .input-dark:focus { border-color: #00d4ff !important; outline: none; }
         .time-filter-btn.active { background: rgba(0,212,255,0.15); border-color: #00d4ff; color: #00d4ff; }
         .hidden-view { display: none !important; }
-        .loading-spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* 日历样式 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; font-size: 10px; transition: transform 0.2s; }
+        .calendar-day:hover { transform: scale(1.05); z-index: 10; }
+        .day-profit { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; }
+        .day-loss { background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.4); color: #f43f5e; }
+        .day-empty { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); color: #4b5563; }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #2d2d4c; border-radius: 10px; }
     </style>
 </head>
 <body class="selection:bg-cyan-600 selection:text-black">
 
-    <!-- 登录/注册 视图 -->
+    <!-- AUTH VIEW -->
     <div id="auth-view" class="min-h-screen flex items-center justify-center p-4 hidden-view">
         <div class="w-full max-w-md p-8 rounded-2xl component-bg shadow-2xl border-t-4 border-cyan-500">
             <div class="text-center mb-8">
-                <i class="fas fa-shield-halved text-5xl text-cyan-400 mb-4"></i>
-                <h1 class="text-2xl font-black tracking-tighter text-white">JINMU <span class="text-cyan-400">AUTH</span></h1>
-                <p class="text-gray-500 text-xs mt-2 uppercase tracking-widest">请输入凭据以访问您的交易控制台</p>
+                <i class="fas fa-user-shield text-5xl text-cyan-400 mb-4"></i>
+                <h1 class="text-2xl font-black tracking-tighter text-white">JINMU <span class="text-cyan-400">LOG</span></h1>
+                <p class="text-gray-500 text-xs mt-2 uppercase">请输入邮箱以同步云端数据</p>
             </div>
-            
             <form id="auth-form" class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold ml-1">电子邮箱</label>
-                    <input type="email" id="auth-email" required class="w-full p-3 rounded-xl input-dark mt-1" placeholder="your@email.com">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold ml-1">安全密码</label>
-                    <input type="password" id="auth-password" required class="w-full p-3 rounded-xl input-dark mt-1" placeholder="••••••••">
-                </div>
-                
-                <div class="pt-4 flex flex-col gap-3">
-                    <button type="submit" id="btn-login" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest">登录控制台</button>
-                    <button type="button" id="btn-register" class="bg-transparent border border-gray-700 hover:border-gray-400 text-gray-400 py-3 rounded-xl text-xs transition-all">还没有账号？点击注册</button>
-                </div>
+                <input type="email" id="auth-email" required class="w-full p-4 rounded-xl input-dark mt-1" placeholder="邮箱地址">
+                <input type="password" id="auth-password" required class="w-full p-4 rounded-xl input-dark mt-1" placeholder="密码">
+                <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest mt-4">进入控制台</button>
+                <button type="button" id="btn-register" class="w-full text-gray-500 text-xs hover:text-cyan-400 transition-colors">新用户？点击此处注册账号</button>
             </form>
             <div id="auth-error" class="mt-4 text-rose-500 text-xs text-center font-bold"></div>
         </div>
     </div>
 
-    <!-- 主程序 视图 (登录后可见) -->
+    <!-- MAIN VIEW -->
     <div id="main-view" class="hidden-view p-4 md:p-8 max-w-7xl mx-auto w-full">
         <header class="mb-8 border-b border-cyan-400/20 pb-6 flex justify-between items-center flex-wrap gap-4">
             <div class="flex items-center space-x-4">
-                <i class="fas fa-terminal text-4xl text-cyan-400 neon-glow"></i>
+                <i class="fas fa-rocket text-4xl text-cyan-400 neon-glow"></i>
                 <div>
-                    <h1 class="text-3xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> PRO</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Institutional Grade Trading Log</p>
+                    <h1 class="text-3xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> ULTIMATE</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Advanced Performance Analytics v4.0</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-4">
                 <div class="bg-[#1a1a2e] px-4 py-2 rounded-xl border border-[#2d2d4c] flex flex-col">
-                    <label class="text-[10px] text-gray-400 uppercase">初始资金</label>
+                    <label class="text-[10px] text-gray-400 uppercase">初始资金 (云端保存)</label>
                     <div class="flex items-center">
                         <span class="text-cyan-400 mr-1">$</span>
-                        <input type="number" id="initial-capital" value="10000" class="w-20 bg-transparent border-none p-0 text-white font-bold focus:ring-0" />
+                        <input type="number" id="initial-capital" class="w-24 bg-transparent border-none p-0 text-white font-bold focus:ring-0" placeholder="10000" />
                     </div>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="flex items-center space-x-2">
-                        <span id="user-display" class="text-xs font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">User</span>
-                        <button id="btn-logout" class="text-gray-500 hover:text-rose-500 text-sm"><i class="fas fa-sign-out-alt"></i></button>
-                    </div>
-                    <span id="sync-status" class="text-[9px] text-emerald-500 mt-1 uppercase font-bold tracking-tighter">● Cloud Synced</span>
-                </div>
+                <button id="btn-logout" class="bg-gray-800 hover:bg-rose-900/40 p-3 rounded-xl text-gray-400 hover:text-rose-500 transition-all"><i class="fas fa-power-off"></i></button>
             </div>
         </header>
 
-        <main>
-            <!-- 统计看板 -->
-            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"></div>
+        <main class="space-y-8">
+            <!-- 顶层指标 -->
+            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- 交易日历面板 -->
+                <div class="lg:col-span-1 p-6 rounded-2xl component-bg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-tighter"><i class="far fa-calendar-alt mr-2 text-cyan-400"></i>交易日历</h3>
+                        <span id="current-month-label" class="text-[10px] text-gray-500 font-mono">2023-10</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-[8px] text-gray-600 mb-2 text-center uppercase">
+                        <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
+                    </div>
+                    <div id="calendar-heatmap" class="calendar-grid"></div>
+                    <div class="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center">
+                        <div class="text-[10px] text-gray-500">本月盈亏情况</div>
+                        <div id="month-summary" class="text-xs font-bold font-mono">+$0.00</div>
+                    </div>
+                </div>
+
                 <!-- 曲线图 -->
-                <div class="lg:col-span-2 p-6 rounded-2xl component-bg shadow-2xl">
+                <div class="lg:col-span-3 p-6 rounded-2xl component-bg shadow-2xl relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <h3 class="text-lg font-bold text-gray-100 flex items-center">
-                            <i class="fas fa-chart-line mr-2 text-pink-500"></i>资产曲线分析
+                            <i class="fas fa-chart-area mr-2 text-pink-500"></i>权益曲线演变
                         </h3>
                         <div class="flex bg-[#0d0d18] p-1 rounded-lg border border-[#2d2d4c]" id="time-filters">
                             <button data-range="all" class="time-filter-btn px-3 py-1 text-xs rounded-md active">全部</button>
                             <button data-range="7d" class="time-filter-btn px-3 py-1 text-xs rounded-md">7天</button>
                             <button data-range="30d" class="time-filter-btn px-3 py-1 text-xs rounded-md">30天</button>
-                            <button data-range="month" class="time-filter-btn px-3 py-1 text-xs rounded-md">本月</button>
                         </div>
                     </div>
-                    <div class="h-80 w-full"><canvas id="equity-chart"></canvas></div>
-                </div>
-                
-                <!-- 操作区 -->
-                <div class="p-6 rounded-2xl component-bg shadow-2xl flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-lg font-bold mb-4 text-gray-100 uppercase tracking-tighter">控制台面板</h3>
-                        <button onclick="window.openModal()" class="cyber-button w-full py-4 rounded-xl font-bold flex items-center justify-center space-x-2 mb-4">
-                            <i class="fas fa-plus-circle"></i>
-                            <span>记录新交易记录</span>
-                        </button>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="window.exportData()" class="bg-gray-800/50 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-400">导出</button>
-                            <button onclick="window.triggerImport()" class="bg-gray-800/50 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-400">导入</button>
-                            <input type="file" id="import-file" class="hidden" accept=".json" onchange="window.importData(event)" />
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-700 pt-4 mt-4">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs text-gray-500 uppercase">胜率概览</span>
-                            <span id="winrate-val" class="text-xl font-black text-emerald-400">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden flex shadow-inner">
-                            <div id="win-bar" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%"></div>
-                            <div id="loss-bar" class="bg-rose-500 h-full transition-all duration-700" style="width: 0%"></div>
-                        </div>
-                    </div>
+                    <div class="h-64 w-full"><canvas id="equity-chart"></canvas></div>
                 </div>
             </div>
 
-            <!-- 日志表格 -->
-            <div class="p-6 rounded-2xl component-bg shadow-2xl overflow-hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-white flex items-center">
-                        <i class="fas fa-list-ul mr-2 text-cyan-400"></i>交易日志矩阵
-                        <span id="log-count" class="ml-3 text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded uppercase">0 Trades</span>
-                    </h3>
+            <!-- 交易日志 & 筛选 -->
+            <div class="p-6 rounded-2xl component-bg shadow-2xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div class="flex items-center space-x-4">
+                        <h3 class="text-xl font-bold text-white">交易矩阵</h3>
+                        <button onclick="window.openModal()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-cyan-500/30">
+                            <i class="fas fa-plus mr-1"></i> 新增
+                        </button>
+                    </div>
+                    
+                    <!-- 筛选栏 -->
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <div class="relative flex-grow md:flex-grow-0">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-600 text-xs"></i>
+                            <input type="text" id="search-input" placeholder="搜索品种..." class="pl-8 pr-4 py-2 bg-[#0d0d18] border border-[#2d2d4c] rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500 w-full">
+                        </div>
+                        <select id="filter-side" class="bg-[#0d0d18] border border-[#2d2d4c] text-gray-400 text-xs px-2 py-2 rounded-lg outline-none">
+                            <option value="all">所有方向</option>
+                            <option value="Long">做多</option>
+                            <option value="Short">做空</option>
+                        </select>
+                        <select id="filter-status" class="bg-[#0d0d18] border border-[#2d2d4c] text-gray-400 text-xs px-2 py-2 rounded-lg outline-none">
+                            <option value="all">所有结果</option>
+                            <option value="win">盈利</option>
+                            <option value="loss">亏损</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
                             <tr class="text-left text-[10px] uppercase text-gray-500 border-b border-gray-800">
-                                <th class="px-4 py-3">交易日期</th>
-                                <th class="px-4 py-3">交易品种</th>
-                                <th class="px-4 py-3">多/空</th>
-                                <th class="px-4 py-3 text-right">盈亏金额</th>
-                                <th class="px-4 py-3 text-right">R 风险比</th>
-                                <th class="px-4 py-3 text-center">TV 分析</th>
-                                <th class="px-4 py-3 text-right">操作</th>
+                                <th class="px-4 py-4">时间</th>
+                                <th class="px-4 py-4">品种</th>
+                                <th class="px-4 py-4">方向</th>
+                                <th class="px-4 py-4 text-right">盈亏</th>
+                                <th class="px-4 py-4 text-right">风险比 (R)</th>
+                                <th class="px-4 py-4 text-center">TV</th>
+                                <th class="px-4 py-4 text-right">管理</th>
                             </tr>
                         </thead>
-                        <tbody id="trade-list" class="divide-y divide-gray-800/50 text-sm"></tbody>
+                        <tbody id="trade-list" class="divide-y divide-gray-800/40 text-sm"></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 记录 模态框 -->
+    <!-- 弹窗 -->
     <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center modal-overlay p-4">
         <div class="bg-[#1a1a2e] border border-[#2d2d4c] p-8 rounded-2xl w-full max-w-lg shadow-2xl relative">
-            <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-            <h3 id="modal-title" class="text-xl font-bold text-white mb-6 uppercase tracking-widest">记录交易详情</h3>
+            <h3 id="modal-title" class="text-xl font-bold text-white mb-6">编辑交易</h3>
             <form id="trade-form" class="grid grid-cols-2 gap-4">
                 <input type="hidden" id="edit-id">
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">交易对 (Symbol)</label>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">品种</label>
                     <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 outline-none border border-[#2d2d4c]">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">方向 (Side)</label>
-                    <select id="trade-direction" class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 outline-none border border-[#2d2d4c]">
-                        <option value="Long">多 (LONG)</option>
-                        <option value="Short">空 (SHORT)</option>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">方向</label>
+                    <select id="trade-direction" class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
+                        <option value="Long">LONG</option>
+                        <option value="Short">SHORT</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">实际盈亏 ($)</label>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">盈亏金额</label>
                     <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">风险回报比 (R)</label>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">R 比率</label>
                     <input id="trade-r" type="number" step="0.1" required class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
                 </div>
                 <div class="col-span-2">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">交易发生时间</label>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">日期时间</label>
                     <input id="trade-date" type="datetime-local" required class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
                 </div>
                 <div class="col-span-2">
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">TradingView 截图链接</label>
-                    <input id="trade-tv-link" type="url" placeholder="https://www.tradingview.com/x/..." class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold">TV 分享链接</label>
+                    <input id="trade-tv-link" type="url" placeholder="https://..." class="w-full p-3 bg-[#0d0d18] text-white rounded-xl mt-1 border border-[#2d2d4c]">
                 </div>
-                <button type="submit" class="col-span-2 cyber-button py-4 rounded-xl font-bold uppercase mt-4">确认并同步到云端</button>
+                <div class="col-span-2 flex space-x-2 mt-4">
+                    <button type="button" onclick="window.closeModal()" class="flex-1 bg-gray-800 text-gray-400 py-3 rounded-xl font-bold">取消</button>
+                    <button type="submit" class="flex-[2] cyber-button py-3 rounded-xl font-bold">保存并上传</button>
+                </div>
             </form>
         </div>
     </div>
@@ -199,9 +203,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 配置 (使用你的项目 ID)
         const firebaseConfig = {
             apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
             authDomain: "jinmu-c0549.firebaseapp.com",
@@ -210,87 +213,103 @@
             messagingSenderId: "433198268542",
             appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f"
         };
-        const appId = 'jinmu-v3-pro';
+        const appId = 'jinmu-v4-pro';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         let allTrades = [];
+        let config = { initialCapital: 10000 };
         let chartInstance = null;
         let activeRange = 'all';
 
-        // --- AUTH 逻辑 ---
-        onAuthStateChanged(auth, (user) => {
+        // --- AUTH & DATA SYNC ---
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('auth-view').classList.add('hidden-view');
                 document.getElementById('main-view').classList.remove('hidden-view');
-                document.getElementById('user-display').textContent = user.email.split('@')[0];
-                initSystem(user.uid);
+                
+                // 加载配置
+                const configRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config');
+                const configSnap = await getDoc(configRef);
+                if (configSnap.exists()) {
+                    config = configSnap.data();
+                    document.getElementById('initial-capital').value = config.initialCapital;
+                }
+
+                // 实时监听交易
+                onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'trades'), (snap) => {
+                    allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    refreshUI();
+                });
             } else {
                 document.getElementById('main-view').classList.add('hidden-view');
                 document.getElementById('auth-view').classList.remove('hidden-view');
             }
         });
 
+        // 登录/注册
         document.getElementById('auth-form').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const errorEl = document.getElementById('auth-error');
-            errorEl.textContent = "";
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (err) {
-                errorEl.textContent = "身份验证失败: " + err.message;
-            }
+            try { await signInWithEmailAndPassword(auth, email, password); } catch (err) { alert(err.message); }
         };
-
         document.getElementById('btn-register').onclick = async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if (!email || !password) return alert("请先填写邮箱和密码");
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (err) { alert("注册失败: " + err.message); }
+            try { await createUserWithEmailAndPassword(auth, email, password); } catch (err) { alert(err.message); }
         };
-
         document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // --- 系统逻辑 ---
-        function initSystem(uid) {
-            const tradesRef = collection(db, 'artifacts', appId, 'users', uid, 'trades');
-            onSnapshot(tradesRef, (snap) => {
-                allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                refreshUI();
-            });
-        }
+        // 保存配置 (初始资金)
+        document.getElementById('initial-capital').onchange = async (e) => {
+            const val = parseFloat(e.target.value) || 10000;
+            config.initialCapital = val;
+            if (auth.currentUser) {
+                await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'config'), { initialCapital: val });
+            }
+            refreshUI();
+        };
 
+        // --- UI REFRESH ---
         function refreshUI() {
             allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
-            let filtered = [...allTrades];
             const now = new Date();
+            
+            // 基础时间范围过滤
+            let baseFiltered = allTrades;
+            if (activeRange === '7d') baseFiltered = allTrades.filter(t => (now - new Date(t.date)) <= 7 * 86400000);
+            else if (activeRange === '30d') baseFiltered = allTrades.filter(t => (now - new Date(t.date)) <= 30 * 86400000);
 
-            if (activeRange === '7d') filtered = allTrades.filter(t => (now - new Date(t.date)) <= 7 * 86400000);
-            else if (activeRange === '30d') filtered = allTrades.filter(t => (now - new Date(t.date)) <= 30 * 86400000);
-            else if (activeRange === 'month') filtered = allTrades.filter(t => new Date(t.date).getMonth() === now.getMonth());
+            // 搜索与矩阵筛选过滤
+            const search = document.getElementById('search-input').value.toUpperCase();
+            const side = document.getElementById('filter-side').value;
+            const status = document.getElementById('filter-status').value;
 
-            updateStatsAndChart(filtered);
-            renderTable(filtered);
+            const tableFiltered = baseFiltered.filter(t => {
+                const matchSearch = t.pair.includes(search);
+                const matchSide = side === 'all' || t.direction === side;
+                const matchStatus = status === 'all' || (status === 'win' ? t.profit >= 0 : t.profit < 0);
+                return matchSearch && matchSide && matchStatus;
+            });
+
+            updateStats(baseFiltered);
+            renderCalendar(allTrades);
+            renderTable(tableFiltered);
         }
 
-        function updateStatsAndChart(data) {
-            const initial = parseFloat(document.getElementById('initial-capital').value) || 10000;
+        function updateStats(data) {
+            const initial = config.initialCapital || 10000;
             let current = initial;
-            let wins = 0, losses = 0, totalP = 0, totalL = 0, maxDD = 0, peak = initial;
+            let wins = 0, totalP = 0, totalL = 0, maxDD = 0, peak = initial;
             const chartData = [{ x: data.length ? new Date(data[0].date) : new Date(), y: initial }];
 
             data.forEach(t => {
                 current += t.profit;
                 if (t.profit >= 0) { wins++; totalP += t.profit; } 
-                else { losses++; totalL += Math.abs(t.profit); }
-                
+                else { totalL += Math.abs(t.profit); }
                 if (current > peak) peak = current;
                 const dd = ((peak - current) / peak) * 100;
                 if (dd > maxDD) maxDD = dd;
@@ -300,45 +319,81 @@
             const winrate = data.length ? (wins / data.length * 100) : 0;
             const pf = totalL ? (totalP / totalL) : totalP;
 
-            // 渲染看板
-            const stats = [
-                { label: '账户总额', val: `$${current.toFixed(2)}`, cls: 'text-white' },
-                { label: '胜率', val: `${winrate.toFixed(1)}%`, cls: 'text-cyan-400' },
-                { label: '盈亏比 PF', val: pf.toFixed(2), cls: 'text-yellow-400' },
+            const metrics = [
+                { label: '账户净值', val: `$${current.toFixed(2)}`, cls: 'text-white' },
+                { label: '累计胜率', val: `${winrate.toFixed(1)}%`, cls: 'text-cyan-400' },
+                { label: '盈亏比 (PF)', val: pf.toFixed(2), cls: 'text-yellow-400' },
                 { label: '最大回撤', val: `${maxDD.toFixed(1)}%`, cls: 'text-rose-500' },
-                { label: '本段净盈亏', val: `$${(current - initial).toFixed(2)}`, cls: (current-initial >=0) ? 'text-emerald-400' : 'text-rose-400' },
-                { label: '平均每笔', val: `$${(data.length ? (current-initial)/data.length : 0).toFixed(2)}`, cls: 'text-gray-300' }
+                { label: '阶段盈亏', val: `$${(current - initial).toFixed(2)}`, cls: (current-initial>=0)?'text-emerald-400':'text-rose-400' },
+                { label: '平均盈利', val: `$${(data.length ? (current-initial)/data.length : 0).toFixed(2)}`, cls: 'text-gray-400' }
             ];
 
-            document.getElementById('metrics-grid').innerHTML = stats.map(s => `
-                <div class="p-4 rounded-xl component-bg border-l-2 border-cyan-500/50">
-                    <p class="text-[9px] uppercase text-gray-500 font-bold mb-1">${s.label}</p>
-                    <p class="text-xl font-black ${s.cls}">${s.val}</p>
+            document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+                <div class="p-4 rounded-xl component-bg border-l-2 border-cyan-500/30">
+                    <p class="text-[9px] uppercase text-gray-500 font-bold mb-1">${m.label}</p>
+                    <p class="text-xl font-black ${m.cls}">${m.val}</p>
                 </div>`).join('');
-
-            document.getElementById('winrate-val').textContent = `${winrate.toFixed(1)}%`;
-            document.getElementById('win-bar').style.width = `${winrate}%`;
-            document.getElementById('loss-bar').style.width = `${100-winrate}%`;
-            document.getElementById('log-count').textContent = `${data.length} TRADES`;
 
             drawChart(chartData);
         }
 
+        // --- 交易日历逻辑 ---
+        function renderCalendar(data) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            document.getElementById('current-month-label').textContent = `${year}-${String(month+1).padStart(2,'0')}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startOffset = (firstDay === 0 ? 6 : firstDay - 1); // 调整为周一开始
+
+            const dailyPnL = {};
+            data.forEach(t => {
+                const d = new Date(t.date);
+                if (d.getFullYear() === year && d.getMonth() === month) {
+                    const dateStr = d.getDate();
+                    dailyPnL[dateStr] = (dailyPnL[dateStr] || 0) + t.profit;
+                }
+            });
+
+            let html = '';
+            for (let i = 0; i < startOffset; i++) html += '<div class="calendar-day opacity-0"></div>';
+            
+            let monthTotal = 0;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const pnl = dailyPnL[d];
+                let cls = 'day-empty';
+                let text = d;
+                if (pnl !== undefined) {
+                    cls = pnl >= 0 ? 'day-profit' : 'day-loss';
+                    monthTotal += pnl;
+                }
+                html += `<div class="calendar-day ${cls}" title="${pnl ? 'PnL: $'+pnl.toFixed(2) : '无交易'}">${d}</div>`;
+            }
+            
+            document.getElementById('calendar-heatmap').innerHTML = html;
+            const summaryEl = document.getElementById('month-summary');
+            summaryEl.textContent = (monthTotal >= 0 ? '+' : '') + '$' + monthTotal.toFixed(2);
+            summaryEl.className = `text-xs font-bold font-mono ${monthTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+
+        // --- 表格渲染 ---
         function renderTable(data) {
             const body = document.getElementById('trade-list');
-            body.innerHTML = data.reverse().map(t => `
-                <tr class="hover:bg-white/5 border-b border-gray-800/30">
+            body.innerHTML = data.slice().reverse().map(t => `
+                <tr class="hover:bg-white/5 border-b border-gray-800/30 group">
                     <td class="px-4 py-4 text-[10px] text-gray-500 font-mono">${new Date(t.date).toLocaleString()}</td>
-                    <td class="px-4 py-4 font-bold text-gray-200">${t.pair}</td>
+                    <td class="px-4 py-4 font-bold text-gray-100">${t.pair}</td>
                     <td class="px-4 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${t.direction}</span></td>
                     <td class="px-4 py-4 text-right font-black ${t.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'}">${t.profit.toFixed(2)}</td>
-                    <td class="px-4 py-4 text-right text-gray-400">${t.r} R</td>
+                    <td class="px-4 py-4 text-right text-gray-500 font-mono">${t.r} R</td>
                     <td class="px-4 py-4 text-center">
-                        <button onclick="window.openTV('${t.pair}', '${t.tvLink || ''}')" class="text-cyan-500 hover:text-white transition-colors"><i class="fas fa-chart-area"></i></button>
+                        <button onclick="window.openTV('${t.pair}', '${t.tvLink || ''}')" class="text-cyan-500 hover:text-white transition-colors"><i class="fas fa-chart-line"></i></button>
                     </td>
                     <td class="px-4 py-4 text-right">
-                        <button onclick="window.editTrade('${t.id}')" class="text-gray-600 hover:text-cyan-400 mr-2"><i class="fas fa-edit"></i></button>
-                        <button onclick="window.deleteTrade('${t.id}')" class="text-gray-600 hover:text-rose-500"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="window.editTrade('${t.id}')" class="text-gray-600 hover:text-cyan-400 mr-2"><i class="fas fa-pen text-xs"></i></button>
+                        <button onclick="window.deleteTrade('${t.id}')" class="text-gray-600 hover:text-rose-500"><i class="fas fa-trash-alt text-xs"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -349,19 +404,19 @@
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: { datasets: [{ data: pts, borderColor: '#00d4ff', borderWidth: 2, fill: true, backgroundColor: 'rgba(0,212,255,0.03)', pointRadius: 0, tension: 0.1 }] },
+                data: { datasets: [{ data: pts, borderColor: '#00d4ff', borderWidth: 2, fill: true, backgroundColor: 'rgba(0,212,255,0.02)', pointRadius: 0, tension: 0.1 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { type: 'time', grid: { display: false }, ticks: { color: '#334155' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#334155' } }
+                        x: { type: 'time', grid: { display: false }, ticks: { color: '#334155', font: {size: 9} } },
+                        y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#334155', font: {size: 9} } }
                     }
                 }
             });
         }
 
-        // --- 交互功能 ---
+        // --- GLOBAL ACTIONS ---
         window.openModal = () => {
             document.getElementById('trade-form').reset();
             document.getElementById('edit-id').value = "";
@@ -383,19 +438,12 @@
             };
             const editId = document.getElementById('edit-id').value;
             const ref = collection(db, 'artifacts', appId, 'users', uid, 'trades');
-            
             if (editId) await updateDoc(doc(db, 'artifacts', appId, 'users', uid, 'trades', editId), trade);
             else await addDoc(ref, trade);
-            
             window.closeModal();
         };
 
-        window.deleteTrade = async (id) => {
-            if (confirm("确定永久删除此记录？")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id));
-            }
-        };
-
+        window.deleteTrade = async (id) => { if(confirm("彻底删除该记录？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id)); };
         window.editTrade = (id) => {
             const t = allTrades.find(x => x.id === id);
             document.getElementById('edit-id').value = t.id;
@@ -413,6 +461,7 @@
             else window.open(`https://www.tradingview.com/chart/?symbol=BINANCE:${pair.replace(/[^A-Z]/g,'')}`, '_blank');
         };
 
+        // 事件监听
         document.querySelectorAll('.time-filter-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
@@ -421,12 +470,14 @@
                 refreshUI();
             };
         });
-
-        document.getElementById('initial-capital').oninput = refreshUI;
+        document.getElementById('search-input').oninput = refreshUI;
+        document.getElementById('filter-side').onchange = refreshUI;
+        document.getElementById('filter-status').onchange = refreshUI;
 
     </script>
 </body>
 </html>
+
 
 
 
