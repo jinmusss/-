@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTC+8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JINMU PRO ULTIMATE - 目标矩阵</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -295,7 +295,7 @@
                     <input id="trade-date" type="datetime-local" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
                 </div>
                 
-                <button type="submit" class="col-span-2 cyber-button py-5 rounded-2xl font-black uppercase text-base mt-4">确认同步至矩阵</button>
+                <button type="submit" class="col-span-2 cyber-button py-5 rounded-2xl font-black uppercase text-base mt-4">确认</button>
             </form>
         </div>
     </div>
@@ -418,7 +418,7 @@
                 { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
                 { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
                 { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
-                { label: '总成交样本', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
+                { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
             ];
             document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
                 <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
@@ -608,6 +608,7 @@
     </script>
 </body>
 </html>
+
 
 
 
