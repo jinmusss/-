@@ -444,312 +444,335 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU","authDomain":"jinmu-c0549.firebaseapp.com","projectId":"jinmu-c0549","storageBucket":"jinmu-c0549.firebasestorage.app","messagingSenderId":"433198268542","appId":"1:433198268542:web:e3a1bb8aedd22c4db8982f"}');
-        const appId = 'jinmu-v8-ultra';
+const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU","authDomain":"jinmu-c0549.firebaseapp.com","projectId":"jinmu-c0549","storageBucket":"jinmu-c0549.firebasestorage.app","messagingSenderId":"433198268542","appId":"1:433198268542:web:e3a1bb8aedd22c4db8982f"}');
+const appId = 'jinmu-v8-ultra-isolated'; // 使用隔离版 ID
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        let allTrades = [];
-        let config = { initialCapital: 10000, targetCapital: 20000 };
-        let chartInstance = null;
-        let viewMode = 'month';
+let allTrades = [];
+let config = { initialCapital: 10000, targetCapital: 20000 };
+let chartInstance = null;
+let viewMode = 'month';
+let unsubscribeTrades = null;
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                document.getElementById('auth-view').classList.add('hidden-view');
-                document.getElementById('main-view').classList.remove('hidden-view');
-                document.getElementById('user-display-name').textContent = user.email.split('@')[0].toUpperCase();
-                
-                const configRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config');
-                const configSnap = await getDoc(configRef);
-                if (configSnap.exists()) {
-                    config = { ...config, ...configSnap.data() };
-                    document.getElementById('initial-capital').value = config.initialCapital;
-                    document.getElementById('target-capital').value = config.targetCapital;
-                }
+// 初始化身份验证（支持环境自动登录）
+const initAuth = async () => {
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+    } else {
+        // 如果没有预设 token，不强制匿名登录，让用户手动输入
+    }
+};
+initAuth();
 
-                const now = new Date();
-                document.getElementById('calendar-month-select').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-                onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'trades'), (snap) => {
-                    allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    refreshUI();
-                });
-            } else {
-                document.getElementById('main-view').classList.add('hidden-view');
-                document.getElementById('auth-view').classList.remove('hidden-view');
-            }
-        });
-
-        const saveConfig = async () => {
-            if (!auth.currentUser) return;
-            config.initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
-            config.targetCapital = parseFloat(document.getElementById('target-capital').value) || 20000;
-            await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'config'), config);
-            refreshUI();
-        };
-        document.getElementById('initial-capital').onchange = saveConfig;
-        document.getElementById('target-capital').onchange = saveConfig;
-
-        function refreshUI() {
-            allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const now = new Date();
-            let filtered = [];
-            if (viewMode === '7d') {
-                const limit = new Date(); limit.setDate(now.getDate() - 7);
-                filtered = allTrades.filter(t => new Date(t.date) >= limit);
-            } else {
-                const monthVal = document.getElementById('calendar-month-select').value;
-                const [y, m] = monthVal.split('-').map(Number);
-                filtered = allTrades.filter(t => {
-                    const d = new Date(t.date);
-                    return d.getFullYear() === y && (d.getMonth() + 1) === m;
-                });
-            }
-            updateGoalProgress(allTrades);
-            updateMetricCards(allTrades);
-            renderCalendar(allTrades);
-            renderTradeList(filtered);
-            updateChart(allTrades, filtered);
-        }
-
-        function updateGoalProgress(all) {
-            const initial = config.initialCapital;
-            const target = config.targetCapital;
-            let currentEquity = initial;
-            all.forEach(t => currentEquity += t.profit);
-            const neededToEarn = target - initial;
-            const alreadyEarned = currentEquity - initial;
-            let progress = neededToEarn > 0 ? Math.max(0, (alreadyEarned / neededToEarn) * 100) : 0;
-            document.getElementById('goal-percent').textContent = `${progress.toFixed(1)}%`;
-            const circle = document.getElementById('goal-progress-bar');
-            const circumference = 389.5; 
-            circle.style.strokeDashoffset = circumference - (Math.min(100, progress) / 100 * circumference);
-            const remaining = target - currentEquity;
-            document.getElementById('remaining-label').textContent = remaining > 0 ? `距目标还差 $${remaining.toLocaleString()}` : 'GOAL REACHED / 目标已达成';
-            document.getElementById('remaining-label').className = remaining > 0 ? 'text-xs text-gray-400 italic font-bold' : 'text-xs text-emerald-400 font-black animate-pulse';
-        }
-
-        function updateMetricCards(all) {
-            const initial = config.initialCapital;
-            let currentEquity = initial;
-            let maxEquity = initial;
-            let maxDD = 0, totalProfit = 0, totalLoss = 0, winCount = 0, lossCount = 0, totalR = 0;
-            all.forEach(t => {
-                currentEquity += t.profit;
-                totalR += t.r;
-                if (t.profit > 0) { totalProfit += t.profit; winCount++; }
-                else { totalLoss += Math.abs(t.profit); lossCount++; }
-                if (currentEquity > maxEquity) maxEquity = currentEquity;
-                const dd = ((maxEquity - currentEquity) / maxEquity) * 100;
-                if (dd > maxDD) maxDD = dd;
-            });
-            const wr = all.length ? (winCount / all.length * 100) : 0;
-            const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
-            
-            const metrics = [
-                { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
-                { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-cyan-400' },
-                { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
-                { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
-                { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
-                { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
-                { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
-                { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
-            ];
-            document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
-                <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
-                    <p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-3">${m.label}</p>
-                    <p class="text-2xl font-black ${m.cls}">${m.val}</p>
-                    <p class="text-[10px] text-gray-600 mt-2 uppercase font-black tracking-tight">${m.sub}</p>
-                </div>`).join('');
-        }
-
-        function renderCalendar(data) {
-            const monthVal = document.getElementById('calendar-month-select').value;
-            const [year, month0] = monthVal.split('-').map(Number);
-            const month = month0 - 1;
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
-            const dailyPnL = {};
-            data.forEach(t => {
-                const d = new Date(t.date);
-                if (d.getFullYear() === year && d.getMonth() === month) {
-                    const day = d.getDate();
-                    dailyPnL[day] = (dailyPnL[day] || 0) + t.profit;
-                }
-            });
-            let html = '';
-            for (let i = 0; i < startOffset; i++) html += '<div class="calendar-day opacity-0 pointer-events-none"></div>';
-            for (let d = 1; d <= daysInMonth; d++) {
-                const pnl = dailyPnL[d];
-                let cls = 'day-empty', pnlLabel = '';
-                if (pnl !== undefined) { 
-                    cls = pnl >= 0 ? 'day-profit' : 'day-loss'; 
-                    pnlLabel = `<span class="font-black mt-1">${pnl >= 0 ? '+' : ''}${Math.round(pnl)}</span>`; 
-                }
-                html += `<div class="calendar-day ${cls} cursor-pointer group"><span class="opacity-50 font-bold group-hover:opacity-100">${d}</span>${pnlLabel}</div>`;
-            }
-            document.getElementById('calendar-heatmap').innerHTML = html;
-        }
-
-        function renderTradeList(filteredData) {
-            const search = document.getElementById('search-input').value.toUpperCase();
-            const status = document.getElementById('filter-status').value;
-            const list = filteredData.filter(t => {
-                const matchSearch = t.pair.includes(search);
-                const matchStatus = status === 'all' || (status === 'win' ? t.profit > 0 : t.profit <= 0);
-                return matchSearch && matchStatus;
-            });
-            const body = document.getElementById('trade-list');
-            const empty = document.getElementById('empty-state');
-            document.getElementById('log-count').textContent = list.length;
-            if (list.length === 0) { body.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-            body.innerHTML = list.slice().reverse().map(t => {
-                const tvLink = t.tvLink || `https://www.tradingview.com/chart/?symbol=${t.pair.replace('/','')}`;
-                return `
-                <tr class="trade-row border-b border-white/5">
-                    <td class="px-6 py-6 text-gray-400 font-mono text-[11px] font-bold">${new Date(t.date).toLocaleString()}</td>
-                    <td class="px-6 py-6 font-black text-white text-lg tracking-tight">${t.pair}</td>
-                    <td class="px-6 py-6 text-right font-black text-xl ${t.profit >= 0 ? 'text-[#10b981]' : 'text-[#ff4b5c]'}">${t.profit >= 0 ? '+' : ''}${t.profit.toFixed(2)}</td>
-                    <td class="px-6 py-6 text-right text-indigo-400 font-black text-lg">${t.r}R</td>
-                    <td class="px-6 py-6 text-center">
-                        <span class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
-                            ${t.direction}
-                        </span>
-                    </td>
-                    <td class="px-6 py-6 text-right">
-                        <div class="flex items-center justify-end space-x-3">
-                            <a href="${tvLink}" target="_blank" class="action-icon text-cyan-400 flex items-center justify-center" title="TradingView 图表">
-                                <i class="fas fa-chart-line"></i>
-                            </a>
-                            <button onclick="window.editTrade('${t.id}')" class="action-icon text-gray-400 hover:text-white flex items-center justify-center">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="window.deleteTrade('${t.id}')" class="action-icon text-gray-600 hover:text-rose-500 flex items-center justify-center">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `}).join('');
-        }
-
-        function updateChart(all, viewData) {
-            const initial = config.initialCapital;
-            let currentViewPnL = 0, baseEquity = initial;
-            if (viewData.length > 0) {
-                const firstDate = new Date(viewData[0].date);
-                all.forEach(t => { if (new Date(t.date) < firstDate) baseEquity += t.profit; });
-            }
-            const pts = [];
-            if (viewData.length > 0) {
-                pts.push({ x: new Date(viewData[0].date), y: baseEquity });
-                let running = baseEquity;
-                viewData.forEach(t => { running += t.profit; currentViewPnL += t.profit; pts.push({ x: new Date(t.date), y: running }); });
-            }
-            document.getElementById('view-pnl').textContent = `${currentViewPnL >= 0 ? '+' : ''}$${currentViewPnL.toFixed(2)}`;
-            document.getElementById('view-pnl').className = `text-2xl font-black font-mono mt-1 ${currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-            document.getElementById('view-count').textContent = viewData.length;
-            
-            const ctx = document.getElementById('equity-chart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { datasets: [{ 
-                    data: pts, borderColor: '#00d4ff', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#00d4ff', fill: true,
-                    backgroundColor: (c) => { 
-                        const g = c.chart.ctx.createLinearGradient(0, 0, 0, 400); 
-                        g.addColorStop(0, 'rgba(0, 212, 255, 0.2)'); 
-                        g.addColorStop(1, 'rgba(0, 212, 255, 0)'); 
-                        return g; 
-                    },
-                    tension: 0.15 
-                }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, tooltip: { padding: 12, backgroundColor: '#111122', titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 14, weight: 'black' } } },
-                    scales: { 
-                        x: { type: 'time', grid: { display: false }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } }, 
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } } 
-                    } 
-                }
-            });
-        }
-
-        window.changeMonth = (off) => {
-            const el = document.getElementById('calendar-month-select');
-            const [y, m] = el.value.split('-').map(Number);
-            const date = new Date(y, m - 1 + off, 1);
-            el.value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
-            viewMode = 'month'; refreshUI();
-        };
-
-        document.getElementById('btn-7d').onclick = () => { viewMode = '7d'; refreshUI(); };
-        document.getElementById('btn-this-month').onclick = () => { viewMode = 'month'; refreshUI(); };
-        document.getElementById('calendar-month-select').onchange = () => { viewMode = 'month'; refreshUI(); };
-        document.getElementById('search-input').oninput = refreshUI;
-        document.getElementById('filter-status').onchange = refreshUI;
-
-        window.openModal = () => {
-            document.getElementById('trade-form').reset();
-            document.getElementById('edit-id').value = "";
-            document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
-            document.getElementById('trade-modal').classList.remove('hidden');
-        };
-        window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        document.getElementById('auth-view').classList.add('hidden-view');
+        document.getElementById('main-view').classList.remove('hidden-view');
+        document.getElementById('user-display-name').textContent = (user.email ? user.email.split('@')[0] : 'USER').toUpperCase();
         
-        document.getElementById('trade-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const trade = { 
-                pair: document.getElementById('trade-pair').value.toUpperCase(), 
-                profit: parseFloat(document.getElementById('trade-profit').value), 
-                direction: document.getElementById('trade-direction').value, 
-                r: parseFloat(document.getElementById('trade-r').value), 
-                tvLink: document.getElementById('trade-tv-link').value,
-                date: document.getElementById('trade-date').value 
-            };
-            const eid = document.getElementById('edit-id').value;
-            if (eid) await updateDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', eid), trade);
-            else await addDoc(collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades'), trade);
-            window.closeModal();
-        };
+        // 1. 获取独立配置
+        const configRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config');
+        const configSnap = await getDoc(configRef);
+        if (configSnap.exists()) {
+            config = { ...config, ...configSnap.data() };
+            document.getElementById('initial-capital').value = config.initialCapital;
+            document.getElementById('target-capital').value = config.targetCapital;
+        }
 
-        window.deleteTrade = async (id) => { 
-            if(confirm("IDENTIFY THREAT: 确定彻底抹除此条成交记录吗？")) 
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id)); 
-        };
+        const now = new Date();
+        document.getElementById('calendar-month-select').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-        window.editTrade = (id) => {
-            const t = allTrades.find(x => x.id === id);
-            document.getElementById('edit-id').value = t.id;
-            document.getElementById('trade-pair').value = t.pair;
-            document.getElementById('trade-profit').value = t.profit;
-            document.getElementById('trade-direction').value = t.direction;
-            document.getElementById('trade-r').value = t.r;
-            document.getElementById('trade-tv-link').value = t.tvLink || "";
-            document.getElementById('trade-date').value = t.date;
-            document.getElementById('trade-modal').classList.remove('hidden');
-        };
+        // 2. 数据隔离监听
+        if (unsubscribeTrades) unsubscribeTrades();
+        unsubscribeTrades = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'trades'), (snap) => {
+            allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            refreshUI();
+        });
+    } else {
+        document.getElementById('main-view').classList.add('hidden-view');
+        document.getElementById('auth-view').classList.remove('hidden-view');
+        if (unsubscribeTrades) unsubscribeTrades();
+    }
+});
 
-        document.getElementById('auth-form').onsubmit = async (e) => {
-            e.preventDefault();
-            try { await signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value); } catch (err) { alert("ERROR: 访问被拒绝 - " + err.message); }
-        };
-        document.getElementById('btn-register').onclick = async () => {
-            try { await createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value); } catch (err) { alert("ERROR: 身份注册失败 - " + err.message); }
-        };
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
+const saveConfig = async () => {
+    if (!auth.currentUser) return;
+    config.initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
+    config.targetCapital = parseFloat(document.getElementById('target-capital').value) || 20000;
+    await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'config'), config);
+    refreshUI();
+};
+document.getElementById('initial-capital').onchange = saveConfig;
+document.getElementById('target-capital').onchange = saveConfig;
+
+// --- 以下是保持不变的 UI 渲染逻辑 ---
+
+function refreshUI() {
+    allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const now = new Date();
+    let filtered = [];
+    if (viewMode === '7d') {
+        const limit = new Date(); limit.setDate(now.getDate() - 7);
+        filtered = allTrades.filter(t => new Date(t.date) >= limit);
+    } else {
+        const monthVal = document.getElementById('calendar-month-select').value;
+        const [y, m] = monthVal.split('-').map(Number);
+        filtered = allTrades.filter(t => {
+            const d = new Date(t.date);
+            return d.getFullYear() === y && (d.getMonth() + 1) === m;
+        });
+    }
+    updateGoalProgress(allTrades);
+    updateMetricCards(allTrades);
+    renderCalendar(allTrades);
+    renderTradeList(filtered);
+    updateChart(allTrades, filtered);
+}
+
+function updateGoalProgress(all) {
+    const initial = config.initialCapital;
+    const target = config.targetCapital;
+    let currentEquity = initial;
+    all.forEach(t => currentEquity += t.profit);
+    const neededToEarn = target - initial;
+    const alreadyEarned = currentEquity - initial;
+    let progress = neededToEarn > 0 ? Math.max(0, (alreadyEarned / neededToEarn) * 100) : 0;
+    document.getElementById('goal-percent').textContent = `${progress.toFixed(1)}%`;
+    const circle = document.getElementById('goal-progress-bar');
+    const circumference = 389.5; 
+    circle.style.strokeDashoffset = circumference - (Math.min(100, progress) / 100 * circumference);
+    const remaining = target - currentEquity;
+    document.getElementById('remaining-label').textContent = remaining > 0 ? `距目标还差 $${remaining.toLocaleString()}` : 'GOAL REACHED / 目标已达成';
+    document.getElementById('remaining-label').className = remaining > 0 ? 'text-xs text-gray-400 italic font-bold' : 'text-xs text-emerald-400 font-black animate-pulse';
+}
+
+function updateMetricCards(all) {
+    const initial = config.initialCapital;
+    let currentEquity = initial;
+    let maxEquity = initial;
+    let maxDD = 0, totalProfit = 0, totalLoss = 0, winCount = 0, lossCount = 0, totalR = 0;
+    all.forEach(t => {
+        currentEquity += t.profit;
+        totalR += t.r;
+        if (t.profit > 0) { totalProfit += t.profit; winCount++; }
+        else { totalLoss += Math.abs(t.profit); lossCount++; }
+        if (currentEquity > maxEquity) maxEquity = currentEquity;
+        const dd = ((maxEquity - currentEquity) / maxEquity) * 100;
+        if (dd > maxDD) maxDD = dd;
+    });
+    const wr = all.length ? (winCount / all.length * 100) : 0;
+    const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
+    
+    const metrics = [
+        { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
+        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-cyan-400' },
+        { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
+        { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
+        { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
+        { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
+        { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
+        { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
+    ];
+    document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+        <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
+            <p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-3">${m.label}</p>
+            <p class="text-2xl font-black ${m.cls}">${m.val}</p>
+            <p class="text-[10px] text-gray-600 mt-2 uppercase font-black tracking-tight">${m.sub}</p>
+        </div>`).join('');
+}
+
+function renderCalendar(data) {
+    const monthVal = document.getElementById('calendar-month-select').value;
+    const [year, month0] = monthVal.split('-').map(Number);
+    const month = month0 - 1;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
+    const dailyPnL = {};
+    data.forEach(t => {
+        const d = new Date(t.date);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+            const day = d.getDate();
+            dailyPnL[day] = (dailyPnL[day] || 0) + t.profit;
+        }
+    });
+    let html = '';
+    for (let i = 0; i < startOffset; i++) html += '<div class="calendar-day opacity-0 pointer-events-none"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+        const pnl = dailyPnL[d];
+        let cls = 'day-empty', pnlLabel = '';
+        if (pnl !== undefined) { 
+            cls = pnl >= 0 ? 'day-profit' : 'day-loss'; 
+            pnlLabel = `<span class="font-black mt-1">${pnl >= 0 ? '+' : ''}${Math.round(pnl)}</span>`; 
+        }
+        html += `<div class="calendar-day ${cls} cursor-pointer group"><span class="opacity-50 font-bold group-hover:opacity-100">${d}</span>${pnlLabel}</div>`;
+    }
+    document.getElementById('calendar-heatmap').innerHTML = html;
+}
+
+function renderTradeList(filteredData) {
+    const search = document.getElementById('search-input').value.toUpperCase();
+    const status = document.getElementById('filter-status').value;
+    const list = filteredData.filter(t => {
+        const matchSearch = t.pair.includes(search);
+        const matchStatus = status === 'all' || (status === 'win' ? t.profit > 0 : t.profit <= 0);
+        return matchSearch && matchStatus;
+    });
+    const body = document.getElementById('trade-list');
+    const empty = document.getElementById('empty-state');
+    document.getElementById('log-count').textContent = list.length;
+    if (list.length === 0) { body.innerHTML = ''; empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+    body.innerHTML = list.slice().reverse().map(t => {
+        const tvLink = t.tvLink || `https://www.tradingview.com/chart/?symbol=${t.pair.replace('/','')}`;
+        return `
+        <tr class="trade-row border-b border-white/5">
+            <td class="px-6 py-6 text-gray-400 font-mono text-[11px] font-bold">${new Date(t.date).toLocaleString()}</td>
+            <td class="px-6 py-6 font-black text-white text-lg tracking-tight">${t.pair}</td>
+            <td class="px-6 py-6 text-right font-black text-xl ${t.profit >= 0 ? 'text-[#10b981]' : 'text-[#ff4b5c]'}">${t.profit >= 0 ? '+' : ''}${t.profit.toFixed(2)}</td>
+            <td class="px-6 py-6 text-right text-indigo-400 font-black text-lg">${t.r}R</td>
+            <td class="px-6 py-6 text-center">
+                <span class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                    ${t.direction}
+                </span>
+            </td>
+            <td class="px-6 py-6 text-right">
+                <div class="flex items-center justify-end space-x-3">
+                    <a href="${tvLink}" target="_blank" class="action-icon text-cyan-400 flex items-center justify-center" title="TradingView 图表">
+                        <i class="fas fa-chart-line"></i>
+                    </a>
+                    <button onclick="window.editTrade('${t.id}')" class="action-icon text-gray-400 hover:text-white flex items-center justify-center">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="window.deleteTrade('${t.id}')" class="action-icon text-gray-600 hover:text-rose-500 flex items-center justify-center">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `}).join('');
+}
+
+function updateChart(all, viewData) {
+    const initial = config.initialCapital;
+    let currentViewPnL = 0, baseEquity = initial;
+    if (viewData.length > 0) {
+        const firstDate = new Date(viewData[0].date);
+        all.forEach(t => { if (new Date(t.date) < firstDate) baseEquity += t.profit; });
+    }
+    const pts = [];
+    if (viewData.length > 0) {
+        pts.push({ x: new Date(viewData[0].date), y: baseEquity });
+        let running = baseEquity;
+        viewData.forEach(t => { running += t.profit; currentViewPnL += t.profit; pts.push({ x: new Date(t.date), y: running }); });
+    }
+    document.getElementById('view-pnl').textContent = `${currentViewPnL >= 0 ? '+' : ''}$${currentViewPnL.toFixed(2)}`;
+    document.getElementById('view-pnl').className = `text-2xl font-black font-mono mt-1 ${currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+    document.getElementById('view-count').textContent = viewData.length;
+    
+    const ctx = document.getElementById('equity-chart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: [{ 
+            data: pts, borderColor: '#00d4ff', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#00d4ff', fill: true,
+            backgroundColor: (c) => { 
+                const g = c.chart.ctx.createLinearGradient(0, 0, 0, 400); 
+                g.addColorStop(0, 'rgba(0, 212, 255, 0.2)'); 
+                g.addColorStop(1, 'rgba(0, 212, 255, 0)'); 
+                return g; 
+            },
+            tension: 0.15 
+        }] },
+        options: { 
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { display: false }, tooltip: { padding: 12, backgroundColor: '#111122', titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 14, weight: 'black' } } },
+            scales: { 
+                x: { type: 'time', grid: { display: false }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } }, 
+                y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } } 
+            } 
+        }
+    });
+}
+
+window.changeMonth = (off) => {
+    const el = document.getElementById('calendar-month-select');
+    const [y, m] = el.value.split('-').map(Number);
+    const date = new Date(y, m - 1 + off, 1);
+    el.value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+    viewMode = 'month'; refreshUI();
+};
+
+document.getElementById('btn-7d').onclick = () => { viewMode = '7d'; refreshUI(); };
+document.getElementById('btn-this-month').onclick = () => { viewMode = 'month'; refreshUI(); };
+document.getElementById('calendar-month-select').onchange = () => { viewMode = 'month'; refreshUI(); };
+document.getElementById('search-input').oninput = refreshUI;
+document.getElementById('filter-status').onchange = refreshUI;
+
+window.openModal = () => {
+    document.getElementById('trade-form').reset();
+    document.getElementById('edit-id').value = "";
+    document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
+    document.getElementById('trade-modal').classList.remove('hidden');
+};
+window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+
+document.getElementById('trade-form').onsubmit = async (e) => {
+    e.preventDefault();
+    if (!auth.currentUser) return;
+    const trade = { 
+        pair: document.getElementById('trade-pair').value.toUpperCase(), 
+        profit: parseFloat(document.getElementById('trade-profit').value), 
+        direction: document.getElementById('trade-direction').value, 
+        r: parseFloat(document.getElementById('trade-r').value), 
+        tvLink: document.getElementById('trade-tv-link').value,
+        date: document.getElementById('trade-date').value 
+    };
+    const eid = document.getElementById('edit-id').value;
+    if (eid) await updateDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', eid), trade);
+    else await addDoc(collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades'), trade);
+    window.closeModal();
+};
+
+window.deleteTrade = async (id) => { 
+    if(confirm("确定彻底抹除此条记录吗？")) 
+        await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id)); 
+};
+
+window.editTrade = (id) => {
+    const t = allTrades.find(x => x.id === id);
+    document.getElementById('edit-id').value = t.id;
+    document.getElementById('trade-pair').value = t.pair;
+    document.getElementById('trade-profit').value = t.profit;
+    document.getElementById('trade-direction').value = t.direction;
+    document.getElementById('trade-r').value = t.r;
+    document.getElementById('trade-tv-link').value = t.tvLink || "";
+    document.getElementById('trade-date').value = t.date;
+    document.getElementById('trade-modal').classList.remove('hidden');
+};
+
+document.getElementById('auth-form').onsubmit = async (e) => {
+    e.preventDefault();
+    try { 
+        await signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value); 
+    } catch (err) { alert("访问被拒绝: " + err.message); }
+};
+document.getElementById('btn-register').onclick = async () => {
+    try { 
+        await createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value); 
+    } catch (err) { alert("注册失败: " + err.message); }
+};
+document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
