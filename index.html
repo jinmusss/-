@@ -253,34 +253,7 @@
             changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
             changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
         }
-        // 如果 3 秒内没收到任何行情，用 HTTP 兜底
-        setTimeout(() => {
-            if (!lastPrices['btcusdt']) {
-                fetchFallbackPrices();
-            }
-        }, 3000);
-        function fetchFallbackPrices() {
-            console.warn('WebSocket 无数据，启用 HTTP 价格兜底');
 
-            fetch('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT","DOGEUSDT"]')
-                .then(res => res.json())
-                .then(data => 
-                    data.forEach(item => {
-                        const symbol = item.symbol.toLowerCase();
-                        const rawPrice = parseFloat(item.price);
-
-                        const displayPrice = rawPrice.toLocaleString(undefined, {
-                            minimumFractionDigits: symbol === 'dogeusdt' ? 4 : 2,
-                            maximumFractionDigits: symbol === 'dogeusdt' ? 4 : 2
-                        });
-
-                        updateUI(symbol, displayPrice, rawPrice, '0.00');
-                    });
-             })
-                .catch(err => console.error('HTTP 兜底失败', err));
-        }
-        
-        
 
     </script>
 </body>
@@ -800,6 +773,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
