@@ -745,7 +745,8 @@ document.getElementById('filter-status').onchange = refreshUI;
 window.openModal = () => {
     document.getElementById('trade-form').reset();
     document.getElementById('edit-id').value = "";
-    document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
+    document.getElementById('trade-date').value =
+        new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16);
     document.getElementById('trade-modal').classList.remove('hidden');
 };
 window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
@@ -799,6 +800,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
