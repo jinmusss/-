@@ -306,21 +306,6 @@
                 <div class="xl:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-5" id="metrics-grid"></div>
             </div>
 
-<div class="metric-card">
-    <div class="metric-title">Total ROI</div>
-
-    <!-- ✅ 插入 ROI 时间窗口切换按钮 -->
-    <div class="flex space-x-2 mb-2" id="roi-window-switch">
-      <button class="roi-btn" data-window="today">Today</button>
-      <button class="roi-btn" data-window="7d">7D</button>
-      <button class="roi-btn" data-window="month">Month</button>
-      <button class="roi-btn" data-window="all">Total</button>
-    </div>
-
-    <div class="metric-value" id="total-roi">+12.5%</div>
-</div>
-
-
             <!-- 中间：日历与曲线 -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-4 xl:col-span-3 p-8 rounded-3xl component-bg border border-white/10 shadow-xl">
@@ -571,97 +556,35 @@ function updateMetricCards(all) {
     const initial = config.initialCapital;
     let currentEquity = initial;
     let maxEquity = initial;
-
-    let maxDD = 0;
-    let totalProfit = 0, totalLoss = 0;
-    let winCount = 0, lossCount = 0;
-    let totalR = 0;
-
+    let maxDD = 0, totalProfit = 0, totalLoss = 0, winCount = 0, lossCount = 0, totalR = 0;
     all.forEach(t => {
-        currentEquity += Number(t.profit || 0);
-        totalR += Number(t.r || 0);
-
-        if (t.profit > 0) {
-            totalProfit += t.profit;
-            winCount++;
-        } else {
-            totalLoss += Math.abs(t.profit || 0);
-            lossCount++;
-        }
-
+        currentEquity += t.profit;
+        totalR += t.r;
+        if (t.profit > 0) { totalProfit += t.profit; winCount++; }
+        else { totalLoss += Math.abs(t.profit); lossCount++; }
         if (currentEquity > maxEquity) maxEquity = currentEquity;
-        const dd = maxEquity > 0 ? ((maxEquity - currentEquity) / maxEquity) * 100 : 0;
+        const dd = ((maxEquity - currentEquity) / maxEquity) * 100;
         if (dd > maxDD) maxDD = dd;
     });
-
-    const totalROI = initial > 0 ? ((currentEquity - initial) / initial) * 100 : 0;
-    const maxDDMoney = (maxDD / 100) * maxEquity;
-    const avgTradeROI = all.length ? totalROI / all.length : 0;
-    // ===== ROI by Time Window =====
-const now = new Date();
-
-function roiByFilter(filterFn) {
-    const subset = all.filter(filterFn);
-    if (!subset.length) return 0;
-
-    let equity = initial;
-    subset.forEach(t => equity += Number(t.profit || 0));
-
-    return initial > 0 ? ((equity - initial) / initial) * 100 : 0;
-}
-
-// Today ROI
-const todayROI = roiByFilter(t => {
-    const d = new Date(t.date);
-    return d.toDateString() === now.toDateString();
-});
-
-// 7D ROI
-const roi7d = roiByFilter(t => {
-    const d = new Date(t.date);
-    return (now - d) <= 7 * 24 * 60 * 60 * 1000;
-});
-
-// Month ROI
-const roiMonth = roiByFilter(t => {
-    const d = new Date(t.date);
-    return d.getFullYear() === now.getFullYear()
-        && d.getMonth() === now.getMonth();
-});
-
-    // 年化收益率（安全版）
-    let annualizedROI = 0;
-    if (all.length >= 2) {
-        const first = new Date(all[0].date);
-        const last = new Date(all[all.length - 1].date);
-        const days = Math.max(1, (last - first) / (1000 * 60 * 60 * 24));
-        annualizedROI = ((currentEquity / initial) ** (365 / days) - 1) * 100;
-    }
-
     const wr = all.length ? (winCount / all.length * 100) : 0;
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
-
+    
     const metrics = [
-        { label: '账户总资产', val: '$' + currentEquity.toFixed(2), sub: 'Current Balance', cls: 'text-white' },
-        { label: '累计收益率', val: totalROI.toFixed(2) + '%', sub: 'Total ROI', cls: totalROI >= 0 ? 'text-emerald-400' : 'text-rose-400' },
-        { label: '年化收益率', val: annualizedROI.toFixed(1) + '%', sub: 'Est. APR', cls: 'text-cyan-400' },
-        { label: '统计胜率', val: wr.toFixed(1) + '%', sub: winCount + 'W / ' + lossCount + 'L', cls: 'text-cyan-400' },
+        { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
+        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-cyan-400' },
         { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
-        { label: '极限回撤', val: maxDD.toFixed(1) + '%', sub: '-$' + maxDDMoney.toFixed(0), cls: 'text-rose-400' },
-        { label: '单笔平均收益率', val: avgTradeROI.toFixed(2) + '%', sub: 'Avg ROI / Trade', cls: 'text-indigo-400' },
+        { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
+        { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
+        { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
+        { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
         { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
     ];
-
-    const grid = document.getElementById('metrics-grid');
-    if (!grid) return;
-
-    grid.innerHTML = metrics.map(m =>
-        '<div class="metric-card p-6 rounded-2xl component-bg border border-white/5">' +
-            '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-3">' + m.label + '</p>' +
-            '<p class="text-2xl font-black ' + m.cls + '">' + m.val + '</p>' +
-            '<p class="text-[10px] text-gray-600 mt-2 uppercase font-black tracking-tight">' + m.sub + '</p>' +
-        '</div>'
-    ).join('');
+    document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+        <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
+            <p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-3">${m.label}</p>
+            <p class="text-2xl font-black ${m.cls}">${m.val}</p>
+            <p class="text-[10px] text-gray-600 mt-2 uppercase font-black tracking-tight">${m.sub}</p>
+        </div>`).join('');
 }
 
 function renderCalendar(data) {
@@ -850,6 +773,8 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
+
 
 
 
