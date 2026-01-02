@@ -230,10 +230,7 @@
                     <div class="flex flex-col space-y-6 mb-6">
                         <div class="flex justify-between items-center">
                             <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-cyan-400"></i>交易日历</h3>
-                            <div class="flex space-x-2">
-                                <button id="btn-7d" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-cyan-500 hover:text-black font-black transition-all">7D</button>
-                                <button id="btn-this-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-cyan-500 hover:text-black font-black transition-all">月度</button>
-                            </div>
+                            <button id="btn-current-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-cyan-500 hover:text-black font-black transition-all">当前月</button>
                         </div>
                         <div class="flex space-x-3">
                             <input type="month" id="calendar-month-select" class="flex-grow bg-[#05050a] border border-[#2d2d4c] text-cyan-400 text-xs px-4 py-3 rounded-xl outline-none font-black">
@@ -249,6 +246,10 @@
                         <div>
                             <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">视图盈亏</p>
                             <p id="view-pnl" class="text-xl font-black font-mono">+$0.00</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">本月收益率</p>
+                            <p id="view-roi" class="text-xl font-black font-mono text-white">0.00%</p>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">交易次数</p>
@@ -487,17 +488,14 @@ function refreshUI() {
     allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
     const now = new Date();
     let filtered = [];
-    if (viewMode === '7d') {
-        const limit = new Date(); limit.setDate(now.getDate() - 7);
-        filtered = allTrades.filter(t => new Date(t.date) >= limit);
-    } else {
-        const monthVal = document.getElementById('calendar-month-select').value;
-        const [y, m] = monthVal.split('-').map(Number);
-        filtered = allTrades.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === y && (d.getMonth() + 1) === m;
-        });
-    }
+    // 默认月度视图
+    const monthVal = document.getElementById('calendar-month-select').value;
+    const [y, m] = monthVal.split('-').map(Number);
+    filtered = allTrades.filter(t => {
+        const d = new Date(t.date);
+        return d.getFullYear() === y && (d.getMonth() + 1) === m;
+    });
+
     updateGoalProgress(allTrades);
     updateMetricCards(allTrades);
     renderCalendar(allTrades);
@@ -538,6 +536,7 @@ function updateMetricCards(all) {
     });
     const wr = all.length ? (winCount / all.length * 100) : 0;
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
+    const roi = initial > 0 ? ((currentEquity - initial) / initial) * 100 : 0;
     
     const metrics = [
         { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
@@ -545,7 +544,7 @@ function updateMetricCards(all) {
         { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
         { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
         { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
-        { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
+        { label: '总收益率 ROI', val: `${roi > 0 ? '+' : ''}${roi.toFixed(2)}%`, sub: 'Total Return', cls: roi >= 0 ? 'text-emerald-500' : 'text-rose-500' },
         { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
         { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
     ];
@@ -632,10 +631,19 @@ function renderTradeList(filteredData) {
 function updateChart(all, viewData) {
     const initial = config.initialCapital;
     let currentViewPnL = 0, baseEquity = initial;
-    if (viewData.length > 0) {
-        const firstDate = new Date(viewData[0].date);
-        all.forEach(t => { if (new Date(t.date) < firstDate) baseEquity += t.profit; });
-    }
+
+    // 计算选中月份的起始资金（无论当月是否有交易）
+    const monthVal = document.getElementById('calendar-month-select').value;
+    const [y, m] = monthVal.split('-').map(Number);
+    const monthStart = new Date(y, m - 1, 1);
+    
+    // 计算本月之前的累计盈亏
+    let preMonthProfit = 0;
+    all.forEach(t => { 
+        if (new Date(t.date) < monthStart) preMonthProfit += t.profit; 
+    });
+    baseEquity = initial + preMonthProfit;
+
     const pts = [];
     if (viewData.length > 0) {
         pts.push({ x: new Date(viewData[0].date), y: baseEquity });
@@ -645,6 +653,11 @@ function updateChart(all, viewData) {
     document.getElementById('view-pnl').textContent = `${currentViewPnL >= 0 ? '+' : ''}$${currentViewPnL.toFixed(2)}`;
     document.getElementById('view-pnl').className = `text-2xl font-black font-mono mt-1 ${currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
     document.getElementById('view-count').textContent = viewData.length;
+    
+    // 计算并显示本月收益率
+    const monthROI = baseEquity > 0 ? (currentViewPnL / baseEquity) * 100 : 0;
+    document.getElementById('view-roi').textContent = `${monthROI > 0 ? '+' : ''}${monthROI.toFixed(2)}%`;
+    document.getElementById('view-roi').className = `text-2xl font-black font-mono mt-1 ${monthROI >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
     
     const ctx = document.getElementById('equity-chart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
@@ -679,8 +692,13 @@ window.changeMonth = (off) => {
     viewMode = 'month'; refreshUI();
 };
 
-document.getElementById('btn-7d').onclick = () => { viewMode = '7d'; refreshUI(); };
-document.getElementById('btn-this-month').onclick = () => { viewMode = 'month'; refreshUI(); };
+document.getElementById('btn-current-month').onclick = () => {
+    const now = new Date();
+    document.getElementById('calendar-month-select').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    viewMode = 'month'; 
+    refreshUI();
+};
+
 document.getElementById('calendar-month-select').onchange = () => { viewMode = 'month'; refreshUI(); };
 document.getElementById('search-input').oninput = refreshUI;
 document.getElementById('filter-status').onchange = refreshUI;
