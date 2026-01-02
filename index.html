@@ -302,9 +302,8 @@
                         </div>
                     </div>
                 </div>
-                <div id="roi-summary"></div>
 
-
+                   <div id="roi-summary"></div>
                 <div class="xl:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-5" id="metrics-grid"></div>
             </div>
 
@@ -630,6 +629,18 @@ function updateMetricCards(all) {
     const wr = all.length ? (winCount / all.length * 100) : 0;
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
 
+    document.getElementById('roi-summary').innerHTML = roiSummaryHTML;
+
+    const roiSummaryHTML =
+    '<div class="component-bg border border-white/5 rounded-2xl p-6 mb-6">' +
+        '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-4">ROI Performance</p>' +
+
+        roiRow('Today', todayROI) +
+        roiRow('7D', roi7d) +
+        roiRow('Month', roiMonth) +
+        roiRow('Total', totalROI) +
+    '</div>';
+
     const metrics = [
         { label: '账户总资产', val: '$' + currentEquity.toFixed(2), sub: 'Current Balance', cls: 'text-white' },
         { label: '累计收益率', val: totalROI.toFixed(2) + '%', sub: 'Total ROI', cls: totalROI >= 0 ? 'text-emerald-400' : 'text-rose-400' },
@@ -641,17 +652,8 @@ function updateMetricCards(all) {
         { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
     ];
 
-    const roiSummaryHTML =
-    '<div class="component-bg border border-white/5 rounded-2xl p-6 mb-6">' +
-        '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-4">ROI Performance</p>' +
-
-        roiRow('Today', todayROI) +
-        roiRow('7D', roi7d) +
-        roiRow('Month', roiMonth) +
-        roiRow('Total', totalROI) +
-    '</div>';
-    document.getElementById('roi-summary').innerHTML = roiSummaryHTML;
-
+    
+    
 
     const grid = document.getElementById('metrics-grid');
     if (!grid) return;
@@ -863,6 +865,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
