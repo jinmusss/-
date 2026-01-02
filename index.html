@@ -555,6 +555,8 @@ function updateGoalProgress(all) {
 function updateMetricCards(all) {
     const initial = config.initialCapital;
     let currentEquity = initial;
+    // 累计收益率 %
+    const totalROI = ((currentEquity - initial) / initial) * 100;
     let maxEquity = initial;
     let maxDD = 0, totalProfit = 0, totalLoss = 0, winCount = 0, lossCount = 0, totalR = 0;
     all.forEach(t => {
@@ -568,6 +570,7 @@ function updateMetricCards(all) {
     });
     const wr = all.length ? (winCount / all.length * 100) : 0;
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
+    const maxDDMoney = (maxDD / 100) * maxEquity;
     
     const metrics = [
         { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
@@ -578,6 +581,10 @@ function updateMetricCards(all) {
         { label: '期望值 EXP', val: `$${all.length ? ((totalProfit - totalLoss) / all.length).toFixed(2) : 0}`, sub: 'Math Expectancy', cls: 'text-emerald-500' },
         { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
         { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
+        { label: '累计收益率', val: `${totalROI.toFixed(2)}%`, sub: 'Total ROI', cls: totalROI >= 0 ? 'text-emerald-400' : 'text-rose-400' },
+        { label: '年化收益率', val: `${annualizedROI.toFixed(1)}%`, sub: 'Est. APR', cls: annualizedROI >= 0 ? 'text-cyan-400' : 'text-rose-400' },
+        { label: '最大回撤金额', val: `-$${maxDDMoney.toFixed(0)}`, sub: 'Max DD ($)', cls: 'text-rose-400' },
+        { label: '单笔平均收益率', val: `${avgTradeROI.toFixed(2)}%`, sub: 'Avg ROI / Trade', cls: 'text-indigo-400' },
     ];
     document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
         <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
@@ -586,6 +593,13 @@ function updateMetricCards(all) {
             <p class="text-[10px] text-gray-600 mt-2 uppercase font-black tracking-tight">${m.sub}</p>
         </div>`).join('');
 }
+    let days = 1;
+    if (all.length >= 2) {
+        const first = new Date(all[0].date);
+        const last = new Date(all[all.length - 1].date);
+        days = Math.max(1, (last - first) / (1000 * 60 * 60 * 24));
+}
+    const annualizedROI = ((currentEquity / initial) ** (365 / days) - 1) * 100;
 
 function renderCalendar(data) {
     const monthVal = document.getElementById('calendar-month-select').value;
@@ -700,6 +714,12 @@ function updateChart(all, viewData) {
         }
     });
 }
+    const viewROI = baseEquity > 0
+        ? (currentViewPnL / baseEquity) * 100
+        : 0;
+
+    document.getElementById('curve-range-label').textContent =
+        `${viewMode === '7d' ? '7D' : 'MONTH'} ROI ${viewROI >= 0 ? '+' : ''}${viewROI.toFixed(2)}%`;
 
 window.changeMonth = (off) => {
     const el = document.getElementById('calendar-month-select');
@@ -773,6 +793,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
