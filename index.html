@@ -303,9 +303,23 @@
                     </div>
                 </div>
 
-                   <div id="roi-summary"></div>
                 <div class="xl:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-5" id="metrics-grid"></div>
             </div>
+
+<div class="metric-card">
+    <div class="metric-title">Total ROI</div>
+
+    <!-- ✅ 插入 ROI 时间窗口切换按钮 -->
+    <div class="flex space-x-2 mb-2" id="roi-window-switch">
+      <button class="roi-btn" data-window="today">Today</button>
+      <button class="roi-btn" data-window="7d">7D</button>
+      <button class="roi-btn" data-window="month">Month</button>
+      <button class="roi-btn" data-window="all">Total</button>
+    </div>
+
+    <div class="metric-value" id="total-roi">+12.5%</div>
+</div>
+
 
             <!-- 中间：日历与曲线 -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -584,50 +598,36 @@ function updateMetricCards(all) {
     const maxDDMoney = (maxDD / 100) * maxEquity;
     const avgTradeROI = all.length ? totalROI / all.length : 0;
     // ===== ROI by Time Window =====
-    const now = new Date();
+const now = new Date();
 
-    function roiByFilter(filterFn) {
-        const subset = all.filter(filterFn);
-        if (!subset.length) return 0;
+function roiByFilter(filterFn) {
+    const subset = all.filter(filterFn);
+    if (!subset.length) return 0;
 
-        let equity = initial;
-        subset.forEach(t => equity += Number(t.profit || 0));
+    let equity = initial;
+    subset.forEach(t => equity += Number(t.profit || 0));
 
-        return initial > 0 ? ((equity - initial) / initial) * 100 : 0;
-    }
-    
-    // Today ROI
-    const todayROI = roiByFilter(t => {
-        const d = new Date(t.date);
-        return d.toDateString() === now.toDateString();
-    });
+    return initial > 0 ? ((equity - initial) / initial) * 100 : 0;
+}
 
-    // 7D ROI
-    const roi7d = roiByFilter(t => {
-        const d = new Date(t.date);
-        return (now - d) <= 7 * 24 * 60 * 60 * 1000;
-    });
+// Today ROI
+const todayROI = roiByFilter(t => {
+    const d = new Date(t.date);
+    return d.toDateString() === now.toDateString();
+});
 
-    // Month ROI
-    const roiMonth = roiByFilter(t => {
-        const d = new Date(t.date);
-        return d.getFullYear() === now.getFullYear()
-            && d.getMonth() === now.getMonth();
-    });
+// 7D ROI
+const roi7d = roiByFilter(t => {
+    const d = new Date(t.date);
+    return (now - d) <= 7 * 24 * 60 * 60 * 1000;
+});
 
-    document.getElementById('roi-summary').innerHTML = roiSummaryHTML;
-
-    const roiSummaryHTML =
-    '<div class="component-bg border border-white/5 rounded-2xl p-6 mb-6">' +
-        '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-4">ROI Performance</p>' +
-
-        roiRow('Today', todayROI) +
-        roiRow('7D', roi7d) +
-        roiRow('Month', roiMonth) +
-        roiRow('Total', totalROI) +
-    '</div>';
-
-    
+// Month ROI
+const roiMonth = roiByFilter(t => {
+    const d = new Date(t.date);
+    return d.getFullYear() === now.getFullYear()
+        && d.getMonth() === now.getMonth();
+});
 
     // 年化收益率（安全版）
     let annualizedROI = 0;
@@ -652,9 +652,6 @@ function updateMetricCards(all) {
         { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
     ];
 
-    
-    
-
     const grid = document.getElementById('metrics-grid');
     if (!grid) return;
 
@@ -666,18 +663,6 @@ function updateMetricCards(all) {
         '</div>'
     ).join('');
 }
-
-function roiRow(label, val) {
-    const cls = val >= 0 ? 'text-emerald-400' : 'text-rose-400';
-    const sign = val >= 0 ? '+' : '';
-    return (
-        '<div class="flex justify-between items-center py-1">' +
-            '<span class="text-xs text-gray-400 font-bold">' + label + '</span>' +
-            '<span class="text-sm font-black ' + cls + '">' + sign + val.toFixed(2) + '%</span>' +
-        '</div>'
-    );
-}
-
 
 function renderCalendar(data) {
     const monthVal = document.getElementById('calendar-month-select').value;
@@ -865,6 +850,9 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
+
+
 
 
 
