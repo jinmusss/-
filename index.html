@@ -12,23 +12,23 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         body {
+            font-family: 'Inter', sans-serif;
             background-image: url("images/bj.jpg");
- 
-    /* 核心设置：确保图片铺满且不重复 */
-    background-size: cover;          /* 缩放背景图以完全覆盖背景区域 */
-    background-position: center;      /* 图片居中显示 */
-    background-attachment: fixed;    /* 背景固定，不随页面滚动（视差效果） */
-    background-repeat: no-repeat;    /* 不重复平铺 */
-}
-        /* 磨砂玻璃效果增强：为了让内容在复杂背景下更清晰 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* 磨砂玻璃效果增强 */
         .component-bg { 
             background-color: rgba(17, 17, 34, 0.85); 
             backdrop-filter: blur(10px);
             border: 1px solid rgba(45, 45, 76, 0.5); 
         }
-
-        .input-dark { background-color: rgba(5, 5, 10, 0.8) !important; border: 1px solid #3d3d5c !important; color: white !important; font-size: 14px !important; }
-        .hidden-view { display: none !important; }
 
         .input-dark { background-color: rgba(5, 5, 10, 0.8) !important; border: 1px solid #3d3d5c !important; color: white !important; font-size: 14px !important; }
         .hidden-view { display: none !important; }
@@ -68,6 +68,15 @@
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #3d3d5c; border-radius: 10px; }
+
+        /* 行情监控特定样式 */
+        .price-up { color: #10b981; animation: flash-green 0.6s ease-out; }
+        .price-down { color: #ef4444; animation: flash-red 0.6s ease-out; }
+
+        @keyframes flash-green { 0% { background-color: rgba(16, 185, 129, 0.15); } 100% { background-color: transparent; } }
+        @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.15); } 100% { background-color: transparent; } }
+        
+        .crypto-icon { font-size: 1.5rem; opacity: 0.8; }
     </style>
 </head>
 <body class="selection:bg-cyan-600 selection:text-black">
@@ -116,148 +125,57 @@
         </header>
 
         <main class="space-y-8">
-            <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行情监控 - JINMU PRO STYLE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-image: url("images/bj.jpg"); /* 继承你主站的背景图路径 */
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-color: #000; /* 备用背景色 */
-            color: #fff;
-            min-h-screen;
-        }
-
-        /* 继承主站的半透明磨砂玻璃质感 */
-        .glass-card {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .price-up { color: #10b981; animation: flash-green 0.6s ease-out; }
-        .price-down { color: #ef4444; animation: flash-red 0.6s ease-out; }
-
-        @keyframes flash-green { 0% { background-color: rgba(16, 185, 129, 0.15); } 100% { background-color: transparent; } }
-        @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.15); } 100% { background-color: transparent; } }
-        
-        .crypto-icon {
-            font-size: 1.5rem;
-            opacity: 0.8;
-        }
-    </style>
-</head>
-<body class="flex items-center justify-center p-6">
-
-    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- BTC 卡片 -->
-        <div id="btcusdt" class="glass-card rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Bitcoin</h3>
-                    <span class="text-xl font-black">BTC / USDT</span>
+            <!-- 整合：实时行情监控 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- BTC 卡片 -->
+                <div id="btcusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#F7931A]">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Bitcoin</h3>
+                            <span class="text-xl font-black">BTC / USDT</span>
+                        </div>
+                        <i class="fa-brands fa-bitcoin text-[#F7931A] crypto-icon"></i>
+                    </div>
+                    <div id="btc-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
+                    <div class="flex items-center gap-2">
+                        <span id="btc-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
+                        <span class="text-gray-500 text-xs uppercase">24h Change</span>
+                    </div>
                 </div>
-                <i class="fa-brands fa-bitcoin text-[#F7931A] crypto-icon"></i>
-            </div>
-            <div id="btc-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
-            <div class="flex items-center gap-2">
-                <span id="btc-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
-                <span class="text-gray-500 text-xs uppercase">24h Vol</span>
-            </div>
-        </div>
 
-        <!-- ETH 卡片 -->
-        <div id="ethusdt" class="glass-card rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Ethereum</h3>
-                    <span class="text-xl font-black">ETH / USDT</span>
+                <!-- ETH 卡片 -->
+                <div id="ethusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#627EEA]">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Ethereum</h3>
+                            <span class="text-xl font-black">ETH / USDT</span>
+                        </div>
+                        <i class="fa-brands fa-ethereum text-[#627EEA] crypto-icon"></i>
+                    </div>
+                    <div id="eth-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
+                    <div class="flex items-center gap-2">
+                        <span id="eth-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
+                        <span class="text-gray-500 text-xs uppercase">24h Change</span>
+                    </div>
                 </div>
-                <i class="fa-brands fa-ethereum text-[#627EEA] crypto-icon"></i>
-            </div>
-            <div id="eth-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
-            <div class="flex items-center gap-2">
-                <span id="eth-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
-                <span class="text-gray-500 text-xs uppercase">24h Vol</span>
-            </div>
-        </div>
 
-        <!-- DOGE 卡片 -->
-        <div id="dogeusdt" class="glass-card rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Dogecoin</h3>
-                    <span class="text-xl font-black">DOGE / USDT</span>
+                <!-- DOGE 卡片 -->
+                <div id="dogeusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#C2A633]">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Dogecoin</h3>
+                            <span class="text-xl font-black">DOGE / USDT</span>
+                        </div>
+                        <i class="fa-solid fa-paw text-[#C2A633] crypto-icon"></i>
+                    </div>
+                    <div id="doge-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
+                    <div class="flex items-center gap-2">
+                        <span id="doge-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
+                        <span class="text-gray-500 text-xs uppercase">24h Change</span>
+                    </div>
                 </div>
-                <i class="fa-solid fa-paw text-[#C2A633] crypto-icon"></i>
             </div>
-            <div id="doge-price" class="text-3xl font-black tracking-tighter mb-2">0.00</div>
-            <div class="flex items-center gap-2">
-                <span id="doge-change" class="text-sm font-bold px-2 py-1 rounded bg-white/5">--%</span>
-                <span class="text-gray-500 text-xs uppercase">24h Vol</span>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        const symbols = ['btcusdt', 'ethusdt', 'dogeusdt'];
-        const streamUrl = `wss://stream.binance.com:9443/stream?streams=${symbols.map(s => s + '@ticker').join('/')}`;
-        const ws = new WebSocket(streamUrl);
-        const lastPrices = {};
-
-        ws.onmessage = (event) => {
-            const { data } = JSON.parse(event.data);
-            const symbol = data.s.toLowerCase();
-            const price = parseFloat(data.c).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === 'dogeusdt' ? 4 : 2,
-                maximumFractionDigits: symbol === 'dogeusdt' ? 4 : 2
-            });
-            const rawPrice = parseFloat(data.c);
-            const changePercent = data.P;
-            
-            updateUI(symbol, price, rawPrice, changePercent);
-        };
-
-        function updateUI(symbol, displayPrice, rawPrice, change) {
-            const coinPrefix = symbol.replace('usdt', '');
-            const priceEl = document.getElementById(`${coinPrefix}-price`);
-            const changeEl = document.getElementById(`${coinPrefix}-change`);
-
-            // 价格闪烁效果
-            if (lastPrices[symbol]) {
-                priceEl.classList.remove('price-up', 'price-down');
-                void priceEl.offsetWidth; // 触发回流重启动画
-                if (rawPrice > lastPrices[symbol]) {
-                    priceEl.classList.add('price-up');
-                } else if (rawPrice < lastPrices[symbol]) {
-                    priceEl.classList.add('price-down');
-                }
-            }
-            
-            priceEl.innerText = displayPrice;
-            lastPrices[symbol] = rawPrice;
-
-            // 涨跌幅样式
-            const isPositive = parseFloat(change) >= 0;
-            changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
-            changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
-        }
-
-
-    </script>
-</body>
-</html>
             <!-- 顶层：目标进度与设置 + 专业指标 -->
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-5 p-8 rounded-3xl component-bg border border-cyan-500/20 relative overflow-hidden shadow-2xl">
@@ -441,6 +359,54 @@
             </form>
         </div>
     </div>
+
+    <!-- 实时行情 Websocket 脚本 -->
+    <script>
+        const symbols = ['btcusdt', 'ethusdt', 'dogeusdt'];
+        const streamUrl = `wss://stream.binance.com:9443/stream?streams=${symbols.map(s => s + '@ticker').join('/')}`;
+        const ws = new WebSocket(streamUrl);
+        const lastPrices = {};
+
+        ws.onmessage = (event) => {
+            const { data } = JSON.parse(event.data);
+            const symbol = data.s.toLowerCase();
+            const price = parseFloat(data.c).toLocaleString(undefined, {
+                minimumFractionDigits: symbol === 'dogeusdt' ? 4 : 2,
+                maximumFractionDigits: symbol === 'dogeusdt' ? 4 : 2
+            });
+            const rawPrice = parseFloat(data.c);
+            const changePercent = data.P;
+            
+            updatePriceUI(symbol, price, rawPrice, changePercent);
+        };
+
+        function updatePriceUI(symbol, displayPrice, rawPrice, change) {
+            const coinPrefix = symbol.replace('usdt', '');
+            const priceEl = document.getElementById(`${coinPrefix}-price`);
+            const changeEl = document.getElementById(`${coinPrefix}-change`);
+
+            if (!priceEl) return;
+
+            // 价格闪烁效果
+            if (lastPrices[symbol]) {
+                priceEl.classList.remove('price-up', 'price-down');
+                void priceEl.offsetWidth; // 触发回流重启动画
+                if (rawPrice > lastPrices[symbol]) {
+                    priceEl.classList.add('price-up');
+                } else if (rawPrice < lastPrices[symbol]) {
+                    priceEl.classList.add('price-down');
+                }
+            }
+            
+            priceEl.innerText = displayPrice;
+            lastPrices[symbol] = rawPrice;
+
+            // 涨跌幅样式
+            const isPositive = parseFloat(change) >= 0;
+            changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
+            changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
+        }
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -773,6 +739,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
