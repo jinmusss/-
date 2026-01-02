@@ -40,24 +40,24 @@
         /* 日历强化 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .calendar-day { aspect-ratio: 1/1.1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 11px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
-        .calendar-day:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+        .calendar-day:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px rgba(217, 70, 239, 0.3); }
         .day-profit { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #10b981; }
         .day-loss { background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #f43f5e; }
         .day-empty { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #64748b; }
         
         /* 指标卡片 */
         .metric-card { transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); border-top: 2px solid transparent; }
-        .metric-card:hover { border-top-color: #00d4ff; background: rgba(22, 22, 50, 0.9); transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .metric-card:hover { border-top-color: #d946ef; background: rgba(22, 22, 50, 0.9); transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
 
-        .cyber-button { background-image: linear-gradient(135deg, #00d4ff,#8338ec); color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(131,56,236,0.3); }
-        .cyber-button:hover { box-shadow: 0 0 25px rgba(0,212,255,0.6); transform: scale(1.02); letter-spacing: 1px; }
+        .cyber-button { background-image: linear-gradient(135deg, #c026d3, #7c3aed); color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+        .cyber-button:hover { box-shadow: 0 0 25px rgba(217, 70, 239, 0.6); transform: scale(1.02); letter-spacing: 1px; }
 
         /* 强化日志行动画 */
         .trade-row { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
-        .trade-row:hover { background-color: rgba(26, 26, 53, 0.8); transform: translateX(12px) scale(1.005); box-shadow: -10px 0 20px -10px #00d4ff; }
+        .trade-row:hover { background-color: rgba(26, 26, 53, 0.8); transform: translateX(12px) scale(1.005); box-shadow: -10px 0 20px -10px #d946ef; }
         
         .action-icon { transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.03); }
-        .action-icon:hover { transform: scale(1.3) rotate(8deg); background: rgba(0,212,255,0.2); color: #00d4ff; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
+        .action-icon:hover { transform: scale(1.3) rotate(8deg); background: rgba(217, 70, 239, 0.2); color: #d946ef; box-shadow: 0 0 15px rgba(217, 70, 239, 0.4); }
 
         /* 弹窗弹出动画 */
         @keyframes modalIn {
@@ -79,21 +79,21 @@
         .crypto-icon { font-size: 1.5rem; opacity: 0.8; }
     </style>
 </head>
-<body class="selection:bg-cyan-600 selection:text-black">
+<body class="selection:bg-purple-600 selection:text-black">
 
     <!-- Auth View -->
     <div id="auth-view" class="min-h-screen flex items-center justify-center p-4 hidden-view">
-        <div class="w-full max-w-md p-10 rounded-3xl component-bg shadow-2xl border-t-8 border-cyan-500">
+        <div class="w-full max-w-md p-10 rounded-3xl component-bg shadow-2xl border-t-8 border-purple-500">
             <div class="text-center mb-10">
-                <i class="fas fa-bolt text-6xl text-cyan-400 mb-6 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]"></i>
-                <h1 class="text-3xl font-black tracking-tighter text-white">JINMU <span class="text-cyan-400">TRADE</span></h1>
+                <i class="fas fa-bolt text-6xl text-purple-400 mb-6 drop-shadow-[0_0_15px_rgba(192,132,252,0.5)]"></i>
+                <h1 class="text-3xl font-black tracking-tighter text-white">JINMU <span class="text-purple-400">TRADE</span></h1>
                 <p class="text-gray-400 text-sm mt-3 font-bold uppercase tracking-widest">Quantum Performance System</p>
             </div>
             <form id="auth-form" class="space-y-6">
                 <input type="email" id="auth-email" required class="w-full p-5 rounded-2xl input-dark" placeholder="邮箱账号">
                 <input type="password" id="auth-password" required class="w-full p-5 rounded-2xl input-dark" placeholder="密码">
                 <button type="submit" class="cyber-button w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg">进入</button>
-                <button type="button" id="btn-register" class="w-full text-gray-500 text-xs hover:text-cyan-400 transition-colors">注册</button>
+                <button type="button" id="btn-register" class="w-full text-gray-500 text-xs hover:text-purple-400 transition-colors">注册</button>
             </form>
         </div>
     </div>
@@ -102,11 +102,11 @@
     <div id="main-view" class="hidden-view p-4 md:p-8 max-w-[1700px] mx-auto w-full">
         <header class="mb-8 flex justify-between items-center bg-[#111122]/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl">
             <div class="flex items-center space-x-5">
-                <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center border border-cyan-500/30 animate-pulse">
-                    <i class="fas fa-layer-group text-2xl text-cyan-400"></i>
+                <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center border border-purple-500/30 animate-pulse">
+                    <i class="fas fa-layer-group text-2xl text-purple-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-wider text-white leading-none">JINMU <span class="text-cyan-400">TRADE</span></h1>
+                    <h1 class="text-2xl font-black tracking-wider text-white leading-none">JINMU <span class="text-purple-400">TRADE</span></h1>
                     <p class="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mt-2">Professional Quantitative Hub</p>
                 </div>
             </div>
@@ -178,19 +178,19 @@
 
             <!-- 顶层：目标进度与设置 + 专业指标 -->
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                <div class="xl:col-span-5 p-8 rounded-3xl component-bg border border-cyan-500/20 relative overflow-hidden shadow-2xl">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-cyan-500/5 blur-3xl rounded-full"></div>
+                <div class="xl:col-span-5 p-8 rounded-3xl component-bg border border-purple-500/20 relative overflow-hidden shadow-2xl">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full"></div>
                     <div class="flex items-center justify-between mb-8">
-                        <span class="text-xs text-cyan-400 font-black uppercase tracking-[0.25em]">Account Growth Tracker</span>
+                        <span class="text-xs text-purple-400 font-black uppercase tracking-[0.25em]">Account Growth Tracker</span>
                         <i class="fas fa-radar text-gray-700"></i>
                     </div>
                     
                     <div class="flex flex-col md:flex-row items-center gap-10">
                         <div class="relative flex items-center justify-center shrink-0 group">
-                            <div class="absolute inset-0 bg-cyan-500/10 blur-2xl rounded-full scale-0 group-hover:scale-110 transition-transform duration-700"></div>
+                            <div class="absolute inset-0 bg-purple-500/10 blur-2xl rounded-full scale-0 group-hover:scale-110 transition-transform duration-700"></div>
                             <svg class="progress-ring relative" width="140" height="140">
                                 <circle class="text-white/5" stroke-width="10" stroke="currentColor" fill="transparent" r="62" cx="70" cy="70"/>
-                                <circle id="goal-progress-bar" class="text-cyan-400 progress-ring__circle" stroke-width="10" stroke-dasharray="389.5" stroke-dashoffset="389.5" stroke-linecap="round" stroke="currentColor" fill="transparent" r="62" cx="70" cy="70"/>
+                                <circle id="goal-progress-bar" class="text-purple-400 progress-ring__circle" stroke-width="10" stroke-dasharray="389.5" stroke-dashoffset="389.5" stroke-linecap="round" stroke="currentColor" fill="transparent" r="62" cx="70" cy="70"/>
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
                                 <span id="goal-percent" class="text-3xl font-black text-white tracking-tighter">0%</span>
@@ -201,15 +201,15 @@
                             <div class="grid grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">初始资金 (Base)</label>
-                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-cyan-500/50 transition-all">
-                                        <span class="text-cyan-500 font-black mr-2">$</span>
+                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-purple-500/50 transition-all">
+                                        <span class="text-purple-500 font-black mr-2">$</span>
                                         <input type="number" id="initial-capital" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" value="10000">
                                     </div>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">目标资金 (Target)</label>
-                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-cyan-500/50 transition-all">
-                                        <span class="text-cyan-500 font-black mr-2">$</span>
+                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-purple-500/50 transition-all">
+                                        <span class="text-purple-500 font-black mr-2">$</span>
                                         <input type="number" id="target-capital" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" value="20000">
                                     </div>
                                 </div>
@@ -229,13 +229,13 @@
                 <div class="lg:col-span-4 xl:col-span-3 p-8 rounded-3xl component-bg border border-white/10 shadow-xl">
                     <div class="flex flex-col space-y-6 mb-6">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-cyan-400"></i>交易日历</h3>
-                            <button id="btn-current-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-cyan-500 hover:text-black font-black transition-all">当前月</button>
+                            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-purple-400"></i>交易日历</h3>
+                            <button id="btn-current-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-purple-500 hover:text-black font-black transition-all">当前月</button>
                         </div>
                         <div class="flex space-x-3">
-                            <input type="month" id="calendar-month-select" class="flex-grow bg-[#05050a] border border-[#2d2d4c] text-cyan-400 text-xs px-4 py-3 rounded-xl outline-none font-black">
-                            <button onclick="window.changeMonth(-1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-cyan-400 transition-colors"><i class="fas fa-chevron-left"></i></button>
-                            <button onclick="window.changeMonth(1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-cyan-400 transition-colors"><i class="fas fa-chevron-right"></i></button>
+                            <input type="month" id="calendar-month-select" class="flex-grow bg-[#05050a] border border-[#2d2d4c] text-purple-400 text-xs px-4 py-3 rounded-xl outline-none font-black">
+                            <button onclick="window.changeMonth(-1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-purple-400 transition-colors"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="window.changeMonth(1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-purple-400 transition-colors"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-600 mb-3 text-center uppercase font-black tracking-widest">
@@ -259,12 +259,12 @@
                 </div>
 
                 <div class="lg:col-span-8 xl:col-span-9 p-8 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[100px] pointer-events-none"></div>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] pointer-events-none"></div>
                     <div class="flex justify-between items-center mb-8">
-                        <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-cyan-500"></i>Equity Curve Analytics</h3>
+                        <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-purple-500"></i>Equity Curve Analytics</h3>
                         <div class="flex bg-black/40 rounded-lg p-1 border border-white/5">
                             <button id="chart-mode-view" class="px-3 py-1 text-[10px] font-black rounded-md text-gray-400 hover:text-white transition-all">VIEW</button>
-                            <button id="chart-mode-all" class="px-3 py-1 text-[10px] font-black rounded-md bg-cyan-500 text-black shadow-lg shadow-cyan-500/20">ALL</button>
+                            <button id="chart-mode-all" class="px-3 py-1 text-[10px] font-black rounded-md bg-purple-500 text-black shadow-lg shadow-purple-500/20">ALL</button>
                         </div>
                     </div>
                     <div class="h-[380px] w-full"><canvas id="equity-chart"></canvas></div>
@@ -275,15 +275,15 @@
             <div class="p-8 rounded-3xl component-bg border border-white/10 shadow-2xl">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
                     <div class="flex items-center space-x-6">
-                        <h3 class="text-2xl font-black text-white uppercase tracking-tighter">交易日志 <span id="log-count" class="ml-3 px-3 py-1 bg-cyan-500 text-black text-[11px] rounded-lg font-black">0</span></h3>
-                        <button onclick="window.openModal()" class="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-3 rounded-2xl text-sm font-black transition-all shadow-xl shadow-cyan-500/30 active:scale-95">
+                        <h3 class="text-2xl font-black text-white uppercase tracking-tighter">交易日志 <span id="log-count" class="ml-3 px-3 py-1 bg-purple-500 text-black text-[11px] rounded-lg font-black">0</span></h3>
+                        <button onclick="window.openModal()" class="bg-purple-500 hover:bg-purple-400 text-black px-8 py-3 rounded-2xl text-sm font-black transition-all shadow-xl shadow-purple-500/30 active:scale-95">
                             <i class="fas fa-plus-circle mr-2"></i> 录入新成交
                         </button>
                     </div>
                     <div class="flex space-x-3 w-full md:w-auto">
                         <div class="relative flex-grow md:flex-initial">
                             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-600"></i>
-                            <input type="text" id="search-input" placeholder="筛选代码 (BTC/ETH)..." class="bg-[#05050a]/60 border border-[#2d2d4c] pl-11 pr-4 py-3 rounded-xl text-xs text-white focus:border-cyan-500 outline-none w-full md:w-56 font-bold transition-all">
+                            <input type="text" id="search-input" placeholder="筛选代码 (BTC/ETH)..." class="bg-[#05050a]/60 border border-[#2d2d4c] pl-11 pr-4 py-3 rounded-xl text-xs text-white focus:border-purple-500 outline-none w-full md:w-56 font-bold transition-all">
                         </div>
                         <select id="filter-status" class="bg-[#05050a]/60 border border-[#2d2d4c] text-white text-xs px-4 py-3 rounded-xl outline-none font-bold">
                             <option value="all">所有状态</option>
@@ -317,11 +317,11 @@
 
     <!-- Trade Modal -->
     <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center p-4 z-50 bg-black/95 backdrop-blur-md">
-        <div class="bg-[#111122] border border-[#2d2d4c] p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_0_100px_-20px_rgba(0,212,255,0.3)] modal-animate">
+        <div class="bg-[#111122] border border-[#2d2d4c] p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_0_100px_-20px_rgba(217,70,239,0.3)] modal-animate">
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h3 class="text-2xl font-black text-white uppercase tracking-tighter">录入成交数据</h3>
-                    <p class="text-[10px] text-cyan-500 font-black uppercase mt-1 tracking-widest">Transaction Entry Protocol</p>
+                    <p class="text-[10px] text-purple-500 font-black uppercase mt-1 tracking-widest">Transaction Entry Protocol</p>
                 </div>
                 <button onclick="window.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
             </div>
@@ -330,11 +330,11 @@
                 
                 <div class="col-span-1">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">交易品种</label>
-                    <input id="trade-pair" type="text" placeholder="e.g. BTC/USDT" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
+                    <input id="trade-pair" type="text" placeholder="e.g. BTC/USDT" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
                 </div>
                 <div class="col-span-1">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">盈亏金额 ($)</label>
-                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
+                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
                 </div>
                 <div class="col-span-1">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">交易方向</label>
@@ -345,18 +345,18 @@
                 </div>
                 <div class="col-span-1">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">R 风险值</label>
-                    <input id="trade-r" type="number" step="0.1" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
+                    <input id="trade-r" type="number" step="0.1" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
                 </div>
                 <div class="col-span-2">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">TradingView 图表链接 (可选)</label>
                     <div class="relative">
-                        <i class="fas fa-link absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500/50"></i>
-                        <input id="trade-tv-link" type="url" placeholder="https://www.tradingview.com/x/..." class="w-full pl-12 pr-4 p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
+                        <i class="fas fa-link absolute left-4 top-1/2 -translate-y-1/2 text-purple-500/50"></i>
+                        <input id="trade-tv-link" type="url" placeholder="https://www.tradingview.com/x/..." class="w-full pl-12 pr-4 p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
                     </div>
                 </div>
                 <div class="col-span-2">
                     <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">成交时间戳</label>
-                    <input id="trade-date" type="datetime-local" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-cyan-500 transition-all font-bold">
+                    <input id="trade-date" type="datetime-local" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
                 </div>
                 
                 <button type="submit" class="col-span-2 cyber-button py-5 rounded-2xl font-black uppercase text-base mt-4">确认</button>
@@ -540,7 +540,7 @@ function updateMetricCards(all) {
     
     const metrics = [
         { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
-        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-cyan-400' },
+        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-purple-400' },
         { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
         { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
         { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
@@ -613,7 +613,7 @@ function renderTradeList(filteredData) {
             </td>
             <td class="px-6 py-6 text-right">
                 <div class="flex items-center justify-end space-x-3">
-                    <a href="${tvLink}" target="_blank" class="action-icon text-cyan-400 flex items-center justify-center" title="TradingView 图表">
+                    <a href="${tvLink}" target="_blank" class="action-icon text-purple-400 flex items-center justify-center" title="TradingView 图表">
                         <i class="fas fa-chart-line"></i>
                     </a>
                     <button onclick="window.editTrade('${t.id}')" class="action-icon text-gray-400 hover:text-white flex items-center justify-center">
@@ -664,11 +664,11 @@ function updateChart(all, viewData) {
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: { datasets: [{ 
-            data: pts, borderColor: '#00d4ff', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#00d4ff', fill: true,
+            data: pts, borderColor: '#d946ef', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#d946ef', fill: true,
             backgroundColor: (c) => { 
                 const g = c.chart.ctx.createLinearGradient(0, 0, 0, 400); 
-                g.addColorStop(0, 'rgba(0, 212, 255, 0.2)'); 
-                g.addColorStop(1, 'rgba(0, 212, 255, 0)'); 
+                g.addColorStop(0, 'rgba(217, 70, 239, 0.2)'); 
+                g.addColorStop(1, 'rgba(217, 70, 239, 0)'); 
                 return g; 
             },
             tension: 0.15 
@@ -717,7 +717,7 @@ document.getElementById('chart-mode-all').onclick = () => {
 function updateChartModeUI() {
     const btnView = document.getElementById('chart-mode-view');
     const btnAll = document.getElementById('chart-mode-all');
-    const activeClass = 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20';
+    const activeClass = 'bg-purple-500 text-black shadow-lg shadow-purple-500/20';
     const inactiveClass = 'text-gray-400 hover:text-white bg-transparent shadow-none';
     const baseClass = 'px-3 py-1 text-[10px] font-black rounded-md transition-all';
     
@@ -783,6 +783,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
