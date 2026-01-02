@@ -615,6 +615,18 @@ function updateMetricCards(all) {
             && d.getMonth() === now.getMonth();
     });
 
+    document.getElementById('roi-summary').innerHTML = roiSummaryHTML;
+
+    const roiSummaryHTML =
+    '<div class="component-bg border border-white/5 rounded-2xl p-6 mb-6">' +
+        '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-4">ROI Performance</p>' +
+
+        roiRow('Today', todayROI) +
+        roiRow('7D', roi7d) +
+        roiRow('Month', roiMonth) +
+        roiRow('Total', totalROI) +
+    '</div>';
+
     
 
     // 年化收益率（安全版）
@@ -628,18 +640,6 @@ function updateMetricCards(all) {
 
     const wr = all.length ? (winCount / all.length * 100) : 0;
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
-
-    document.getElementById('roi-summary').innerHTML = roiSummaryHTML;
-
-    const roiSummaryHTML =
-    '<div class="component-bg border border-white/5 rounded-2xl p-6 mb-6">' +
-        '<p class="text-[11px] uppercase text-gray-500 font-black tracking-widest mb-4">ROI Performance</p>' +
-
-        roiRow('Today', todayROI) +
-        roiRow('7D', roi7d) +
-        roiRow('Month', roiMonth) +
-        roiRow('Total', totalROI) +
-    '</div>';
 
     const metrics = [
         { label: '账户总资产', val: '$' + currentEquity.toFixed(2), sub: 'Current Balance', cls: 'text-white' },
@@ -865,6 +865,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
 
 
 
