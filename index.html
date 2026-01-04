@@ -83,6 +83,14 @@
         @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.15); } 100% { background-color: transparent; } }
         
         .crypto-icon { font-size: 1.5rem; opacity: 0.8; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px) scale(0.98); filter: blur(10px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .calendar-tooltip { position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%) translateY(10px) scale(0.9); opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 50; background: rgba(10, 10, 20, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); padding: 10px 14px; border-radius: 12px; width: max-content; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8); text-align: left; min-width: 120px; }
+        .calendar-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(10, 10, 20, 0.95) transparent transparent transparent; }
+        .calendar-day:hover .calendar-tooltip { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); visibility: visible; }
+        .tooltip-row { display: flex; justify-content: space-between; gap: 12px; font-size: 10px; margin-bottom: 2px; }
+        .tooltip-label { color: #9ca3af; font-weight: 700; text-transform: uppercase; }
+        .tooltip-value { font-weight: 900; color: #fff; font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
 <body class="selection:bg-purple-600 selection:text-black">
@@ -237,6 +245,41 @@
                             <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">Risk Amount (风险金额)</label>
                             <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-blue-500/50 transition-all">
                                 <span class="text-blue-500 font-black mr-2">$</span>
+                                <input type="number" id="calc-risk-amount-top" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" placeholder="100">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">Stop Loss % (止损幅度)</label>
+                            <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-blue-500/50 transition-all">
+                                <i class="fas fa-percent text-blue-500 text-xs mr-3"></i>
+                                <input type="number" id="calc-risk-percent-top" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" placeholder="1.0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5">
+                            <div class="flex justify-between items-end">
+                                <span class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Position Size</span>
+                                <span id="calc-result-top" class="text-2xl font-black text-white tracking-tight">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-5 grid grid-cols-2 gap-5" id="metrics-grid"></div>
+            </div>
+
+            <!-- 中间：日历与曲线 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-4 xl:col-span-3 p-8 rounded-3xl component-bg border border-blue-500/20 shadow-2xl flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full"></div>
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-xs text-blue-400 font-black uppercase tracking-[0.25em]">Position Size Calc</span>
+                        <i class="fas fa-calculator text-gray-700"></i>
+                    </div>
+                    <div class="space-y-5">
+                        <div class="space-y-2">
+                            <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">Risk Amount (风险金额)</label>
+                            <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-blue-500/50 transition-all">
+                                <span class="text-blue-500 font-black mr-2">$</span>
                                 <input type="number" id="calc-risk-amount" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" placeholder="100">
                             </div>
                         </div>
@@ -255,12 +298,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="xl:col-span-5 grid grid-cols-2 gap-5" id="metrics-grid"></div>
-            </div>
-
-            <!-- 中间：日历与曲线 -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-4 xl:col-span-3 p-8 rounded-3xl component-bg border border-white/10 shadow-xl">
                     <div class="flex flex-col space-y-6 mb-6">
                         <div class="flex justify-between items-center">
@@ -293,7 +330,7 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-8 xl:col-span-9 p-8 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
+                <div class="lg:col-span-8 xl:col-span-6 p-8 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] pointer-events-none"></div>
                     <div class="flex justify-between items-center mb-8">
                         <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-purple-500"></i>Equity Curve Analytics</h3>
@@ -479,7 +516,9 @@ initAuth();
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-view').classList.add('hidden-view');
-        document.getElementById('main-view').classList.remove('hidden-view');
+        const mv = document.getElementById('main-view');
+        mv.classList.remove('hidden-view');
+        mv.classList.add('animate-fade-in-up');
         document.getElementById('user-display-name').textContent = (user.email ? user.email.split('@')[0] : 'USER').toUpperCase();
         
         // 1. 获取独立配置
@@ -599,23 +638,43 @@ function renderCalendar(data) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
     const dailyPnL = {};
+    const dailyCount = {};
     data.forEach(t => {
         const d = new Date(t.date);
         if (d.getFullYear() === year && d.getMonth() === month) {
             const day = d.getDate();
             dailyPnL[day] = (dailyPnL[day] || 0) + t.profit;
+            dailyCount[day] = (dailyCount[day] || 0) + 1;
         }
     });
+    const monthStart = new Date(year, month, 1);
+    let baseEquity = config.initialCapital;
+    data.forEach(t => { if (new Date(t.date) < monthStart) baseEquity += t.profit; });
     let html = '';
     for (let i = 0; i < startOffset; i++) html += '<div class="calendar-day opacity-0 pointer-events-none"></div>';
+    let running = 0;
     for (let d = 1; d <= daysInMonth; d++) {
         const pnl = dailyPnL[d];
-        let cls = 'day-empty', pnlLabel = '';
-        if (pnl !== undefined) { 
-            cls = pnl >= 0 ? 'day-profit' : 'day-loss'; 
-            pnlLabel = `<span class="font-black mt-1">${pnl >= 0 ? '+' : ''}${Math.round(pnl)}</span>`; 
+        const cnt = dailyCount[d] || 0;
+        const dayStart = baseEquity + running;
+        if (pnl !== undefined) running += pnl;
+        let cls = 'day-empty', content = `<span class="opacity-50 font-bold group-hover:opacity-100">${d}</span>`;
+        if (pnl !== undefined) {
+            const roi = dayStart > 0 ? (pnl / dayStart) * 100 : 0;
+            const sign = pnl >= 0 ? '+' : '';
+            content = `
+                <span class="opacity-50 font-bold group-hover:opacity-100">${d}</span>
+                <span class="font-black mt-1 font-mono text-[9px]">${sign}${Math.round(pnl)}</span>
+                <div class="calendar-tooltip">
+                    <div class="tooltip-row"><span class="tooltip-label">Date</span><span class="tooltip-value text-gray-300">${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">PnL</span><span class="tooltip-value" style="color:${roi>=0?'#10b981':'#f43f5e'}">${sign}$${pnl.toFixed(2)}</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">Daily ROI</span><span class="tooltip-value" style="color:${roi>=0?'#10b981':'#f43f5e'}">${roi>0?'+':''}${roi.toFixed(2)}%</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">Trades</span><span class="tooltip-value text-white">${cnt}</span></div>
+                    <div class="tooltip-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;"><span class="tooltip-label">Balance</span><span class="tooltip-value text-purple-300">$${(dayStart+pnl).toLocaleString()}</span></div>
+                </div>`;
+            cls = pnl >= 0 ? 'day-profit' : 'day-loss';
         }
-        html += `<div class="calendar-day ${cls} cursor-pointer group"><span class="opacity-50 font-bold group-hover:opacity-100">${d}</span>${pnlLabel}</div>`;
+        html += `<div class="calendar-day ${cls} cursor-pointer group relative">${content}</div>`;
     }
     document.getElementById('calendar-heatmap').innerHTML = html;
 }
@@ -680,10 +739,20 @@ function updateChart(all, viewData) {
     baseEquity = initial + preMonthProfit;
 
     const pts = [];
+    const rois = [];
     if (viewData.length > 0) {
         pts.push({ x: new Date(viewData[0].date), y: baseEquity });
+        rois.push(0);
         let running = baseEquity;
-        viewData.forEach(t => { running += t.profit; currentViewPnL += t.profit; pts.push({ x: new Date(t.date), y: running }); });
+        viewData.forEach(t => { 
+            const prev = running;
+            running += t.profit; 
+            currentViewPnL += t.profit; 
+            pts.push({ x: new Date(t.date), y: running }); 
+            const diff = running - prev;
+            const r = prev > 0 ? (diff / prev) * 100 : 0;
+            rois.push(r);
+        });
     }
     document.getElementById('view-pnl').textContent = `${currentViewPnL >= 0 ? '+' : ''}$${currentViewPnL.toFixed(2)}`;
     document.getElementById('view-pnl').className = `text-2xl font-black font-mono mt-1 ${currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -699,7 +768,7 @@ function updateChart(all, viewData) {
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: { datasets: [{ 
-            data: pts, borderColor: '#d946ef', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#d946ef', fill: true,
+            data: pts, borderColor: '#d946ef', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#d946ef', fill: true, dailyROI: rois,
             backgroundColor: (c) => { 
                 const g = c.chart.ctx.createLinearGradient(0, 0, 0, 400); 
                 g.addColorStop(0, 'rgba(217, 70, 239, 0.2)'); 
@@ -710,7 +779,23 @@ function updateChart(all, viewData) {
         }] },
         options: { 
             responsive: true, maintainAspectRatio: false, 
-            plugins: { legend: { display: false }, tooltip: { padding: 12, backgroundColor: '#111122', titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 14, weight: 'black' } } },
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    padding: 12, backgroundColor: '#111122', titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 14, weight: 'black' },
+                    callbacks: {
+                        label: (ctx) => {
+                            const i = ctx.dataIndex;
+                            const ds = ctx.dataset;
+                            const roi = ds.dailyROI && ds.dailyROI[i] ? ds.dailyROI[i] : 0;
+                            const prevY = i>0 ? ctx.chart.data.datasets[0].data[i-1].y : ds.data[i].y;
+                            const diff = ds.data[i].y - prevY;
+                            const sign = diff >= 0 ? '+' : '';
+                            return `PnL ${sign}$${diff.toFixed(2)} | ROI ${roi>0?'+':''}${roi.toFixed(2)}%`;
+                        }
+                    }
+                } 
+            },
             scales: { 
                 x: { type: 'time', grid: { display: false }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } }, 
                 y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } } 
@@ -815,9 +900,23 @@ document.getElementById('btn-register').onclick = async () => {
     } catch (err) { alert("注册失败: " + err.message); }
 };
 document.getElementById('btn-logout').onclick = () => signOut(auth);
+const calcRiskAmount = document.getElementById('calc-risk-amount');
+const calcRiskPercent = document.getElementById('calc-risk-percent');
+const calcResult = document.getElementById('calc-result');
+function updatePositionSize() {
+    const risk = parseFloat(calcRiskAmount?.value) || 0;
+    const percent = parseFloat(calcRiskPercent?.value) || 0;
+    const size = risk > 0 && percent > 0 ? (risk / (percent / 100)) : 0;
+    calcResult.textContent = '$' + size.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+if (calcRiskAmount && calcRiskPercent) {
+    calcRiskAmount.oninput = updatePositionSize;
+    calcRiskPercent.oninput = updatePositionSize;
+}
     </script>
 </body>
 </html>
+
 
 
 
