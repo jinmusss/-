@@ -84,9 +84,18 @@
         @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.15); } 100% { background-color: transparent; } }
         
         .crypto-icon { font-size: 1.5rem; opacity: 0.8; }
+
+        .video-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+        .video-bg video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.35); }
     </style>
 </head>
 <body class="selection:bg-purple-600 selection:text-black">
+
+    <div class="video-bg">
+        <video autoplay muted loop playsinline>
+            <source src="-/bg.mp4" type="video/mp4">
+        </video>
+    </div>
 
     <!-- Auth View -->
     <div id="auth-view" class="min-h-screen relative overflow-hidden flex items-center justify-center p-8 hidden-view">
@@ -841,6 +850,7 @@ if (calcRiskAmount && calcRiskPercent) {
     </script>
 </body>
 </html>
+
 
 
 
