@@ -51,9 +51,9 @@
         .progress-ring__circle { transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 50% 50%; }
 
         /* 日历强化 */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .calendar-day { aspect-ratio: 1/1.1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 11px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
-        .calendar-day:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px rgba(217, 70, 239, 0.3); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 11px; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .calendar-day:hover { transform: scale(1.06); z-index: 10; box-shadow: 0 0 12px rgba(217, 70, 239, 0.25); }
         .day-profit { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #10b981; }
         .day-loss { background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #f43f5e; }
         .day-empty { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #64748b; }
@@ -127,7 +127,7 @@
 
     <!-- Main View -->
     <div id="main-view" class="hidden-view p-4 md:p-8 max-w-[1700px] mx-auto w-full">
-        <header class="mb-8 flex justify-between items-center bg-[#111122]/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl">
+        <header class="mb-6 flex justify-between items-center bg-[#111122]/80 backdrop-blur-md p-4 rounded-3xl border border-white/10 shadow-xl">
             <div class="flex items-center space-x-5">
                 <div class="w-14 h-14 bg-purple-500/10 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                     <i class="fas fa-chart-line text-2xl text-purple-400"></i>
@@ -152,9 +152,9 @@
 
         <main class="space-y-8">
             <!-- 整合：实时行情监控 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- BTC 卡片 -->
-                <div id="btcusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#F7931A]">
+                <div id="btcusdt" class="component-bg rounded-2xl p-4 shadow-2xl transition-all duration-300 hover:scale-[1.01] border-t-2 border-transparent hover:border-t-[#F7931A]">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Bitcoin</h3>
@@ -170,7 +170,7 @@
                 </div>
 
                 <!-- ETH 卡片 -->
-                <div id="ethusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#627EEA]">
+                <div id="ethusdt" class="component-bg rounded-2xl p-4 shadow-2xl transition-all duration-300 hover:scale-[1.01] border-t-2 border-transparent hover:border-t-[#627EEA]">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Ethereum</h3>
@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- DOGE 卡片 -->
-                <div id="dogeusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#C2A633]">
+                <div id="dogeusdt" class="component-bg rounded-2xl p-4 shadow-2xl transition-all duration-300 hover:scale-[1.01] border-t-2 border-transparent hover:border-t-[#C2A633]">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest">Dogecoin</h3>
@@ -203,10 +203,9 @@
             </div>
 
             <!-- 顶层：目标进度与设置 + 专业指标 -->
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <div class="xl:col-span-5 p-8 rounded-3xl component-bg border border-purple-500/20 relative overflow-hidden shadow-2xl">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full"></div>
-                    <div class="flex items-center justify-between mb-6">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+                <div class="xl:col-span-5 p-5 rounded-3xl component-bg border border-purple-500/20 relative overflow-hidden shadow-2xl">
+                    <div class="flex items-center justify-between mb-4">
                         <span class="text-xs text-purple-400 font-black uppercase tracking-[0.25em]">Account Growth Tracker</span>
                         <i class="fas fa-radar text-gray-700"></i>
                     </div>
@@ -245,12 +244,12 @@
                     </div>
                 </div>
 
-                <div class="xl:col-span-7 grid grid-cols-2 gap-4" id="metrics-grid"></div>
+                <div class="xl:col-span-7 grid grid-cols-2 gap-3" id="metrics-grid"></div>
             </div>
 
             <!-- 中间：日历与曲线 -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-3 xl:col-span-3 p-5 rounded-3xl component-bg border border-blue-500/20 shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-3 xl:col-span-3 p-4 rounded-3xl component-bg border border-blue-500/20 shadow-2xl">
                     <div class="flex items-center justify-between mb-4">
                         <span class="text-xs text-blue-400 font-black uppercase tracking-[0.25em]">Position Size Calc</span>
                         <i class="fas fa-calculator text-gray-700"></i>
@@ -277,7 +276,7 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-5 xl:col-span-5 p-5 rounded-3xl component-bg border border-white/10 shadow-xl">
+                <div class="lg:col-span-5 xl:col-span-5 p-4 rounded-3xl component-bg border border-white/10 shadow-xl">
                     <div class="flex flex-col space-y-6 mb-4">
                         <div class="flex justify-between items-center">
                             <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-purple-400"></i>交易日历</h3>
@@ -293,7 +292,7 @@
                         <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
                     </div>
                     <div id="calendar-heatmap" class="calendar-grid"></div>
-                    <div class="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
+                    <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
                         <div>
                             <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">视图盈亏</p>
                             <p id="view-pnl" class="text-xl font-black font-mono">+$0.00</p>
@@ -309,8 +308,7 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-4 xl:col-span-4 p-5 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] pointer-events-none"></div>
+                <div class="lg:col-span-4 xl:col-span-4 p-4 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-purple-500"></i>Equity Curve Analytics</h3>
                         <div class="flex bg-black/40 rounded-lg p-1 border border-white/5">
@@ -323,7 +321,7 @@
             </div>
 
             <!-- 底层：交易日志 -->
-            <div class="p-8 rounded-3xl component-bg border border-white/10 shadow-2xl">
+            <div class="p-6 rounded-3xl component-bg border border-white/10 shadow-2xl">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
                     <div class="flex items-center space-x-6">
                         <h3 class="text-2xl font-black text-white uppercase tracking-tighter">交易日志 <span id="log-count" class="ml-3 px-3 py-1 bg-purple-500 text-black text-[11px] rounded-lg font-black">0</span></h3>
