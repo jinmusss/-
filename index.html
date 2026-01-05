@@ -11,24 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
-    <div class="video-bg">
-        <video autoplay muted loop playsinline>
-            <source src="-/bg.mp4" type="video/mp4">
-        </video>
-    </div>
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-image: url("images/bj.jpg");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-color: #000;
-            color: #fff;
-            min-height: 100vh;
-        }
 
         /* 磨砂玻璃效果增强 */
         .component-bg { 
@@ -97,7 +80,11 @@
 </head>
 <body class="selection:bg-purple-600 selection:text-black">
 
-
+    <div class="video-bg">
+        <video autoplay muted loop playsinline>
+            <source src="-/bg.mp4" type="video/mp4">
+        </video>
+    </div>
 
     <!-- Auth View -->
     <div id="auth-view" class="min-h-screen relative overflow-hidden flex items-center justify-center p-8 hidden-view">
