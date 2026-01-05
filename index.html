@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Great+Vibes&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -97,6 +97,70 @@
         @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.15); } 100% { background-color: transparent; } }
         
         .crypto-icon { font-size: 1.5rem; opacity: 0.8; }
+        
+        /* New Script Font & Glow Styles */
+        .font-script { font-family: 'Great Vibes', cursive; }
+        
+        .glow-flow-text {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(192, 38, 211, 0.5), 0 0 20px rgba(192, 38, 211, 0.3);
+            animation: glow-breathe 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow-breathe {
+            from {
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(192, 38, 211, 0.5), 0 0 20px rgba(168, 85, 247, 0.3);
+            }
+            to {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(232, 121, 249, 0.8), 0 0 30px rgba(192, 38, 211, 0.6), 0 0 40px rgba(168, 85, 247, 0.5);
+            }
+        }
+        
+        /* Rotating Border Glow for Login Box */
+        .login-box-glow {
+            position: relative;
+            z-index: 0;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            padding: 3px !important; /* Make space for the border */
+            background: transparent !important;
+            box-shadow: 0 0 40px rgba(192, 38, 211, 0.2);
+        }
+        
+        .login-box-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, #a855f7, #d946ef, #fff, #d946ef, #a855f7, transparent 40%);
+            animation: rotate-border 3s linear infinite;
+            z-index: -2;
+        }
+        
+        .login-box-glow::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: rgba(17, 17, 34, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: calc(1.5rem - 3px);
+            z-index: -1;
+        }
+        
+        .login-box-content {
+            position: relative;
+            z-index: 1;
+            padding: 2.5rem; /* p-10 equivalent */
+            height: 100%;
+            border-radius: 1.5rem;
+        }
+        
+        @keyframes rotate-border {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="selection:bg-purple-600 selection:text-black">
@@ -108,13 +172,13 @@
     <div id="auth-view" class="min-h-screen relative overflow-hidden flex items-center justify-center p-8 hidden-view">
         <div class="absolute -top-24 -left-24 w-80 h-80 bg-purple-500/10 blur-[100px] animate__animated animate__pulse animate__infinite"></div>
         <div class="absolute -bottom-24 -right-10 w-96 h-96 bg-indigo-500/10 blur-[120px] animate__animated animate__pulse animate__slower animate__infinite"></div>
-        <div class="relative w-full max-w-md p-10 rounded-3xl component-bg shadow-2xl border-t-8 border-purple-500 ring-1 ring-purple-500/30 transition-all hover:shadow-purple-500/30 animate__animated animate__fadeInUp">
-            <div class="text-center mb-10 animate__animated animate__fadeInDown animate__fast">
-                <i class="fas fa-bolt text-6xl text-purple-400 mb-6 drop-shadow-[0_0_18px_rgba(192,132,252,0.6)]"></i>
-                <h1 class="text-3xl font-black tracking-tighter bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">JINMU <span class="text-white">TRADE</span></h1>
-                <p class="text-gray-400 text-xs mt-3 font-black uppercase tracking-[0.35em]">Quantum Performance System</p>
-            </div>
-            <form id="auth-form" class="space-y-6 animate__animated animate__fadeInUp animate__delay-1s">
+        <div class="relative w-full max-w-md login-box-glow animate__animated animate__fadeInUp">
+            <div class="login-box-content">
+                <div class="text-center mb-10 animate__animated animate__fadeInDown animate__fast">
+                    <i class="fas fa-chart-line text-6xl text-purple-400 mb-6 drop-shadow-[0_0_18px_rgba(192,132,252,0.6)]"></i>
+                    <h1 class="text-5xl font-script glow-flow-text tracking-wider">Jinmu Trade</h1>
+                </div>
+                <form id="auth-form" class="space-y-6 animate__animated animate__fadeInUp animate__delay-1s">
                 <div class="relative">
                     <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
                     <input type="email" id="auth-email" required class="w-full pl-10 p-5 rounded-2xl input-dark" placeholder="邮箱账号">
@@ -126,6 +190,7 @@
                 <button type="submit" class="cyber-button w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:shadow-purple-500/50">进入</button>
                 <button type="button" id="btn-register" class="w-full text-gray-400 text-xs hover:text-purple-400 transition-colors">注册</button>
             </form>
+            </div>
         </div>
     </div>
 
@@ -134,10 +199,10 @@
         <header class="mb-8 flex justify-between items-center bg-[#111122]/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl">
             <div class="flex items-center space-x-5">
                 <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center border border-purple-500/30 animate-pulse">
-                    <i class="fas fa-layer-group text-2xl text-purple-400"></i>
+                    <i class="fas fa-chart-line text-2xl text-purple-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-wider text-white leading-none">JINMU <span class="text-purple-400">TRADE</span></h1>
+                    <h1 class="text-3xl font-script glow-flow-text tracking-wide leading-none pt-1">Jinmu Trade</h1>
                     <p class="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mt-2">Professional Quantitative Hub</p>
                 </div>
             </div>
@@ -355,12 +420,12 @@
                     <table class="min-w-full">
                         <thead>
                             <tr class="text-left text-[11px] uppercase text-gray-500 font-black tracking-[0.2em] border-b border-white/5">
-                                <th class="px-6 py-6">Timestamp / 成交时间</th>
-                                <th class="px-6 py-6">Asset / 品种</th>
-                                <th class="px-6 py-6 text-right">PnL / 获利($)</th>
-                                <th class="px-6 py-6 text-right">Risk / R值</th>
-                                <th class="px-6 py-6 text-center">Bias / 方向</th>
-                                <th class="px-6 py-6 text-right">Actions / 操作</th>
+                                <th class="px-6 py-6">日期 (Date)</th>
+                                <th class="px-6 py-6">交易对 (Symbol)</th>
+                                <th class="px-6 py-6 text-right">盈亏 (PnL)</th>
+                                <th class="px-6 py-6 text-right">风险回报 (R)</th>
+                                <th class="px-6 py-6 text-center">方向 (Side)</th>
+                                <th class="px-6 py-6 text-right">操作 (Action)</th>
                             </tr>
                         </thead>
                         <tbody id="trade-list" class="divide-y divide-white/5 text-sm"></tbody>
@@ -598,14 +663,14 @@ function updateMetricCards(all) {
     const roi = initial > 0 ? ((currentEquity - initial) / initial) * 100 : 0;
     
     const metrics = [
-        { label: '账户总资产', val: `$${currentEquity.toFixed(2)}`, sub: 'Current Balance', cls: 'text-white' },
-        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}W / ${lossCount}L`, cls: 'text-purple-400' },
-        { label: '盈亏系数 PF', val: pf.toFixed(2), sub: 'Profit Factor', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
-        { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: 'Max Drawdown', cls: 'text-rose-400' },
-        { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: 'Avg Risk Multiplier', cls: 'text-indigo-400' },
-        { label: '总收益率 ROI', val: `${roi > 0 ? '+' : ''}${roi.toFixed(2)}%`, sub: 'Total Return', cls: roi >= 0 ? 'text-emerald-500' : 'text-rose-500' },
-        { label: '核心净利润', val: `$${(currentEquity - initial).toFixed(2)}`, sub: 'Absolute Profit', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
-        { label: '总交易数', val: all.length, sub: 'Log Samples', cls: 'text-gray-400' }
+        { label: '账户总资产', val: `${currentEquity.toFixed(2)}`, sub: '当前余额 (Balance)', cls: 'text-white' },
+        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}胜 / ${lossCount}负`, cls: 'text-purple-400' },
+        { label: '盈亏系数 PF', val: pf.toFixed(2), sub: '盈亏比 (Factor)', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
+        { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: '最大回撤 (Drawdown)', cls: 'text-rose-400' },
+        { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: '平均R值 (Avg R)', cls: 'text-indigo-400' },
+        { label: '总收益率 ROI', val: `${roi > 0 ? '+' : ''}${roi.toFixed(2)}%`, sub: '总回报率 (Return)', cls: roi >= 0 ? 'text-emerald-500' : 'text-rose-500' },
+        { label: '核心净利润', val: `${(currentEquity - initial).toFixed(2)}`, sub: '净利润 (Net Profit)', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
+        { label: '总交易数', val: all.length, sub: '总笔数 (Count)', cls: 'text-gray-400' }
     ];
     document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
         <div class="metric-card p-6 rounded-2xl component-bg border border-white/5">
