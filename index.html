@@ -9,8 +9,79 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Great+Vibes&display=swap');
+        
+        /* Flatpickr Customization */
+        .flatpickr-calendar {
+            background: rgba(17, 17, 34, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5) !important;
+            font-family: 'Inter', sans-serif !important;
+            border-radius: 1rem !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            background: transparent !important;
+            color: #fff !important;
+            fill: #fff !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: transparent !important;
+            color: #fff !important;
+            font-weight: 700 !important;
+        }
+        .flatpickr-current-month input.cur-year {
+            color: #fff !important;
+            font-weight: 700 !important;
+        }
+        .flatpickr-day {
+            color: #9ca3af !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+        }
+        .flatpickr-day:hover {
+            background: rgba(255,255,255,0.05) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+            background: #d946ef !important;
+            border-color: #d946ef !important;
+            color: #000 !important;
+            font-weight: 900 !important;
+            box-shadow: 0 0 15px rgba(217, 70, 239, 0.4) !important;
+        }
+        .flatpickr-day.today {
+            border-color: #d946ef !important;
+            color: #d946ef !important;
+        }
+        .flatpickr-day.today:hover {
+            background: #d946ef !important;
+            color: #000 !important;
+        }
+        .flatpickr-time {
+            border-top: 1px solid rgba(255,255,255,0.08) !important;
+        }
+        .flatpickr-time .flatpickr-time-separator, .flatpickr-time .flatpickr-am-pm {
+            color: #fff !important;
+        }
+        .flatpickr-time input {
+            color: #fff !important;
+        }
+        span.flatpickr-weekday {
+            background: transparent !important;
+            color: #64748b !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+        }
+
         
         body {
             font-family: 'Inter', sans-serif;
@@ -37,12 +108,75 @@
             object-fit: cover;
         }
 
+        #video-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(5, 5, 10, 0.75);
+        z-index: -99;
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+    }
+
         /* 磨砂玻璃效果增强 */
         .component-bg { 
-            background-color: rgba(17, 17, 34, 0.85); 
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(45, 45, 76, 0.5); 
+            background-color: rgba(20, 20, 35, 0.7); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
+
+        /* Custom Scrollbar for Dropdowns */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+
+        /* Fixed Footer Style */
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(17, 17, 34, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 1.5rem;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Nav & Tab Styles */
+        .nav-link {
+            position: relative;
+            color: #9ca3af;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+        }
+        .nav-link:hover, .nav-link.active { color: #fff; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; width: 100%; height: 2px;
+            background: #d946ef;
+            box-shadow: 0 0 10px #d946ef;
+        }
+
+        .view-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Table Optimization */
+        th, td { vertical-align: middle; white-space: nowrap; }
 
         .input-dark { background-color: rgba(5, 5, 10, 0.8) !important; border: 1px solid #3d3d5c !important; color: white !important; font-size: 14px !important; }
         .hidden-view { display: none !important; }
@@ -167,18 +301,21 @@
     <video autoplay muted loop playsinline id="bg-video">
         <source src="bg.mp4" type="video/mp4">
     </video>
+    <div id="video-overlay"></div>
 
     <!-- Auth View -->
     <div id="auth-view" class="min-h-screen relative overflow-hidden flex items-center justify-center p-8 hidden-view">
-        <div class="absolute -top-24 -left-24 w-80 h-80 bg-purple-500/10 blur-[100px] animate__animated animate__pulse animate__infinite"></div>
-        <div class="absolute -bottom-24 -right-10 w-96 h-96 bg-indigo-500/10 blur-[120px] animate__animated animate__pulse animate__slower animate__infinite"></div>
+        <div class="absolute -top-24 -left-24 w-80 h-80 bg-purple-500/5 blur-[100px]"></div>
+        <div class="absolute -bottom-24 -right-10 w-96 h-96 bg-indigo-500/5 blur-[120px]"></div>
         <div class="relative w-full max-w-md login-box-glow animate__animated animate__fadeInUp">
             <div class="login-box-content">
-                <div class="text-center mb-10 animate__animated animate__fadeInDown animate__fast">
-                    <i class="fas fa-chart-line text-6xl text-purple-400 mb-6 drop-shadow-[0_0_18px_rgba(192,132,252,0.6)]"></i>
+<div class="text-center mb-10">
                     <h1 class="text-5xl font-script glow-flow-text tracking-wider">Jinmu Trade</h1>
+                    <p class="mt-4 text-[10px] font-black tracking-[0.6em] text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 uppercase animate-pulse drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]">
+                        Jinmu Always Win
+                    </p>
                 </div>
-                <form id="auth-form" class="space-y-6 animate__animated animate__fadeInUp animate__delay-1s">
+                <form id="auth-form" class="space-y-6">
                 <div class="relative">
                     <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
                     <input type="email" id="auth-email" required class="w-full pl-10 p-5 rounded-2xl input-dark" placeholder="邮箱账号">
@@ -195,34 +332,91 @@
     </div>
 
     <!-- Main View -->
-    <div id="main-view" class="hidden-view p-4 md:p-8 max-w-[1700px] mx-auto w-full">
-        <header class="mb-8 flex justify-between items-center bg-[#111122]/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl">
-            <div class="flex items-center space-x-5">
-                <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center border border-purple-500/30 animate-pulse">
-                    <i class="fas fa-chart-line text-2xl text-purple-400"></i>
+    <div id="main-view" class="hidden-view p-4 md:p-6 max-w-[1800px] mx-auto w-full flex flex-col h-screen overflow-hidden">
+        <!-- Top Navigation -->
+        <header class="flex-none mb-4 flex justify-between items-center bg-[#111122]/90 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/5 shadow-lg z-50">
+            <div class="flex items-center space-x-8">
+                <div class="flex items-center space-x-4">
+
+                    <div>
+                        <h1 class="text-2xl font-script glow-flow-text tracking-wide leading-none pt-1">Jinmu Trade</h1>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-script glow-flow-text tracking-wide leading-none pt-1">Jinmu Trade</h1>
-                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mt-2">Professional Quantitative Hub</p>
-                </div>
+                
+                <nav class="hidden md:flex items-center space-x-6 ml-8">
+                    <a onclick="switchView('dashboard')" id="nav-dashboard" class="nav-link active">Dashboard</a>
+                    <a onclick="switchView('trades')" id="nav-trades" class="nav-link">Trades</a>
+                    <a onclick="switchView('analytics')" id="nav-analytics" class="nav-link">Analytics</a>
+                    <a onclick="switchView('settings')" id="nav-settings" class="nav-link">Settings</a>
+                </nav>
             </div>
+
             <div class="flex items-center space-x-6">
                 <div class="flex flex-col items-end">
-                    <span id="user-display-name" class="text-sm font-black text-white tracking-tight">OPERATOR</span>
-                    <span class="flex items-center text-[10px] text-emerald-500 uppercase font-black tracking-tighter">
-                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-ping"></span> online
+                    <span id="user-display-name" class="text-xs font-bold text-gray-300 tracking-wide">OPERATOR</span>
+                    <span class="flex items-center text-[10px] text-emerald-500 uppercase font-bold tracking-wider">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Online
                     </span>
                 </div>
-                <div class="h-10 w-[1px] bg-white/10"></div>
-                <button id="btn-logout" class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 flex items-center justify-center group">
-                    <i class="fas fa-power-off group-hover:rotate-90 transition-transform"></i>
+                <div class="h-8 w-[1px] bg-white/10"></div>
+                <button id="btn-logout" class="text-gray-400 hover:text-rose-500 transition-colors">
+                    <i class="fas fa-power-off text-lg"></i>
                 </button>
             </div>
         </header>
 
-        <main class="space-y-8">
-            <!-- 整合：实时行情监控 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Secondary Toolbar -->
+        <div class="flex-none mb-6 flex flex-wrap gap-4 items-center justify-between px-2 overflow-visible">
+            <div class="flex items-center space-x-2 bg-black/30 p-1.5 rounded-xl border border-white/5 backdrop-blur-sm relative z-[60]">
+                
+                <!-- Year Picker -->
+                <div class="relative inline-block text-left" id="year-picker-container">
+                    <button id="year-picker-btn" onclick="toggleYearPicker()" class="flex items-center px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-xs font-bold text-white outline-none">
+                        <i class="fas fa-calendar text-purple-400 mr-2 text-sm"></i>
+                        <span id="year-picker-label">YYYY</span>
+                        <i class="fas fa-chevron-down ml-2 text-[10px] text-gray-500"></i>
+                    </button>
+                    <input type="hidden" id="global-year">
+                    <div id="year-picker-dropdown" class="hidden absolute left-0 top-full mt-2 w-24 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
+                </div>
+
+                <div class="h-4 w-[1px] bg-white/10"></div>
+
+                <!-- Month Picker -->
+                <div class="relative inline-block text-left" id="month-picker-container">
+                    <button id="month-picker-btn" onclick="toggleMonthPicker()" class="flex items-center px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-xs font-bold text-white outline-none">
+                        <span id="month-picker-label">MM月</span>
+                        <i class="fas fa-chevron-down ml-2 text-[10px] text-gray-500"></i>
+                    </button>
+                    <input type="hidden" id="global-month">
+                    <div id="month-picker-dropdown" class="hidden absolute left-0 top-full mt-2 w-24 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
+                </div>
+
+                <div class="h-4 w-[1px] bg-white/10"></div>
+
+
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="window.openModal()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-purple-600/20 flex items-center">
+                    <i class="fas fa-plus mr-2"></i> 记一笔
+                </button>
+                <button onclick="window.triggerImport()" class="bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 px-4 py-2 rounded-lg text-xs font-bold border border-white/10 transition-all">
+                    <i class="fas fa-file-import mr-2"></i> 导入
+                </button>
+                <button onclick="window.exportToCSV()" class="bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 px-4 py-2 rounded-lg text-xs font-bold border border-white/10 transition-all">
+                    <i class="fas fa-file-export mr-2"></i> 导出
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <main class="flex-grow overflow-y-auto pr-2 space-y-8 scroll-smooth" id="content-container">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section active space-y-6">
+                <!-- 整合：实时行情监控 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- BTC 卡片 -->
                 <div id="btcusdt" class="component-bg rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:scale-[1.02] border-t-2 border-transparent hover:border-t-[#F7931A]">
                     <div class="flex justify-between items-center mb-6">
@@ -395,52 +589,59 @@
                 </div>
             </div>
 
-            <!-- 底层：交易日志 -->
-            <div class="p-8 rounded-3xl component-bg border border-white/10 shadow-2xl">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                    <div class="flex items-center space-x-6">
-                        <h3 class="text-2xl font-black text-white uppercase tracking-tighter">交易日志 <span id="log-count" class="ml-3 px-3 py-1 bg-purple-500 text-black text-[11px] rounded-lg font-black">0</span></h3>
-                        <button onclick="window.openModal()" class="bg-purple-500 hover:bg-purple-400 text-black px-8 py-3 rounded-2xl text-sm font-black transition-all shadow-xl shadow-purple-500/30 active:scale-95">
-                            <i class="fas fa-plus-circle mr-2"></i> 录入新成交
-                        </button>
-                    </div>
-                    <div class="flex space-x-3 w-full md:w-auto">
-                        <div class="relative flex-grow md:flex-initial">
-                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-600"></i>
-                            <input type="text" id="search-input" placeholder="筛选代码 (BTC/ETH)..." class="bg-[#05050a]/60 border border-[#2d2d4c] pl-11 pr-4 py-3 rounded-xl text-xs text-white focus:border-purple-500 outline-none w-full md:w-56 font-bold transition-all">
+            </div> <!-- End Dashboard View -->
+
+            <!-- VIEW: TRADES (Table) -->
+            <div id="view-trades" class="view-section space-y-6">
+                <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-list-ul mr-3 text-purple-400"></i> Trade Journal</h3>
+                        <div class="flex space-x-2">
+                             <input type="text" id="table-search" placeholder="Search..." class="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:border-purple-500 outline-none">
                         </div>
-                        <select id="filter-status" class="bg-[#05050a]/60 border border-[#2d2d4c] text-white text-xs px-4 py-3 rounded-xl outline-none font-bold">
-                            <option value="all">所有状态</option>
-                            <option value="win">盈利单</option>
-                            <option value="loss">亏损单</option>
-                        </select>
                     </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full">
-                        <thead>
-                            <tr class="text-left text-[11px] uppercase text-gray-500 font-black tracking-[0.2em] border-b border-white/5">
-                                <th class="px-6 py-6">日期 (Date)</th>
-                                <th class="px-6 py-6">交易对 (Symbol)</th>
-                                <th class="px-6 py-6 text-right">盈亏 (PnL)</th>
-                                <th class="px-6 py-6 text-right">风险回报 (R)</th>
-                                <th class="px-6 py-6 text-center">方向 (Side)</th>
-                                <th class="px-6 py-6 text-right">操作 (Action)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="trade-list" class="divide-y divide-white/5 text-sm"></tbody>
-                    </table>
-                    <div id="empty-state" class="hidden py-24 text-center text-gray-700">
-                        <i class="fas fa-terminal text-4xl mb-4 block animate-pulse"></i>
-                        <p class="text-xs font-black uppercase tracking-[0.3em]">No Data Packets Found in Current Scope</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="text-left text-[10px] uppercase text-gray-500 font-bold tracking-wider border-b border-white/5">
+                                    <th class="px-4 py-4 cursor-pointer hover:text-white">Date / 时间</th>
+                                    <th class="px-4 py-4 cursor-pointer hover:text-white">Symbol / 交易对</th>
+                                    <th class="px-4 py-4 text-center cursor-pointer hover:text-white">Side / 方向</th>
+                                    <th class="px-4 py-4 text-right cursor-pointer hover:text-white">PnL / 盈亏 ($)</th>
+                                    <th class="px-4 py-4 text-right">Action / 操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trade-list" class="divide-y divide-white/5 text-xs font-medium text-gray-300"></tbody>
+                        </table>
+                        <div id="empty-state" class="hidden py-20 text-center text-gray-600">
+                            <i class="fas fa-inbox text-4xl mb-3"></i>
+                            <p class="text-xs">No records found matching filters.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- VIEW: ANALYTICS -->
+            <div id="view-analytics" class="view-section">
+                <div class="p-10 rounded-3xl component-bg border border-white/5 flex flex-col items-center justify-center text-gray-500 min-h-[400px]">
+                    <i class="fas fa-chart-pie text-5xl mb-4 text-gray-700"></i>
+                    <p class="text-sm uppercase tracking-widest font-bold">Analytics Module Coming Soon</p>
+                </div>
+            </div>
+
+            <!-- VIEW: SETTINGS -->
+            <div id="view-settings" class="view-section">
+                <div class="p-10 rounded-3xl component-bg border border-white/5 min-h-[400px]">
+                    <h3 class="text-lg font-bold text-white mb-6">Settings</h3>
+                    <p class="text-gray-500 text-sm">User preferences and account configuration.</p>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <!-- Trade Modal -->
-    <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center p-4 z-50 bg-black/95 backdrop-blur-md">
+    <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center p-4 z-[200] bg-black/95 backdrop-blur-md">
         <div class="bg-[#111122] border border-[#2d2d4c] p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_0_100px_-20px_rgba(217,70,239,0.3)] modal-animate">
             <div class="flex justify-between items-center mb-8">
                 <div>
@@ -449,44 +650,59 @@
                 </div>
                 <button onclick="window.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <form id="trade-form" class="grid grid-cols-2 gap-6">
+            <form id="trade-form" class="grid grid-cols-2 gap-5">
                 <input type="hidden" id="edit-id">
                 
-                <div class="col-span-1">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">交易品种</label>
-                    <input id="trade-pair" type="text" placeholder="e.g. BTC/USDT" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
-                </div>
-                <div class="col-span-1">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">盈亏金额 ($)</label>
-                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
-                </div>
-                <div class="col-span-1">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">交易方向</label>
-                    <select id="trade-direction" class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none font-black appearance-none">
-                        <option value="Long">LONG / 做多</option>
-                        <option value="Short">SHORT / 做空</option>
-                    </select>
-                </div>
-                <div class="col-span-1">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">R 风险值</label>
-                    <input id="trade-r" type="number" step="0.1" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
-                </div>
-                <div class="col-span-2">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">TradingView 图表链接 (可选)</label>
-                    <div class="relative">
-                        <i class="fas fa-link absolute left-4 top-1/2 -translate-y-1/2 text-purple-500/50"></i>
-                        <input id="trade-tv-link" type="url" placeholder="https://www.tradingview.com/x/..." class="w-full pl-12 pr-4 p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
-                    </div>
-                </div>
-                <div class="col-span-2">
-                    <label class="text-[12px] text-white uppercase font-black tracking-widest mb-2 block">成交时间戳</label>
-                    <input id="trade-date" type="datetime-local" required class="w-full p-4 bg-[#05050a] text-white rounded-2xl border border-[#3d3d5c] outline-none focus:border-purple-500 transition-all font-bold">
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Symbol / 交易对</label>
+                    <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono">
                 </div>
                 
-                <button type="submit" class="col-span-2 cyber-button py-5 rounded-2xl font-black uppercase text-base mt-4">确认</button>
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Date / 时间</label>
+                    <input id="trade-date" type="text" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono cursor-pointer" placeholder="选择时间...">
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Side / 方向</label>
+                    <select id="trade-direction" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none">
+                        <option value="Long">Long (做多)</option>
+                        <option value="Short">Short (做空)</option>
+                    </select>
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">PnL / 盈亏 ($)</label>
+                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono">
+                </div>
+
+                <div class="col-span-2 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Chart Link / 图表链接</label>
+                    <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none">
+                </div>
+                
+                <div class="col-span-2 pt-4">
+                    <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-purple-500/30">保存</button>
+                </div>
             </form>
         </div>
     </div>
+
+    <!-- Fixed Footer -->
+    <footer class="fixed-footer">
+        <div class="flex items-center space-x-6">
+            <span class="flex items-center"><i class="fas fa-circle text-[8px] text-emerald-500 mr-2 animate-pulse"></i> 系统在线</span>
+            <span class="flex items-center"><i class="fas fa-database text-[10px] text-purple-500 mr-2"></i> 云端同步中</span>
+            <span id="last-sync-time" class="text-gray-500">上次同步: --:--:--</span>
+        </div>
+        <div class="flex items-center space-x-6">
+            <span>Jinmu Trade OS v2.1</span>
+            <span class="text-purple-500">PRO ULTIMATE</span>
+        </div>
+    </footer>
+
+    <!-- Hidden File Input for Import -->
+    <input type="file" id="import-file" accept=".csv" class="hidden" onchange="processImport(this)">
 
     <!-- 实时行情 Websocket 脚本 -->
     <script>
@@ -567,6 +783,7 @@ initAuth();
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        document.getElementById('video-overlay').style.opacity = '1';
         document.getElementById('auth-view').classList.add('hidden-view');
         document.getElementById('main-view').classList.remove('hidden-view');
         document.getElementById('user-display-name').textContent = (user.email ? user.email.split('@')[0] : 'USER').toUpperCase();
@@ -581,20 +798,45 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         const now = new Date();
-        document.getElementById('calendar-month-select').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        const currentMonthVal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        
+        // Initialize Custom Date Picker
+        initPickers();
 
         // 2. 数据隔离监听
         if (unsubscribeTrades) unsubscribeTrades();
         unsubscribeTrades = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'trades'), (snap) => {
             allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            document.getElementById('last-sync-time').textContent = `上次同步: ${new Date().toLocaleTimeString()}`;
+            populateFilters();
             refreshUI();
         });
     } else {
+        document.getElementById('video-overlay').style.opacity = '0';
         document.getElementById('main-view').classList.add('hidden-view');
         document.getElementById('auth-view').classList.remove('hidden-view');
         if (unsubscribeTrades) unsubscribeTrades();
     }
 });
+
+// View Switching Logic
+window.switchView = (viewId) => {
+    // Update Nav
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById(`nav-${viewId}`)?.classList.add('active');
+    
+    // Update View Sections
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById(`view-${viewId}`)?.classList.add('active');
+    
+    // Refresh UI if needed (e.g. resizing charts)
+    if (viewId === 'dashboard' || viewId === 'analytics') refreshUI();
+};
+
+function populateFilters() {
+    renderYearDropdown();
+    renderMonthDropdown();
+}
 
 const saveConfig = async () => {
     if (!auth.currentUser) return;
@@ -612,19 +854,25 @@ function refreshUI() {
     allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
     const now = new Date();
     let filtered = [];
-    // 默认月度视图
-    const monthVal = document.getElementById('calendar-month-select').value;
-    const [y, m] = monthVal.split('-').map(Number);
+    
+    const y = Number(document.getElementById('global-year').value);
+    const m = Number(document.getElementById('global-month').value);
+    
     filtered = allTrades.filter(t => {
         const d = new Date(t.date);
         return d.getFullYear() === y && (d.getMonth() + 1) === m;
     });
 
     updateGoalProgress(allTrades);
-    updateMetricCards(allTrades);
-    renderCalendar(allTrades);
+    updateMetricCards(allTrades); 
+    
+    // Sync Calendar Widget Month (if it exists)
+    const calSelect = document.getElementById('calendar-month-select');
+    if (calSelect) calSelect.value = `${y}-${String(m).padStart(2,'0')}`;
+
+    renderCalendar(allTrades); // Calendar heatmap usually shows whole month data regardless of other filters? Or filtered? Let's pass allTrades for now to show all activity in that month.
     renderTradeList(filtered);
-    updateChart(allTrades, chartMode === 'all' ? allTrades : filtered);
+    updateChart(allTrades, filtered); // Equity chart needs base equity (allTrades) and view data (filtered)
 }
 
 function updateGoalProgress(all) {
@@ -681,9 +929,10 @@ function updateMetricCards(all) {
 }
 
 function renderCalendar(data) {
-    const monthVal = document.getElementById('calendar-month-select').value;
-    const [year, month0] = monthVal.split('-').map(Number);
-    const month = month0 - 1;
+    const y = Number(document.getElementById('global-year').value);
+    const m = Number(document.getElementById('global-month').value);
+    const year = y || new Date().getFullYear();
+    const month = (m ? Number(m) : (new Date().getMonth() + 1)) - 1;
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
@@ -710,40 +959,44 @@ function renderCalendar(data) {
 }
 
 function renderTradeList(filteredData) {
-    const search = document.getElementById('search-input').value.toUpperCase();
-    const status = document.getElementById('filter-status').value;
+    const search = document.getElementById('table-search')?.value.toUpperCase() || "";
+    // filter-status was removed in HTML, so we ignore it or add it back to toolbar if needed.
+    // The new toolbar has strategy/pair.
+    
     const list = filteredData.filter(t => {
-        const matchSearch = t.pair.includes(search);
-        const matchStatus = status === 'all' || (status === 'win' ? t.profit > 0 : t.profit <= 0);
-        return matchSearch && matchStatus;
+        const matchSearch = (t.pair + t.strategy + t.tags).toUpperCase().includes(search);
+        return matchSearch;
     });
+    
     const body = document.getElementById('trade-list');
     const empty = document.getElementById('empty-state');
-    document.getElementById('log-count').textContent = list.length;
+    // document.getElementById('log-count').textContent = list.length; // Removed in new HTML
+    
     if (list.length === 0) { body.innerHTML = ''; empty.classList.remove('hidden'); return; }
     empty.classList.add('hidden');
+    
     body.innerHTML = list.slice().reverse().map(t => {
         const tvLink = t.tvLink || `https://www.tradingview.com/chart/?symbol=${t.pair.replace('/','')}`;
+        const pnlClass = t.profit >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        const pnlSign = t.profit >= 0 ? '+' : '';
+        
         return `
-        <tr class="trade-row border-b border-white/5">
-            <td class="px-6 py-6 text-gray-400 font-mono text-[11px] font-bold">${new Date(t.date).toLocaleString()}</td>
-            <td class="px-6 py-6 font-black text-white text-lg tracking-tight">${t.pair}</td>
-            <td class="px-6 py-6 text-right font-black text-xl ${t.profit >= 0 ? 'text-[#10b981]' : 'text-[#ff4b5c]'}">${t.profit >= 0 ? '+' : ''}${t.profit.toFixed(2)}</td>
-            <td class="px-6 py-6 text-right text-indigo-400 font-black text-lg">${t.r}R</td>
-            <td class="px-6 py-6 text-center">
-                <span class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+        <tr class="trade-row border-b border-white/5 hover:bg-white/5 transition-colors">
+            <td class="px-4 py-4 text-gray-400 font-mono">${new Date(t.date).toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
+            <td class="px-4 py-4 font-bold text-white tracking-tight">${t.pair}</td>
+            <td class="px-4 py-4 text-center">
+                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
                     ${t.direction}
                 </span>
             </td>
-            <td class="px-6 py-6 text-right">
-                <div class="flex items-center justify-end space-x-3">
-                    <a href="${tvLink}" target="_blank" class="action-icon text-purple-400 flex items-center justify-center" title="TradingView 图表">
-                        <i class="fas fa-chart-line"></i>
-                    </a>
-                    <button onclick="window.editTrade('${t.id}')" class="action-icon text-gray-400 hover:text-white flex items-center justify-center">
+            <td class="px-4 py-4 text-right font-bold text-sm ${pnlClass}">${pnlSign}${t.profit.toFixed(2)}</td>
+            <td class="px-4 py-4 text-right">
+                <div class="flex items-center justify-end space-x-2">
+                    ${t.tvLink ? `<a href="${t.tvLink}" target="_blank" class="text-gray-500 hover:text-purple-400 transition-colors" title="Chart"><i class="fas fa-chart-line"></i></a>` : ''}
+                    <button onclick="window.editTrade('${t.id}')" class="text-gray-500 hover:text-white transition-colors">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="window.deleteTrade('${t.id}')" class="action-icon text-gray-600 hover:text-rose-500 flex items-center justify-center">
+                    <button onclick="window.deleteTrade('${t.id}')" class="text-gray-500 hover:text-rose-500 transition-colors">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -756,32 +1009,58 @@ function updateChart(all, viewData) {
     const initial = config.initialCapital;
     let currentViewPnL = 0, baseEquity = initial;
 
-    // 计算选中月份的起始资金（无论当月是否有交易）
-    const monthVal = document.getElementById('calendar-month-select').value;
-    const [y, m] = monthVal.split('-').map(Number);
+    // 1. Calculate View Stats (Selected Month Data)
+    const y = Number(document.getElementById('global-year').value);
+    const m = Number(document.getElementById('global-month').value);
     const monthStart = new Date(y, m - 1, 1);
     
-    // 计算本月之前的累计盈亏
+    // Calculate PnL for the View (Month)
+    viewData.forEach(t => currentViewPnL += t.profit);
+    
+    // Calculate Equity at the start of the selected month
     let preMonthProfit = 0;
     all.forEach(t => { 
         if (new Date(t.date) < monthStart) preMonthProfit += t.profit; 
     });
     baseEquity = initial + preMonthProfit;
 
-    const pts = [];
-    if (viewData.length > 0) {
-        pts.push({ x: new Date(viewData[0].date), y: baseEquity });
-        let running = baseEquity;
-        viewData.forEach(t => { running += t.profit; currentViewPnL += t.profit; pts.push({ x: new Date(t.date), y: running }); });
-    }
+    // Update Stats DOM (Always reflect the selected Month/View Stats)
     document.getElementById('view-pnl').textContent = `${currentViewPnL >= 0 ? '+' : ''}$${currentViewPnL.toFixed(2)}`;
     document.getElementById('view-pnl').className = `text-2xl font-black font-mono mt-1 ${currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
     document.getElementById('view-count').textContent = viewData.length;
     
-    // 计算并显示本月收益率
     const monthROI = baseEquity > 0 ? (currentViewPnL / baseEquity) * 100 : 0;
     document.getElementById('view-roi').textContent = `${monthROI > 0 ? '+' : ''}${monthROI.toFixed(2)}%`;
     document.getElementById('view-roi').className = `text-2xl font-black font-mono mt-1 ${monthROI >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+    
+    // 2. Generate Chart Data based on chartMode
+    const pts = [];
+    
+    if (chartMode === 'all') {
+        // ALL Mode: From Initial Capital -> Now (All Trades)
+        let running = initial;
+        // Start point: 1 day before first trade or today
+        if (all.length > 0) {
+            pts.push({ x: new Date(new Date(all[0].date).getTime() - 86400000), y: initial });
+        } else {
+            pts.push({ x: new Date(), y: initial });
+        }
+        
+        all.forEach(t => {
+            running += t.profit;
+            pts.push({ x: new Date(t.date), y: running });
+        });
+    } else {
+        // VIEW Mode: Selected Month Equity Curve
+        // Start point: 1st of the month with baseEquity
+        pts.push({ x: monthStart, y: baseEquity });
+        
+        let running = baseEquity;
+        viewData.forEach(t => {
+            running += t.profit;
+            pts.push({ x: new Date(t.date), y: running });
+        });
+    }
     
     const ctx = document.getElementById('equity-chart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
@@ -809,23 +1088,217 @@ function updateChart(all, viewData) {
 }
 
 window.changeMonth = (off) => {
-    const el = document.getElementById('calendar-month-select');
-    const [y, m] = el.value.split('-').map(Number);
+    let y = Number(document.getElementById('global-year').value);
+    let m = Number(document.getElementById('global-month').value);
+    
     const date = new Date(y, m - 1 + off, 1);
-    el.value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
-    viewMode = 'month'; refreshUI();
+    selectYear(date.getFullYear(), false);
+    selectMonth(String(date.getMonth() + 1).padStart(2,'0'), true);
 };
 
 document.getElementById('btn-current-month').onclick = () => {
     const now = new Date();
-    document.getElementById('calendar-month-select').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    viewMode = 'month'; 
-    refreshUI();
+    selectYear(now.getFullYear(), false);
+    selectMonth(String(now.getMonth() + 1).padStart(2,'0'), true);
 };
 
-document.getElementById('calendar-month-select').onchange = () => { viewMode = 'month'; refreshUI(); };
-document.getElementById('search-input').oninput = refreshUI;
-document.getElementById('filter-status').onchange = refreshUI;
+// document.getElementById('global-date-picker').onchange = refreshUI; // Deprecated
+// document.getElementById('global-pair-filter').onchange = refreshUI; // Deprecated
+document.getElementById('table-search')?.addEventListener('input', refreshUI);
+
+// --- Custom Picker Logic (Year / Month / Pair) ---
+
+// Initialize all pickers
+window.initPickers = () => {
+    const now = new Date();
+    const currentY = now.getFullYear();
+    const currentM = String(now.getMonth() + 1).padStart(2, '0');
+
+    // Init Values if empty
+    if(!document.getElementById('global-year').value) selectYear(currentY, false);
+    if(!document.getElementById('global-month').value) selectMonth(currentM, false);
+    
+    // Render Dropdowns
+    renderYearDropdown();
+    renderMonthDropdown();
+    
+    // Close listeners
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('year-picker-container').contains(e.target)) {
+            document.getElementById('year-picker-dropdown').classList.add('hidden');
+        }
+        if (!document.getElementById('month-picker-container').contains(e.target)) {
+            document.getElementById('month-picker-dropdown').classList.add('hidden');
+        }
+    });
+};
+
+// Year Picker
+window.toggleYearPicker = () => document.getElementById('year-picker-dropdown').classList.toggle('hidden');
+window.renderYearDropdown = () => {
+    const currentY = new Date().getFullYear();
+    const startY = currentY - 2;
+    const endY = currentY + 1;
+    const selected = document.getElementById('global-year').value;
+    let html = '';
+    for (let y = endY; y >= startY; y--) {
+        const isSelected = String(y) === String(selected);
+        html += `
+            <div onclick="selectYear('${y}')" 
+                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-purple-500/20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-purple-400' : ''}">
+                <span>${y}</span>
+                ${isSelected ? '<i class="fas fa-check text-purple-500 text-[10px]"></i>' : ''}
+            </div>`;
+    }
+    document.getElementById('year-picker-dropdown').innerHTML = html;
+};
+window.selectYear = (y, refresh = true) => {
+    document.getElementById('global-year').value = y;
+    document.getElementById('year-picker-label').textContent = y;
+    document.getElementById('year-picker-dropdown').classList.add('hidden');
+    renderYearDropdown(); 
+    if(refresh) refreshUI();
+};
+
+// Month Picker
+window.toggleMonthPicker = () => document.getElementById('month-picker-dropdown').classList.toggle('hidden');
+window.renderMonthDropdown = () => {
+    const selected = document.getElementById('global-month').value;
+    let html = '';
+    for (let m = 1; m <= 12; m++) {
+        const val = String(m).padStart(2, '0');
+        const isSelected = val === String(selected);
+        html += `
+            <div onclick="selectMonth('${val}')" 
+                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-purple-500/20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-purple-400' : ''}">
+                <span>${m}月</span>
+                ${isSelected ? '<i class="fas fa-check text-purple-500 text-[10px]"></i>' : ''}
+            </div>`;
+    }
+    document.getElementById('month-picker-dropdown').innerHTML = html;
+};
+window.selectMonth = (m, refresh = true) => {
+    document.getElementById('global-month').value = m;
+    document.getElementById('month-picker-label').textContent = `${Number(m)}月`;
+    document.getElementById('month-picker-dropdown').classList.add('hidden');
+    renderMonthDropdown();
+    if(refresh) refreshUI();
+};
+
+
+// --- Import / Export Logic (Chinese Comments) ---
+
+window.triggerImport = () => {
+    document.getElementById('import-file').click();
+};
+
+window.processImport = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+            if (results.errors.length > 0) {
+                alert("CSV 解析错误: " + results.errors[0].message);
+                return;
+            }
+
+            const rows = results.data;
+            let importedCount = 0;
+            let errorCount = 0;
+
+            // 必填列检查
+            const requiredCols = ['Date', 'Symbol', 'Side', 'PnL']; 
+            
+            const headers = results.meta.fields;
+            const missing = requiredCols.filter(c => !headers.includes(c));
+            if (missing.length > 0) {
+                alert(`CSV 校验失败。缺少列: ${missing.join(', ')}`);
+                return;
+            }
+
+            if (!confirm(`发现 ${rows.length} 条记录。确认导入？`)) return;
+
+            for (const row of rows) {
+                try {
+                    // 数据转换与验证
+                    const trade = {
+                        date: row['Date'] || new Date().toISOString(),
+                        pair: (row['Symbol'] || 'UNKNOWN').toUpperCase(),
+                        direction: ['Long', 'Short'].includes(row['Side']) ? row['Side'] : 'Long',
+                        qty: parseFloat(row['Qty']) || 0,
+                        entry: parseFloat(row['Entry']) || 0,
+                        exit: parseFloat(row['Exit']) || 0,
+                        profit: parseFloat(row['PnL']) || 0,
+                        fee: parseFloat(row['Fee']) || 0,
+                        r: parseFloat(row['R']) || 0,
+                        strategy: row['Strategy'] || '',
+                        tags: row['Tags'] || '',
+                        tvLink: '' // 默认为空
+                    };
+
+                    // 简单逻辑检查
+                    if (isNaN(trade.profit)) throw new Error("无效的盈亏数值");
+
+                    await addDoc(collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades'), trade);
+                    importedCount++;
+                } catch (err) {
+                    console.error("行导入失败:", row, err);
+                    errorCount++;
+                }
+            }
+            
+            alert(`导入完成。\n成功: ${importedCount}\n失败: ${errorCount}`);
+            input.value = ''; // 重置
+        }
+    });
+};
+
+window.exportToCSV = () => {
+    const y = Number(document.getElementById('global-year').value);
+    const m = Number(document.getElementById('global-month').value);
+    const search = document.getElementById('table-search')?.value.toUpperCase() || "";
+
+    const filtered = allTrades.filter(t => {
+        const d = new Date(t.date);
+        const matchDate = d.getFullYear() === y && (d.getMonth() + 1) === m;
+        const matchSearch = (t.pair + t.strategy + (t.tags||"")).toUpperCase().includes(search);
+        return matchDate && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+        alert("当前筛选条件下无数据可导出。");
+        return;
+    }
+
+    const csvData = filtered.map(t => ({
+        Date: t.date,
+        Symbol: t.pair,
+        Side: t.direction,
+        Qty: t.qty,
+        Entry: t.entry,
+        Exit: t.exit,
+        PnL: t.profit,
+        Fee: t.fee,
+        R: t.r,
+        Strategy: t.strategy,
+        Tags: t.tags
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const filename = `jinmu_trades_export_${y}-${String(m).padStart(2,'0')}.csv`;
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 
 document.getElementById('chart-mode-view').onclick = () => { 
     chartMode = 'view'; 
@@ -849,11 +1322,29 @@ function updateChartModeUI() {
     btnAll.className = `${baseClass} ${chartMode === 'all' ? activeClass : inactiveClass}`;
 }
 
+// Flatpickr Instance
+let datePickerInstance = null;
+
 window.openModal = () => {
     document.getElementById('trade-form').reset();
     document.getElementById('edit-id').value = "";
-    document.getElementById('trade-date').value =
-        new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16);
+    
+    // Initialize or Update Flatpickr
+    const now = new Date();
+    if (!datePickerInstance) {
+        datePickerInstance = flatpickr("#trade-date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            defaultDate: now,
+            locale: "zh",
+            theme: "dark",
+            disableMobile: "true"
+        });
+    } else {
+        datePickerInstance.setDate(now);
+    }
+    
     document.getElementById('trade-modal').classList.remove('hidden');
 };
 window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
@@ -861,13 +1352,20 @@ window.closeModal = () => document.getElementById('trade-modal').classList.add('
 document.getElementById('trade-form').onsubmit = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) return;
+    
+    // Construct Date from Flatpickr
+    const rawDate = document.getElementById('trade-date').value;
+    const dateObj = new Date(rawDate);
+    const isoDate = !isNaN(dateObj) ? dateObj.toISOString() : new Date().toISOString();
+
     const trade = { 
         pair: document.getElementById('trade-pair').value.toUpperCase(), 
-        profit: parseFloat(document.getElementById('trade-profit').value), 
-        direction: document.getElementById('trade-direction').value, 
-        r: parseFloat(document.getElementById('trade-r').value), 
+        date: isoDate,
+        direction: document.getElementById('trade-direction').value,
+        profit: parseFloat(document.getElementById('trade-profit').value),
         tvLink: document.getElementById('trade-tv-link').value,
-        date: document.getElementById('trade-date').value 
+        // Defaults for removed fields
+        qty: 0, entry: 0, exit: 0, fee: 0, r: 0, strategy: "", tags: ""
     };
     const eid = document.getElementById('edit-id').value;
     if (eid) await updateDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', eid), trade);
@@ -876,7 +1374,7 @@ document.getElementById('trade-form').onsubmit = async (e) => {
 };
 
 window.deleteTrade = async (id) => { 
-    if(confirm("确定彻底抹除此条记录吗？")) 
+    if(confirm("确定要删除这条记录吗？")) 
         await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id)); 
 };
 
@@ -884,11 +1382,22 @@ window.editTrade = (id) => {
     const t = allTrades.find(x => x.id === id);
     document.getElementById('edit-id').value = t.id;
     document.getElementById('trade-pair').value = t.pair;
-    document.getElementById('trade-profit').value = t.profit;
     document.getElementById('trade-direction').value = t.direction;
-    document.getElementById('trade-r').value = t.r;
+    document.getElementById('trade-profit').value = t.profit;
     document.getElementById('trade-tv-link').value = t.tvLink || "";
-    document.getElementById('trade-date').value = t.date;
+    
+    if (!datePickerInstance) {
+         datePickerInstance = flatpickr("#trade-date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            locale: "zh",
+            theme: "dark",
+            disableMobile: "true"
+        });
+    }
+    datePickerInstance.setDate(new Date(t.date));
+    
     document.getElementById('trade-modal').classList.remove('hidden');
 };
 
@@ -922,6 +1431,7 @@ if (calcRiskAmount && calcRiskPercent) {
     </script>
 </body>
 </html>
+
 
 
 
