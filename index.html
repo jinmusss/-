@@ -347,6 +347,7 @@
                     <a onclick="switchView('dashboard')" id="nav-dashboard" class="nav-link active">Dashboard</a>
                     <a onclick="switchView('trades')" id="nav-trades" class="nav-link">Trades</a>
                     <a onclick="switchView('analytics')" id="nav-analytics" class="nav-link">Analytics</a>
+                    <a onclick="switchView('learn')" id="nav-learn" class="nav-link">Learn</a>
                     <a onclick="switchView('settings')" id="nav-settings" class="nav-link">Settings</a>
                 </nav>
             </div>
@@ -357,6 +358,7 @@
                     <span class="flex items-center text-[10px] text-emerald-500 uppercase font-bold tracking-wider">
                         <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Online
                     </span>
+                    <span id="last-sync-time" class="text-[9px] text-gray-500 font-mono mt-0.5 opacity-60">Waiting...</span>
                 </div>
                 <div class="h-8 w-[1px] bg-white/10"></div>
                 <button id="btn-logout" class="text-gray-400 hover:text-rose-500 transition-colors">
@@ -629,6 +631,18 @@
                 </div>
             </div>
 
+            <!-- VIEW: LEARN -->
+            <div id="view-learn" class="view-section">
+                <div class="p-8 rounded-3xl component-bg border border-white/5 shadow-2xl min-h-[600px]">
+                    <div class="flex justify-between items-center mb-8">
+                         <h3 class="text-lg font-bold text-white flex items-center"><i class="fab fa-youtube mr-3 text-red-500"></i> Learning Center</h3>
+                    </div>
+                    <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- Videos will be injected here -->
+                    </div>
+                </div>
+            </div>
+
             <!-- VIEW: SETTINGS -->
             <div id="view-settings" class="view-section">
                 <div class="p-10 rounded-3xl component-bg border border-white/5 min-h-[400px]">
@@ -688,7 +702,7 @@
         </div>
     </div>
 
-
+    <!-- Video Modals Removed -->
 
     <!-- Hidden File Input for Import -->
     <input type="file" id="import-file" accept=".csv" class="hidden" onchange="processImport(this)">
@@ -739,6 +753,8 @@
             changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
             changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
         }
+
+
     </script>
 
     <script type="module">
@@ -759,6 +775,23 @@ let chartInstance = null;
 let viewMode = 'month';
 let chartMode = 'all';
 let unsubscribeTrades = null;
+
+// --- LEARN MODULE CONFIGURATION ---
+// MODIFY THIS ARRAY TO CHANGE VIDEOS
+const LEARN_VIDEOS = [
+    {
+        title: "TTrades Top-Down Chart Lessons #1",
+        url: "https://www.youtube.com/watch?v=Nlw-PZhoViQ"
+    },
+    {
+        title: "Price Action Trading Strategies",
+        url: "https://www.youtube.com/watch?v=7gZ5Yt0C1xY" 
+    },
+    {
+        title: "Risk Management for Traders",
+        url: "https://www.youtube.com/watch?v=M9m-4zFjP4g"
+    }
+];
 
 // 初始化身份验证（支持环境自动登录）
 const initAuth = async () => {
@@ -796,10 +829,19 @@ onAuthStateChanged(auth, async (user) => {
         if (unsubscribeTrades) unsubscribeTrades();
         unsubscribeTrades = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'trades'), (snap) => {
             allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            document.getElementById('last-sync-time').textContent = `上次同步: ${new Date().toLocaleTimeString()}`;
-            populateFilters();
-            refreshUI();
+            const syncTimeEl = document.getElementById('last-sync-time');
+            if (syncTimeEl) syncTimeEl.textContent = `Synced: ${new Date().toLocaleTimeString()}`;
+            
+            // 延迟刷新以确保 DOM 布局就绪 (解决首次加载图表不显示的问题)
+            setTimeout(() => {
+                populateFilters();
+                refreshUI();
+            }, 50);
         });
+
+        // 3. Videos (Static Render)
+        renderVideos();
+
     } else {
         document.getElementById('video-overlay').style.opacity = '0';
         document.getElementById('main-view').classList.add('hidden-view');
@@ -844,8 +886,17 @@ function refreshUI() {
     const now = new Date();
     let filtered = [];
     
-    const y = Number(document.getElementById('global-year').value);
-    const m = Number(document.getElementById('global-month').value);
+    // Safety check: ensure year/month have defaults if inputs are empty
+    let y = Number(document.getElementById('global-year').value);
+    let m = Number(document.getElementById('global-month').value);
+    
+    if (!y || !m) {
+        y = now.getFullYear();
+        m = now.getMonth() + 1;
+        // Update inputs to reflect defaults
+        if(document.getElementById('global-year')) document.getElementById('global-year').value = y;
+        if(document.getElementById('global-month')) document.getElementById('global-month').value = String(m).padStart(2, '0');
+    }
     
     filtered = allTrades.filter(t => {
         const d = new Date(t.date);
@@ -1417,9 +1468,62 @@ if (calcRiskAmount && calcRiskPercent) {
     calcRiskPercent.oninput = updatePositionSize;
     updatePositionSize();
 }
+
+// --- Video / Learn Module Logic ---
+
+function getYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function renderVideos() {
+    const grid = document.getElementById('video-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    if (LEARN_VIDEOS.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center text-gray-500 py-20">
+                <i class="fab fa-youtube text-4xl mb-3 opacity-50"></i>
+                <p class="text-xs uppercase tracking-widest">No videos configured</p>
+            </div>
+        `;
+        return;
+    }
+
+    LEARN_VIDEOS.forEach(video => {
+        const videoId = getYouTubeId(video.url);
+        if (!videoId) return;
+        
+        const card = document.createElement('div');
+        card.className = 'bg-[#0a0a15] rounded-2xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all group relative hover:-translate-y-1 hover:shadow-2xl';
+        
+        // Changed: Opens in new tab instead of modal
+        card.innerHTML = `
+            <a href="${video.url}" target="_blank" class="block aspect-video relative overflow-hidden cursor-pointer">
+                <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-600/90 flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100 shadow-lg shadow-purple-600/50">
+                        <i class="fas fa-external-link-alt text-white ml-1"></i>
+                    </div>
+                </div>
+            </a>
+            <div class="p-4">
+                <h4 class="text-white font-bold text-sm line-clamp-2 leading-relaxed mb-2">${video.title || 'Untitled Video'}</h4>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                    <span class="text-[10px] text-gray-500 font-mono uppercase">Youtube</span>
+                    <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider">WATCH NOW</span>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
     </script>
 </body>
-</html>
+</html></html>
 
 
 
