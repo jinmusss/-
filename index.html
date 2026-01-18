@@ -333,6 +333,70 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* -----------------------------------
+           New Advanced Text Animations
+           ----------------------------------- */
+        @keyframes shine-flow-horizontal {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        
+        .text-liquid-gold {
+            background: linear-gradient(
+                90deg, 
+                var(--primary) 0%, 
+                #ffffff 25%, 
+                var(--primary) 50%, 
+                #ffffff 75%, 
+                var(--primary) 100%
+            );
+            background-size: 200% auto;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine-flow-horizontal 4s linear infinite;
+            filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.6));
+        }
+
+        .line-scanner {
+            position: relative;
+            overflow: hidden;
+        }
+        .line-scanner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            transform: translateX(-100%);
+            animation: scan-move 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes scan-move {
+            0% { transform: translateX(-100%); }
+            50%, 100% { transform: translateX(100%); }
+        }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .group-hover\:animate-shimmer:hover {
+            animation: shimmer 0.8s ease-in-out;
+        }
+
+        /* Jelly / Bounce Effect */
+        @keyframes jelly {
+            0%, 100% { transform: scale(1, 1); }
+            25% { transform: scale(0.9, 1.1); }
+            50% { transform: scale(1.1, 0.9); }
+            75% { transform: scale(0.95, 1.05); }
+        }
+        .hover\:animate-jelly:hover {
+            animation: jelly 0.5s both;
+        }
     </style>
 
 </head>
@@ -392,8 +456,10 @@
             </div>
 
             <div class="flex items-center space-x-6">
-                <button onclick="window.openModal()" class="bg-theme-primary hover:bg-theme-primary text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-theme-primary-sm flex items-center mr-2">
-                    <i class="fas fa-plus mr-2"></i> 记一笔
+                <button onclick="window.openModal()" class="relative overflow-hidden bg-theme-primary text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-theme-primary-sm flex items-center mr-2 group active:scale-95 hover:animate-jelly">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                    <i class="fas fa-plus mr-2 transition-transform duration-300 group-hover:rotate-90"></i> 
+                    <span class="relative z-10">记一笔</span>
                 </button>
                 <div class="flex flex-col items-end">
                     <span id="user-display-name" class="text-xs font-bold text-gray-300 tracking-wide">OPERATOR</span>
@@ -493,13 +559,19 @@
                             <!-- Only Show Target Capital (Read-Only) -->
                             <div class="space-y-1">
                                 <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">目标资金 (Target)</label>
-                                <div class="flex flex-col items-start justify-center py-4 relative overflow-visible group pl-2">
-                                    <div class="absolute inset-0 bg-theme-primary opacity-0 group-hover:opacity-10 transition-opacity duration-700 blur-[60px] rounded-full transform scale-150 origin-left"></div>
-                                    <div class="relative z-10 flex items-center justify-start transform transition-transform duration-500 group-hover:scale-110 group-hover:origin-left w-full pr-8">
-                                        <span class="text-theme-primary font-black text-3xl mr-2 italic opacity-80 shrink-0">$</span>
-                                        <span id="dashboard-target-display" class="text-transparent bg-clip-text bg-gradient-to-r from-white via-theme-primary to-white font-display text-5xl italic drop-shadow-theme-primary animate-pulse py-1 px-2 leading-normal block">20,000</span>
+                                <div class="flex flex-col items-start justify-center py-4 relative overflow-visible group pl-2 cursor-default">
+                                    <!-- 背景光晕：从中心爆发扩散 -->
+                                    <div class="absolute -inset-4 bg-theme-primary opacity-0 group-hover:opacity-20 transition-all duration-500 ease-out blur-[40px] rounded-full transform scale-75 group-hover:scale-110"></div>
+                                    
+                                    <!-- 主体文字：弹性放大 + 位移 -->
+                                    <div class="relative z-10 flex items-center justify-start transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110 group-hover:translate-x-4 w-full pr-8">
+                                        <!-- 符号：微旋转 -->
+                                        <span class="text-theme-primary font-black text-3xl mr-2 italic opacity-80 shrink-0 transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">$</span>
+                                        <span id="dashboard-target-display" class="font-display text-5xl italic text-liquid-gold py-1 px-2 leading-normal block select-none">20,000</span>
                                     </div>
-                                    <div class="h-px w-24 bg-gradient-to-r from-theme-primary to-transparent mt-1 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    
+                                    <!-- 装饰线：弹性伸长 -->
+                                    <div class="h-1 w-32 group-hover:w-48 bg-gradient-to-r from-theme-primary to-transparent mt-2 rounded-full opacity-60 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-left"></div>
                                 </div>
                             </div>
                             <div class="pt-3 border-t border-white/5">
@@ -599,10 +671,10 @@
                             
                             <!-- Year Picker -->
                             <div class="relative inline-block text-left" id="year-picker-container">
-                                <button id="year-picker-btn" onclick="toggleYearPicker()" class="flex items-center px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 hover:bg-white/5 transition-colors cursor-pointer text-xs font-bold text-white outline-none">
-                                    <i class="fas fa-calendar text-theme-primary mr-2 text-sm"></i>
+                                <button id="year-picker-btn" onclick="toggleYearPicker()" class="flex items-center px-4 py-2 rounded-xl bg-theme-primary-10 border border-theme-primary text-theme-primary font-black text-sm hover:bg-theme-primary hover:!text-black transition-all shadow-lg shadow-theme-primary-sm outline-none group">
+                                    <i class="fas fa-calendar-alt mr-2 group-hover:text-black"></i>
                                     <span id="year-picker-label">YYYY</span>
-                                    <i class="fas fa-chevron-down ml-2 text-[10px] text-gray-500"></i>
+                                    <i class="fas fa-chevron-down ml-2 text-[10px] group-hover:text-black"></i>
                                 </button>
                                 <input type="hidden" id="global-year">
                                 <div id="year-picker-dropdown" class="hidden absolute left-0 top-full mt-2 w-24 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
@@ -610,9 +682,9 @@
 
                             <!-- Month Picker -->
                             <div class="relative inline-block text-left" id="month-picker-container">
-                                <button id="month-picker-btn" onclick="toggleMonthPicker()" class="flex items-center px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 hover:bg-white/5 transition-colors cursor-pointer text-xs font-bold text-white outline-none">
+                                <button id="month-picker-btn" onclick="toggleMonthPicker()" class="flex items-center px-4 py-2 rounded-xl bg-theme-primary-10 border border-theme-primary text-theme-primary font-black text-sm hover:bg-theme-primary hover:!text-black transition-all shadow-lg shadow-theme-primary-sm outline-none group">
                                     <span id="month-picker-label">MM月</span>
-                                    <i class="fas fa-chevron-down ml-2 text-[10px] text-gray-500"></i>
+                                    <i class="fas fa-chevron-down ml-2 text-[10px] group-hover:text-black"></i>
                                 </button>
                                 <input type="hidden" id="global-month">
                                 <div id="month-picker-dropdown" class="hidden absolute left-0 top-full mt-2 w-24 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
@@ -661,10 +733,10 @@
                     
                     <!-- Analytics Year Picker -->
                     <div class="relative inline-block text-left" id="analytics-year-picker-container">
-                        <button onclick="toggleAnalyticsYearPicker()" class="flex items-center px-4 py-2 rounded-xl bg-theme-primary-10 border border-theme-primary text-theme-primary font-black text-sm hover:bg-theme-primary hover:text-black transition-all shadow-lg shadow-theme-primary-sm">
-                            <i class="fas fa-calendar-alt mr-2"></i>
+                        <button onclick="toggleAnalyticsYearPicker()" class="flex items-center px-4 py-2 rounded-xl bg-theme-primary-10 border border-theme-primary text-theme-primary font-black text-sm hover:bg-theme-primary hover:!text-black transition-all shadow-lg shadow-theme-primary-sm outline-none group">
+                            <i class="fas fa-calendar-alt mr-2 group-hover:text-black"></i>
                             <span id="analytics-year-label">2025</span>
-                            <i class="fas fa-chevron-down ml-2 text-[10px]"></i>
+                            <i class="fas fa-chevron-down ml-2 text-[10px] group-hover:text-black"></i>
                         </button>
                         <div id="analytics-year-picker-dropdown" class="hidden absolute right-0 top-full mt-2 w-32 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
                     </div>
@@ -1197,7 +1269,7 @@ function updateAnalyticsCharts(all) {
     });
 
     const labels = Object.keys(stats).sort(); // Jan to Dec
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
     const displayLabels = labels.map(k => monthNames[parseInt(k.split('-')[1])-1]);
     
     const pnlData = labels.map(k => stats[k].pnl);
@@ -1943,6 +2015,8 @@ function renderVideos() {
     </script>
 </body>
 </html></html>
+
+
 
 
 
