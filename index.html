@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -17,6 +18,43 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Great+Vibes&display=swap');
         
+        :root {
+            /* Default Theme (Purple) */
+            --primary: #d946ef;
+            --primary-rgb: 217, 70, 239;
+            --secondary: #a855f7;
+            --secondary-rgb: 168, 85, 247;
+            --accent: #f0abfc;
+        }
+
+        /* Dynamic Theme Utilities */
+        .text-theme-primary { color: var(--primary) !important; }
+        .bg-theme-primary { background-color: var(--primary) !important; }
+        .bg-theme-primary-10 { background-color: rgba(var(--primary-rgb), 0.1) !important; }
+        .bg-theme-primary-5 { background-color: rgba(var(--primary-rgb), 0.05) !important; }
+        .bg-theme-primary-20 { background-color: rgba(var(--primary-rgb), 0.2) !important; }
+        .text-gradient-theme {
+            background-image: linear-gradient(to right, var(--accent), var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .border-theme-primary { border-color: var(--primary) !important; }
+        .border-theme-primary-20 { border-color: rgba(var(--primary-rgb), 0.2) !important; }
+        .border-theme-primary-50 { border-color: rgba(var(--primary-rgb), 0.5) !important; }
+        .shadow-theme-primary { box-shadow: 0 4px 14px 0 rgba(var(--primary-rgb), 0.39) !important; }
+        .shadow-theme-primary-sm { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2) !important; }
+        .shadow-theme-primary-lg { box-shadow: 0 0 100px -20px rgba(var(--primary-rgb), 0.3) !important; }
+        .drop-shadow-theme-primary { filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.8)); }
+        .hover\:text-theme-primary:hover { color: var(--primary) !important; }
+        .hover\:bg-theme-primary:hover { background-color: var(--primary) !important; }
+        .hover\:bg-theme-primary-20:hover { background-color: rgba(var(--primary-rgb), 0.2) !important; }
+        .hover\:border-theme-primary-50:hover { border-color: rgba(var(--primary-rgb), 0.5) !important; }
+        .focus\:border-theme-primary:focus { border-color: var(--primary) !important; }
+        .focus-within\:border-theme-primary:focus-within { border-color: var(--primary) !important; }
+        .group:hover .group-hover\:text-theme-primary { color: var(--primary) !important; }
+        .selection\:bg-theme-primary::selection { background-color: var(--primary) !important; color: black !important; }
+
         /* Flatpickr Customization */
         .flatpickr-calendar {
             background: rgba(17, 17, 34, 0.95) !important;
@@ -51,18 +89,18 @@
             color: #fff !important;
         }
         .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
-            background: #d946ef !important;
-            border-color: #d946ef !important;
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
             color: #000 !important;
             font-weight: 900 !important;
-            box-shadow: 0 0 15px rgba(217, 70, 239, 0.4) !important;
+            box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.4) !important;
         }
         .flatpickr-day.today {
-            border-color: #d946ef !important;
-            color: #d946ef !important;
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
         }
         .flatpickr-day.today:hover {
-            background: #d946ef !important;
+            background: var(--primary) !important;
             color: #000 !important;
         }
         .flatpickr-time {
@@ -167,8 +205,8 @@
             content: '';
             position: absolute;
             bottom: -4px; left: 0; width: 100%; height: 2px;
-            background: #d946ef;
-            box-shadow: 0 0 10px #d946ef;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
         }
 
         .view-section { display: none; animation: fadeIn 0.4s ease-out; }
@@ -188,30 +226,29 @@
         /* 日历强化 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .calendar-day { aspect-ratio: 1/1.1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 11px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
-        .calendar-day:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px rgba(217, 70, 239, 0.3); }
+        .calendar-day:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.3); }
         .day-profit { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #10b981; }
         .day-loss { background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #f43f5e; }
         .day-empty { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #64748b; }
         
         /* 指标卡片 */
         .metric-card { transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); border-top: 2px solid transparent; }
-        .metric-card:hover { border-top-color: #d946ef; background: rgba(22, 22, 50, 0.9); transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .metric-card:hover { border-top-color: var(--primary); background: rgba(22, 22, 50, 0.9); transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
 
-        .cyber-button { background-image: linear-gradient(135deg, #c026d3, #7c3aed); color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
-        .cyber-button:hover { box-shadow: 0 0 25px rgba(217, 70, 239, 0.6); transform: scale(1.02); letter-spacing: 1px; }
+        .cyber-button { background-image: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(var(--secondary-rgb), 0.3); }
+        .cyber-button:hover { box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.6); transform: scale(1.02); letter-spacing: 1px; }
 
         /* 强化日志行动画 */
-        .trade-row { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; }
+        .trade-row { transition: all 0.2s ease-in-out; position: relative; }
         .trade-row:hover { 
-            background: linear-gradient(90deg, rgba(192, 38, 211, 0.2) 0%, rgba(20, 20, 40, 0.6) 100%); 
-            transform: translateX(6px) scale(1.01); 
-            box-shadow: inset 3px 0 0 0 #d946ef, 0 10px 40px -10px rgba(192, 38, 211, 0.3);
+            background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(var(--primary-rgb), 0.05) 100%); 
+            box-shadow: inset 2px 0 0 0 var(--primary), 0 0 20px rgba(var(--primary-rgb), 0.1);
             z-index: 5;
         }
-        .trade-row:hover .text-gray-400 { color: #f0abfc !important; text-shadow: 0 0 8px rgba(217, 70, 239, 0.4); }
+        .trade-row:hover .text-gray-400 { color: var(--accent) !important; text-shadow: 0 0 8px rgba(var(--primary-rgb), 0.4); }
         
-        .action-icon { transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.03); }
-        .action-icon:hover { transform: scale(1.3) rotate(8deg); background: rgba(217, 70, 239, 0.2); color: #d946ef; box-shadow: 0 0 15px rgba(217, 70, 239, 0.4); }
+        .action-icon { transition: all 0.2s ease-out; width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.03); font-size: 1.1rem; }
+        .action-icon:hover { background: rgba(var(--primary-rgb), 0.2); color: var(--primary); box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.4); }
 
         /* 弹窗弹出动画 */
         @keyframes modalIn {
@@ -234,19 +271,20 @@
         
         /* New Script Font & Glow Styles */
         .font-script { font-family: 'Great Vibes', cursive; }
+        .font-display { font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.05em; }
         
         .glow-flow-text {
             color: #fff;
-            text-shadow: 0 0 10px rgba(192, 38, 211, 0.5), 0 0 20px rgba(192, 38, 211, 0.3);
+            text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);
             animation: glow-breathe 2s ease-in-out infinite alternate;
         }
         
         @keyframes glow-breathe {
             from {
-                text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(192, 38, 211, 0.5), 0 0 20px rgba(168, 85, 247, 0.3);
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--secondary-rgb), 0.3);
             }
             to {
-                text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(232, 121, 249, 0.8), 0 0 30px rgba(192, 38, 211, 0.6), 0 0 40px rgba(168, 85, 247, 0.5);
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(var(--primary-rgb), 0.8), 0 0 30px rgba(var(--primary-rgb), 0.6), 0 0 40px rgba(var(--secondary-rgb), 0.5);
             }
         }
         
@@ -258,7 +296,7 @@
             border-radius: 1.5rem;
             padding: 3px !important; /* Make space for the border */
             background: transparent !important;
-            box-shadow: 0 0 40px rgba(192, 38, 211, 0.2);
+            box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.2);
         }
         
         .login-box-glow::before {
@@ -268,7 +306,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: conic-gradient(transparent, #a855f7, #d946ef, #fff, #d946ef, #a855f7, transparent 40%);
+            background: conic-gradient(transparent, var(--secondary), var(--primary), #fff, var(--primary), var(--secondary), transparent 40%);
             animation: rotate-border 3s linear infinite;
             z-index: -2;
         }
@@ -296,8 +334,9 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+
 </head>
-<body class="selection:bg-purple-600 selection:text-black">
+<body class="selection:bg-theme-primary selection:text-black">
     <video autoplay muted loop playsinline id="bg-video">
         <source src="bg.mp4" type="video/mp4">
     </video>
@@ -305,13 +344,13 @@
 
     <!-- Auth View -->
     <div id="auth-view" class="min-h-screen relative overflow-hidden flex items-center justify-center p-8 hidden-view">
-        <div class="absolute -top-24 -left-24 w-80 h-80 bg-purple-500/5 blur-[100px]"></div>
+        <div class="absolute -top-24 -left-24 w-80 h-80 bg-theme-primary-5 blur-[100px]"></div>
         <div class="absolute -bottom-24 -right-10 w-96 h-96 bg-indigo-500/5 blur-[120px]"></div>
         <div class="relative w-full max-w-md login-box-glow animate__animated animate__fadeInUp">
             <div class="login-box-content">
 <div class="text-center mb-10">
                     <h1 class="text-5xl font-script glow-flow-text tracking-wider">Jinmu Trade</h1>
-                    <p class="mt-4 text-[10px] font-black tracking-[0.6em] text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 uppercase animate-pulse drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]">
+                    <p class="mt-4 text-[10px] font-black tracking-[0.6em] text-gradient-theme uppercase animate-pulse drop-shadow-theme-primary">
                         Jinmu Always Win
                     </p>
                 </div>
@@ -324,8 +363,8 @@
                     <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
                     <input type="password" id="auth-password" required class="w-full pl-10 p-5 rounded-2xl input-dark" placeholder="密码">
                 </div>
-                <button type="submit" class="cyber-button w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:shadow-purple-500/50">进入</button>
-                <button type="button" id="btn-register" class="w-full text-gray-400 text-xs hover:text-purple-400 transition-colors">注册</button>
+                <button type="submit" class="cyber-button w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:shadow-theme-primary">进入</button>
+                <button type="button" id="btn-register" class="w-full text-gray-400 text-xs hover:text-theme-primary transition-colors">注册</button>
             </form>
             </div>
         </div>
@@ -353,7 +392,7 @@
             </div>
 
             <div class="flex items-center space-x-6">
-                <button onclick="window.openModal()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-purple-600/20 flex items-center mr-2">
+                <button onclick="window.openModal()" class="bg-theme-primary hover:bg-theme-primary text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-theme-primary-sm flex items-center mr-2">
                     <i class="fas fa-plus mr-2"></i> 记一笔
                 </button>
                 <div class="flex flex-col items-end">
@@ -429,79 +468,77 @@
             </div>
 
             <!-- 顶层：目标进度与设置 + 专业指标 -->
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                <div class="xl:col-span-4 p-8 rounded-3xl component-bg border border-purple-500/20 relative overflow-hidden shadow-2xl">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full"></div>
-                    <div class="flex items-center justify-between mb-8">
-                        <span class="text-xs text-purple-400 font-black uppercase tracking-[0.25em]">Account Growth Tracker</span>
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 h-[320px]">
+                <!-- Account Growth Tracker -->
+                <div class="xl:col-span-4 p-8 rounded-3xl component-bg border border-theme-primary-20 relative overflow-hidden shadow-2xl flex flex-col justify-between">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-theme-primary-5 blur-3xl rounded-full"></div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-theme-primary font-black uppercase tracking-[0.25em]">Account Growth Tracker</span>
                         <i class="fas fa-radar text-gray-700"></i>
                     </div>
                     
-                    <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="flex flex-col md:flex-row items-center gap-8 h-full">
                         <div class="relative flex items-center justify-center shrink-0 group">
-                            <div class="absolute inset-0 bg-purple-500/10 blur-2xl rounded-full scale-0 group-hover:scale-110 transition-transform duration-700"></div>
-                            <svg class="progress-ring relative" width="140" height="140">
-                                <circle class="text-white/5" stroke-width="10" stroke="currentColor" fill="transparent" r="62" cx="70" cy="70"/>
-                                <circle id="goal-progress-bar" class="text-purple-400 progress-ring__circle" stroke-width="10" stroke-dasharray="389.5" stroke-dashoffset="389.5" stroke-linecap="round" stroke="currentColor" fill="transparent" r="62" cx="70" cy="70"/>
+                            <div class="absolute inset-0 bg-theme-primary-10 blur-2xl rounded-full scale-0 group-hover:scale-110 transition-transform duration-700"></div>
+                            <svg class="progress-ring relative" width="130" height="130">
+                                <circle class="text-white/5" stroke-width="8" stroke="currentColor" fill="transparent" r="58" cx="65" cy="65"/>
+                                <circle id="goal-progress-bar" class="text-theme-primary progress-ring__circle" stroke-width="8" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" stroke="currentColor" fill="transparent" r="58" cx="65" cy="65"/>
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span id="goal-percent" class="text-3xl font-black text-white tracking-tighter">0%</span>
+                                <span id="goal-percent" class="text-2xl font-black text-white tracking-tighter">0%</span>
                             </div>
                         </div>
 
-                        <div class="flex-grow w-full space-y-6">
-                            <div class="grid grid-cols-2 gap-6">
-                                <div class="space-y-2">
-                                    <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">初始资金 (Base)</label>
-                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-purple-500/50 transition-all">
-                                        <span class="text-purple-500 font-black mr-2">$</span>
-                                        <input type="number" id="initial-capital" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" value="10000">
+                        <div class="flex-grow w-full flex flex-col justify-center space-y-4">
+                            <!-- Only Show Target Capital (Read-Only) -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">目标资金 (Target)</label>
+                                <div class="flex flex-col items-start justify-center py-4 relative overflow-visible group pl-2">
+                                    <div class="absolute inset-0 bg-theme-primary opacity-0 group-hover:opacity-10 transition-opacity duration-700 blur-[60px] rounded-full transform scale-150 origin-left"></div>
+                                    <div class="relative z-10 flex items-center justify-start transform transition-transform duration-500 group-hover:scale-110 group-hover:origin-left w-full pr-8">
+                                        <span class="text-theme-primary font-black text-3xl mr-2 italic opacity-80 shrink-0">$</span>
+                                        <span id="dashboard-target-display" class="text-transparent bg-clip-text bg-gradient-to-r from-white via-theme-primary to-white font-display text-5xl italic drop-shadow-theme-primary animate-pulse py-1 px-2 leading-normal block">20,000</span>
                                     </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest">目标资金 (Target)</label>
-                                    <div class="flex items-center bg-black/40 px-4 py-3 rounded-xl border border-white/5 focus-within:border-purple-500/50 transition-all">
-                                        <span class="text-purple-500 font-black mr-2">$</span>
-                                        <input type="number" id="target-capital" class="bg-transparent border-none p-0 text-white font-black text-base w-full focus:ring-0" value="20000">
-                                    </div>
+                                    <div class="h-px w-24 bg-gradient-to-r from-theme-primary to-transparent mt-1 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                                 </div>
                             </div>
-                            <div class="pt-4 border-t border-white/5">
-                                <p id="remaining-label" class="text-xs text-gray-400 italic font-medium tracking-tight">AI 正在解析目标路径...</p>
+                            <div class="pt-3 border-t border-white/5">
+                                <p id="remaining-label" class="text-[10px] text-gray-400 italic font-medium tracking-tight">AI 正在解析目标路径...</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 仓位计算器小组件 -->
-                <div class="xl:col-span-2 p-6 rounded-3xl component-bg border border-blue-500/20 shadow-2xl">
+                <div class="xl:col-span-2 p-6 rounded-3xl component-bg border border-theme-primary-20 shadow-2xl flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs text-blue-400 font-black uppercase tracking-[0.25em]">仓位计算器</span>
+                        <span class="text-xs text-theme-primary font-black uppercase tracking-[0.25em]">仓位计算器</span>
                         <i class="fas fa-calculator text-gray-700"></i>
                     </div>
-                    <div class="grid grid-cols-1 gap-4">
+                    <div class="grid grid-cols-1 gap-4 flex-grow content-center">
                         <div>
                             <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">风险金额</label>
-                            <div class="flex items-center bg-black/40 px-3 py-2 rounded-xl border border-white/5 focus-within:border-blue-500/50 transition-all">
-                                <span class="text-blue-500 font-black mr-2">$</span>
+                            <div class="flex items-center bg-black/40 px-3 py-3 rounded-xl border border-white/5 focus-within:border-theme-primary transition-all mt-1">
+                                <span class="text-theme-primary font-black mr-2">$</span>
                                 <input type="number" id="calc-risk-amount" class="bg-transparent border-none p-0 text-white font-black text-sm w-full focus:ring-0" placeholder="100">
                             </div>
                         </div>
                         <div>
                             <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">风险值 (%)</label>
-                            <div class="flex items-center bg-black/40 px-3 py-2 rounded-xl border border-white/5 focus-within:border-blue-500/50 transition-all">
-                                <i class="fas fa-percent text-blue-500 text-xs mr-2"></i>
+                            <div class="flex items-center bg-black/40 px-3 py-3 rounded-xl border border-white/5 focus-within:border-theme-primary transition-all mt-1">
+                                <i class="fas fa-percent text-theme-primary text-xs mr-2"></i>
                                 <input type="number" id="calc-risk-percent" class="bg-transparent border-none p-0 text-white font-black text-sm w-full focus:ring-0" placeholder="1.0" step="0.1">
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center bg-white/5 rounded-xl px-3 py-2 mt-3">
+                    <div class="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3 mt-4">
                         <span class="text-[10px] text-gray-500 uppercase font-black tracking-widest">仓位大小</span>
                         <span id="calc-result" class="text-xl font-black text-white tracking-tight">$0.00</span>
                     </div>
                 </div>
 
-                <div class="xl:col-span-6 grid grid-cols-2 md:grid-cols-4 gap-5" id="metrics-grid"></div>
+                <!-- 指标网格 -->
+                <div class="xl:col-span-6 grid grid-cols-2 md:grid-cols-4 gap-4" id="metrics-grid"></div>
             </div>
 
             <!-- 中间：日历与曲线 -->
@@ -509,13 +546,13 @@
                 <div class="lg:col-span-4 xl:col-span-3 p-8 rounded-3xl component-bg border border-white/10 shadow-xl">
                     <div class="flex flex-col space-y-6 mb-6">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-purple-400"></i>交易日历</h3>
-                            <button id="btn-current-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-purple-500 hover:text-black font-black transition-all">当前月</button>
+                            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center"><i class="fas fa-calendar-alt mr-3 text-theme-primary"></i>交易日历</h3>
+                            <button id="btn-current-month" class="px-3 py-1.5 text-[10px] bg-white/5 rounded-lg text-gray-400 hover:bg-theme-primary hover:text-black font-black transition-all">当前月</button>
                         </div>
                         <div class="flex space-x-3">
-                            <input type="month" id="calendar-month-select" class="flex-grow bg-[#05050a] border border-[#2d2d4c] text-purple-400 text-xs px-4 py-3 rounded-xl outline-none font-black">
-                            <button onclick="window.changeMonth(-1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-purple-400 transition-colors"><i class="fas fa-chevron-left"></i></button>
-                            <button onclick="window.changeMonth(1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-purple-400 transition-colors"><i class="fas fa-chevron-right"></i></button>
+                            <input type="month" id="calendar-month-select" class="flex-grow bg-[#05050a] border border-[#2d2d4c] text-theme-primary text-xs px-4 py-3 rounded-xl outline-none font-black">
+                            <button onclick="window.changeMonth(-1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-theme-primary transition-colors"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="window.changeMonth(1)" class="w-10 h-10 bg-white/5 rounded-xl hover:text-theme-primary transition-colors"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-600 mb-3 text-center uppercase font-black tracking-widest">
@@ -539,12 +576,12 @@
                 </div>
 
                 <div class="lg:col-span-8 xl:col-span-9 p-8 rounded-3xl component-bg shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] pointer-events-none"></div>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-theme-primary-5 blur-[100px] pointer-events-none"></div>
                     <div class="flex justify-between items-center mb-8">
-                        <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-purple-500"></i>Equity Curve Analytics</h3>
+                        <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em]"><i class="fas fa-wave-square mr-3 text-theme-primary"></i>Equity Curve Analytics</h3>
                         <div class="flex bg-black/40 rounded-lg p-1 border border-white/5">
                             <button id="chart-mode-view" class="px-3 py-1 text-[10px] font-black rounded-md text-gray-400 hover:text-white transition-all">VIEW</button>
-                            <button id="chart-mode-all" class="px-3 py-1 text-[10px] font-black rounded-md bg-purple-500 text-black shadow-lg shadow-purple-500/20">ALL</button>
+                            <button id="chart-mode-all" class="px-3 py-1 text-[10px] font-black rounded-md bg-theme-primary text-black shadow-lg shadow-theme-primary-sm">ALL</button>
                         </div>
                     </div>
                     <div class="h-[380px] w-full"><canvas id="equity-chart"></canvas></div>
@@ -558,12 +595,12 @@
                 <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-2xl">
                     <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
                         <div class="flex items-center space-x-4">
-                            <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-list-ul mr-3 text-purple-400"></i> Trade Journal</h3>
+                            <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-list-ul mr-3 text-theme-primary"></i> Trade Journal</h3>
                             
                             <!-- Year Picker -->
                             <div class="relative inline-block text-left" id="year-picker-container">
                                 <button id="year-picker-btn" onclick="toggleYearPicker()" class="flex items-center px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 hover:bg-white/5 transition-colors cursor-pointer text-xs font-bold text-white outline-none">
-                                    <i class="fas fa-calendar text-purple-400 mr-2 text-sm"></i>
+                                    <i class="fas fa-calendar text-theme-primary mr-2 text-sm"></i>
                                     <span id="year-picker-label">YYYY</span>
                                     <i class="fas fa-chevron-down ml-2 text-[10px] text-gray-500"></i>
                                 </button>
@@ -590,7 +627,7 @@
                                 <i class="fas fa-file-export"></i>
                             </button>
                              <div class="h-6 w-[1px] bg-white/10 mx-1"></div>
-                             <input type="text" id="table-search" placeholder="Search..." class="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:border-purple-500 outline-none w-40">
+                             <input type="text" id="table-search" placeholder="Search..." class="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:border-theme-primary outline-none w-40">
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -615,10 +652,68 @@
             </div>
 
             <!-- VIEW: ANALYTICS -->
-            <div id="view-analytics" class="view-section">
-                <div class="p-10 rounded-3xl component-bg border border-white/5 flex flex-col items-center justify-center text-gray-500 min-h-[400px]">
-                    <i class="fas fa-chart-pie text-5xl mb-4 text-gray-700"></i>
-                    <p class="text-sm uppercase tracking-widest font-bold">Analytics Module Coming Soon</p>
+            <div id="view-analytics" class="view-section space-y-6">
+                <!-- Analytics Toolbar -->
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <h3 class="text-xl font-black text-white uppercase tracking-widest flex items-center">
+                        <i class="fas fa-chart-pie mr-3 text-theme-primary"></i> Performance Analytics
+                    </h3>
+                    
+                    <!-- Analytics Year Picker -->
+                    <div class="relative inline-block text-left" id="analytics-year-picker-container">
+                        <button onclick="toggleAnalyticsYearPicker()" class="flex items-center px-4 py-2 rounded-xl bg-theme-primary-10 border border-theme-primary text-theme-primary font-black text-sm hover:bg-theme-primary hover:text-black transition-all shadow-lg shadow-theme-primary-sm">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span id="analytics-year-label">2025</span>
+                            <i class="fas fa-chevron-down ml-2 text-[10px]"></i>
+                        </button>
+                        <div id="analytics-year-picker-dropdown" class="hidden absolute right-0 top-full mt-2 w-32 rounded-xl component-bg border border-white/10 shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Monthly PnL Chart -->
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                            <span>Monthly PnL (盈亏)</span>
+                            <i class="fas fa-chart-bar text-emerald-500"></i>
+                        </h3>
+                        <div class="flex-grow w-full relative">
+                            <canvas id="analytics-pnl-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly ROI Chart -->
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                            <span>Monthly ROI (收益率)</span>
+                            <i class="fas fa-percentage text-blue-500"></i>
+                        </h3>
+                        <div class="flex-grow w-full relative">
+                            <canvas id="analytics-roi-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Win Rate Chart -->
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                            <span>Monthly Win Rate (胜率)</span>
+                            <i class="fas fa-trophy text-yellow-500"></i>
+                        </h3>
+                        <div class="flex-grow w-full relative">
+                            <canvas id="analytics-wr-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trade Count Chart -->
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                            <span>Monthly Trades (交易数)</span>
+                            <i class="fas fa-list-ol text-purple-500"></i>
+                        </h3>
+                        <div class="flex-grow w-full relative">
+                            <canvas id="analytics-count-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -636,9 +731,54 @@
 
             <!-- VIEW: SETTINGS -->
             <div id="view-settings" class="view-section">
-                <div class="p-10 rounded-3xl component-bg border border-white/5 min-h-[400px]">
-                    <h3 class="text-lg font-bold text-white mb-6">Settings</h3>
-                    <p class="text-gray-500 text-sm">User preferences and account configuration.</p>
+                <div class="p-8 rounded-3xl component-bg border border-white/5 shadow-2xl space-y-8">
+                    
+                    <!-- Theme Settings -->
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-6 flex items-center"><i class="fas fa-palette mr-3 text-theme-primary"></i>Theme Color / 主题配色</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button onclick="window.setTheme('purple')" class="group relative p-4 rounded-xl border border-white/10 hover:border-fuchsia-500 transition-all bg-[#1a1a2e] flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400 to-purple-600 shadow-lg group-hover:scale-110 transition-transform"></div>
+                                <span class="text-xs font-bold text-gray-400 group-hover:text-white">Purple (Default)</span>
+                            </button>
+                            <button onclick="window.setTheme('blue')" class="group relative p-4 rounded-xl border border-white/10 hover:border-sky-500 transition-all bg-[#1a1a2e] flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 shadow-lg group-hover:scale-110 transition-transform"></div>
+                                <span class="text-xs font-bold text-gray-400 group-hover:text-white">Ocean Blue</span>
+                            </button>
+                            <button onclick="window.setTheme('green')" class="group relative p-4 rounded-xl border border-white/10 hover:border-emerald-500 transition-all bg-[#1a1a2e] flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg group-hover:scale-110 transition-transform"></div>
+                                <span class="text-xs font-bold text-gray-400 group-hover:text-white">Emerald Green</span>
+                            </button>
+                            <button onclick="window.setTheme('orange')" class="group relative p-4 rounded-xl border border-white/10 hover:border-orange-500 transition-all bg-[#1a1a2e] flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-600 shadow-lg group-hover:scale-110 transition-transform"></div>
+                                <span class="text-xs font-bold text-gray-400 group-hover:text-white">Sunset Orange</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Capital Settings (Moved from Dashboard) -->
+                    <div class="pt-8 border-t border-white/5">
+                        <h3 class="text-lg font-bold text-white mb-6 flex items-center"><i class="fas fa-wallet mr-3 text-theme-primary"></i>Account Configuration / 资金设置</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-3">
+                                <label class="text-xs text-gray-400 uppercase font-bold tracking-wider">Initial Capital (初始资金)</label>
+                                <div class="flex items-center bg-black/40 px-5 py-4 rounded-2xl border border-white/10 focus-within:border-theme-primary transition-all">
+                                    <span class="text-theme-primary font-black mr-3 text-lg">$</span>
+                                    <input type="number" id="initial-capital" class="bg-transparent border-none p-0 text-white font-black text-lg w-full focus:ring-0" value="10000">
+                                </div>
+                                <p class="text-[10px] text-gray-600">Starting balance for ROI calculations.</p>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="text-xs text-gray-400 uppercase font-bold tracking-wider">Target Capital (目标资金)</label>
+                                <div class="flex items-center bg-black/40 px-5 py-4 rounded-2xl border border-white/10 focus-within:border-theme-primary transition-all">
+                                    <span class="text-theme-primary font-black mr-3 text-lg">$</span>
+                                    <input type="number" id="target-capital" class="bg-transparent border-none p-0 text-white font-black text-lg w-full focus:ring-0" value="20000">
+                                </div>
+                                <p class="text-[10px] text-gray-600">Goal amount for progress tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -647,11 +787,11 @@
 
     <!-- Trade Modal -->
     <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center p-4 z-[200] bg-black/95 backdrop-blur-md">
-        <div class="bg-[#111122] border border-[#2d2d4c] p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_0_100px_-20px_rgba(217,70,239,0.3)] modal-animate">
+        <div class="bg-[#111122] border border-[#2d2d4c] p-10 rounded-[2.5rem] w-full max-w-xl shadow-theme-primary-lg modal-animate">
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h3 class="text-2xl font-black text-white uppercase tracking-tighter">录入成交数据</h3>
-                    <p class="text-[10px] text-purple-500 font-black uppercase mt-1 tracking-widest">Transaction Entry Protocol</p>
+                    <p class="text-[10px] text-theme-primary font-black uppercase mt-1 tracking-widest">Transaction Entry Protocol</p>
                 </div>
                 <button onclick="window.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
             </div>
@@ -660,17 +800,17 @@
                 
                 <div class="col-span-1 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Symbol / 交易对</label>
-                    <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono">
+                    <input id="trade-pair" type="text" placeholder="BTCUSDT" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none font-mono">
                 </div>
                 
                 <div class="col-span-1 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Date / 时间</label>
-                    <input id="trade-date" type="text" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono cursor-pointer" placeholder="选择时间...">
+                    <input id="trade-date" type="text" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none font-mono cursor-pointer" placeholder="选择时间...">
                 </div>
 
                 <div class="col-span-1 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Side / 方向</label>
-                    <select id="trade-direction" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none">
+                    <select id="trade-direction" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                         <option value="Long">Long (做多)</option>
                         <option value="Short">Short (做空)</option>
                     </select>
@@ -678,16 +818,16 @@
 
                 <div class="col-span-1 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">PnL / 盈亏 ($)</label>
-                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none font-mono">
+                    <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none font-mono">
                 </div>
 
                 <div class="col-span-2 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Chart Link / 图表链接</label>
-                    <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-purple-500 outline-none">
+                    <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                 </div>
                 
                 <div class="col-span-2 pt-4">
-                    <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-purple-500/30">保存</button>
+                    <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-theme-primary">保存</button>
                 </div>
             </form>
         </div>
@@ -701,22 +841,64 @@
     <!-- 实时行情 Websocket 脚本 -->
     <script>
         const symbols = ['btcusdt', 'ethusdt', 'dogeusdt'];
-        const streamUrl = `wss://stream.binance.com:9443/stream?streams=${symbols.map(s => s + '@ticker').join('/')}`;
-        const ws = new WebSocket(streamUrl);
         const lastPrices = {};
+        let ws = null;
+        let reconnectTimeout = null;
 
-        ws.onmessage = (event) => {
-            const { data } = JSON.parse(event.data);
-            const symbol = data.s.toLowerCase();
-            const price = parseFloat(data.c).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === 'dogeusdt' ? 4 : 2,
-                maximumFractionDigits: symbol === 'dogeusdt' ? 4 : 2
-            });
-            const rawPrice = parseFloat(data.c);
-            const changePercent = data.P;
+        function initWebSocket() {
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+
+            const streamUrl = `wss://stream.binance.com:9443/stream?streams=${symbols.map(s => s + '@ticker').join('/')}`;
             
-            updatePriceUI(symbol, price, rawPrice, changePercent);
-        };
+            try {
+                ws = new WebSocket(streamUrl);
+            } catch (e) {
+                console.error("WS Init Failed", e);
+                scheduleReconnect();
+                return;
+            }
+
+            ws.onopen = () => {
+                console.log('Market Data Connected');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const { data } = JSON.parse(event.data);
+                    if (!data) return;
+                    
+                    const symbol = data.s.toLowerCase();
+                    const rawPrice = parseFloat(data.c);
+                    const price = rawPrice.toLocaleString(undefined, {
+                        minimumFractionDigits: symbol === 'dogeusdt' ? 4 : 2,
+                        maximumFractionDigits: symbol === 'dogeusdt' ? 4 : 2
+                    });
+                    const changePercent = data.P;
+                    
+                    updatePriceUI(symbol, price, rawPrice, changePercent);
+                } catch (err) {
+                    console.error("Data parse error", err);
+                }
+            };
+
+            ws.onerror = (err) => {
+                console.error('WS Error', err);
+            };
+
+            ws.onclose = () => {
+                console.log('Market Data Disconnected. Reconnecting...');
+                scheduleReconnect();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            reconnectTimeout = setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    initWebSocket();
+                }
+            }, 3000);
+        }
 
         function updatePriceUI(symbol, displayPrice, rawPrice, change) {
             const coinPrefix = symbol.replace('usdt', '');
@@ -741,11 +923,52 @@
 
             // 涨跌幅样式
             const isPositive = parseFloat(change) >= 0;
-            changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
-            changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
+            if (changeEl) {
+                changeEl.innerText = `${isPositive ? '↑' : '↓'} ${Math.abs(change)}%`;
+                changeEl.style.color = isPositive ? '#10b981' : '#ef4444';
+            }
         }
 
+        // Handle visibility change (reconnect when tab comes back)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (!ws || ws.readyState === WebSocket.CLOSED) {
+                    initWebSocket();
+                }
+            }
+        });
 
+        // Initial Start
+        initWebSocket();
+
+
+    window.setTheme = (themeName) => {
+        const themes = {
+            purple: { primary: '#d946ef', primaryRgb: '217, 70, 239', secondary: '#a855f7', secondaryRgb: '168, 85, 247', accent: '#f0abfc' },
+            blue: { primary: '#0ea5e9', primaryRgb: '14, 165, 233', secondary: '#3b82f6', secondaryRgb: '59, 130, 246', accent: '#7dd3fc' },
+            green: { primary: '#10b981', primaryRgb: '16, 185, 129', secondary: '#22c55e', secondaryRgb: '34, 197, 94', accent: '#6ee7b7' },
+            orange: { primary: '#f97316', primaryRgb: '249, 115, 22', secondary: '#ef4444', secondaryRgb: '239, 68, 68', accent: '#fdba74' }
+        };
+
+        const t = themes[themeName] || themes.purple;
+        const root = document.documentElement;
+        
+        root.style.setProperty('--primary', t.primary);
+        root.style.setProperty('--primary-rgb', t.primaryRgb);
+        root.style.setProperty('--secondary', t.secondary);
+        root.style.setProperty('--secondary-rgb', t.secondaryRgb);
+        root.style.setProperty('--accent', t.accent);
+        
+        localStorage.setItem('jinmu-theme', themeName);
+        
+        // Trigger UI Refresh for Canvas/JS-driven styles
+        if (typeof refreshUI === 'function') refreshUI();
+    };
+
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('jinmu-theme') || 'purple';
+    window.setTheme(savedTheme);
+    
     </script>
 
     <script type="module">
@@ -763,6 +986,8 @@ const db = getFirestore(app);
 let allTrades = [];
 let config = { initialCapital: 10000, targetCapital: 20000 };
 let chartInstance = null;
+let analyticsCharts = { pnl: null, roi: null, wr: null, count: null };
+let analyticsYear = new Date().getFullYear();
 let viewMode = 'month';
 let chartMode = 'all';
 let unsubscribeTrades = null;
@@ -916,6 +1141,153 @@ function refreshUI() {
     renderCalendar(allTrades); // Calendar heatmap usually shows whole month data regardless of other filters? Or filtered? Let's pass allTrades for now to show all activity in that month.
     renderTradeList(filtered);
     updateChart(allTrades, filtered); // Equity chart needs base equity (allTrades) and view data (filtered)
+
+    if (document.getElementById('view-analytics').classList.contains('active')) {
+        updateAnalyticsCharts(allTrades);
+    }
+}
+
+function updateAnalyticsCharts(all) {
+    // 1. Group Data by Month for Selected Year
+    const stats = {};
+    const sorted = all.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    let runningEquity = config.initialCapital;
+    
+    // Initialize all 12 months for the selected year
+    for(let m=1; m<=12; m++) {
+        const key = `${analyticsYear}-${String(m).padStart(2,'0')}`;
+        stats[key] = { pnl: 0, wins: 0, total: 0, startEquity: runningEquity };
+    }
+
+    // Process Trades
+    sorted.forEach(t => {
+        const d = new Date(t.date);
+        const y = d.getFullYear();
+        if (y < analyticsYear) {
+            runningEquity += t.profit; // Keep track of equity before this year
+        } else if (y === analyticsYear) {
+            const key = `${analyticsYear}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            // If month bucket exists (it should), update it
+            if(stats[key]) {
+                // Fix startEquity for the month: it should be equity BEFORE the first trade of the month
+                // But simplified: runningEquity at start of loop is equity before this trade.
+                // We need logic to capture equity at start of month.
+                // Actually, simplest way: Calculate running equity continuously.
+            }
+        }
+    });
+    
+    // Re-run loop with correct equity tracking
+    runningEquity = config.initialCapital;
+    sorted.forEach(t => {
+        const d = new Date(t.date);
+        const y = d.getFullYear();
+        const key = `${y}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (y === analyticsYear) {
+            if (!stats[key].hasData) {
+                stats[key].startEquity = runningEquity;
+                stats[key].hasData = true;
+            }
+            stats[key].pnl += t.profit;
+            stats[key].total++;
+            if (t.profit > 0) stats[key].wins++;
+        }
+        runningEquity += t.profit;
+    });
+
+    const labels = Object.keys(stats).sort(); // Jan to Dec
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const displayLabels = labels.map(k => monthNames[parseInt(k.split('-')[1])-1]);
+    
+    const pnlData = labels.map(k => stats[k].pnl);
+    const roiData = labels.map(k => {
+        const equity = stats[k].startEquity || config.initialCapital; // Fallback
+        return equity > 0 ? (stats[k].pnl / equity) * 100 : 0;
+    });
+    const wrData = labels.map(k => stats[k].total > 0 ? (stats[k].wins / stats[k].total) * 100 : 0);
+    const countData = labels.map(k => stats[k].total);
+
+    // Helper for Chart Config
+    const createConfig = (label, data, colorCallback, unit = '') => ({
+        type: 'bar',
+        data: {
+            labels: displayLabels,
+            datasets: [{
+                label: label,
+                data: data,
+                backgroundColor: colorCallback,
+                borderRadius: 6,
+                borderSkipped: false,
+                barPercentage: 0.6,
+                categoryPercentage: 0.8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: '900', size: 13, family: 'Inter' },
+                    anchor: 'end',
+                    align: 'end',
+                    offset: -4,
+                    textShadowBlur: 4,
+                    textShadowColor: 'rgba(0,0,0,0.8)',
+                    formatter: (val) => val === 0 ? '' : (unit === '$' && val > 0 ? '+' : '') + val.toFixed(unit === '' ? 0 : 2) + unit
+                },
+                tooltip: { 
+                    callbacks: { label: (c) => `${c.raw.toFixed(2)}${unit}` },
+                    backgroundColor: '#111122',
+                    titleFont: { size: 12 },
+                    bodyFont: { size: 14, weight: 'bold' }
+                }
+            },
+            layout: {
+                padding: {
+                    top: 25,
+                    left: 10,
+                    right: 10,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#9ca3af', font: {size: 11, weight: 'bold'} } },
+                y: { 
+                    grid: { color: 'rgba(255,255,255,0.05)' }, 
+                    ticks: { color: '#6b7280', font: {size: 11, weight: 'bold'} },
+                    grace: '10%' 
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Render PnL Chart
+    const ctxPnL = document.getElementById('analytics-pnl-chart').getContext('2d');
+    if (analyticsCharts.pnl) analyticsCharts.pnl.destroy();
+    analyticsCharts.pnl = new Chart(ctxPnL, createConfig('PnL', pnlData, (c) => {
+        return c.raw >= 0 ? '#10b981' : '#ef4444';
+    }, '$'));
+
+    // Render ROI Chart
+    const ctxROI = document.getElementById('analytics-roi-chart').getContext('2d');
+    if (analyticsCharts.roi) analyticsCharts.roi.destroy();
+    analyticsCharts.roi = new Chart(ctxROI, createConfig('ROI', roiData, (c) => {
+        return c.raw >= 0 ? '#3b82f6' : '#f59e0b';
+    }, '%'));
+
+    // Render Win Rate Chart
+    const ctxWR = document.getElementById('analytics-wr-chart').getContext('2d');
+    if (analyticsCharts.wr) analyticsCharts.wr.destroy();
+    analyticsCharts.wr = new Chart(ctxWR, createConfig('Win Rate', wrData, '#eab308', '%'));
+
+    // Render Count Chart
+    const ctxCount = document.getElementById('analytics-count-chart').getContext('2d');
+    if (analyticsCharts.count) analyticsCharts.count.destroy();
+    analyticsCharts.count = new Chart(ctxCount, createConfig('Trades', countData, '#a855f7', ''));
 }
 
 function updateGoalProgress(all) {
@@ -928,11 +1300,16 @@ function updateGoalProgress(all) {
     let progress = neededToEarn > 0 ? Math.max(0, (alreadyEarned / neededToEarn) * 100) : 0;
     document.getElementById('goal-percent').textContent = `${progress.toFixed(1)}%`;
     const circle = document.getElementById('goal-progress-bar');
-    const circumference = 389.5; 
+    const circumference = 364.4; 
     circle.style.strokeDashoffset = circumference - (Math.min(100, progress) / 100 * circumference);
     const remaining = target - currentEquity;
+    
+    // Update Dashboard Display
+    const targetDisplay = document.getElementById('dashboard-target-display');
+    if (targetDisplay) targetDisplay.textContent = target.toLocaleString();
+
     document.getElementById('remaining-label').textContent = remaining > 0 ? `距目标还差 $${remaining.toLocaleString()}` : 'GOAL REACHED / 目标已达成';
-    document.getElementById('remaining-label').className = remaining > 0 ? 'text-xs text-gray-400 italic font-bold' : 'text-xs text-emerald-400 font-black animate-pulse';
+    document.getElementById('remaining-label').className = remaining > 0 ? 'text-[10px] text-gray-400 italic font-bold' : 'text-[10px] text-emerald-400 font-black animate-pulse';
 }
 
 function updateMetricCards(all) {
@@ -955,7 +1332,7 @@ function updateMetricCards(all) {
     
     const metrics = [
         { label: '账户总资产', val: `${currentEquity.toFixed(2)}`, sub: '当前余额 (Balance)', cls: 'text-white' },
-        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}胜 / ${lossCount}负`, cls: 'text-purple-400' },
+        { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}胜 / ${lossCount}负`, cls: 'text-theme-primary' },
         { label: '盈亏系数 PF', val: pf.toFixed(2), sub: '盈亏比 (Factor)', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
         { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: '最大回撤 (Drawdown)', cls: 'text-rose-400' },
         { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: '平均R值 (Avg R)', cls: 'text-indigo-400' },
@@ -1032,14 +1409,14 @@ function renderTradeList(filteredData) {
                     ${t.direction}
                 </span>
             </td>
-            <td class="px-4 py-4 text-right font-bold text-sm ${pnlClass}">${pnlSign}${t.profit.toFixed(2)}</td>
+            <td class="px-4 py-4 text-right font-bold text-base ${pnlClass}">${pnlSign}${t.profit.toFixed(2)}</td>
             <td class="px-4 py-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
-                    ${t.tvLink ? `<a href="${t.tvLink}" target="_blank" class="text-gray-500 hover:text-purple-400 transition-colors" title="Chart"><i class="fas fa-chart-line"></i></a>` : ''}
-                    <button onclick="window.editTrade('${t.id}')" class="text-gray-500 hover:text-white transition-colors">
+                    ${t.tvLink ? `<a href="${t.tvLink}" target="_blank" class="action-icon flex items-center justify-center text-gray-500 hover:text-theme-primary transition-colors" title="Chart"><i class="fas fa-chart-line"></i></a>` : ''}
+                    <button onclick="window.editTrade('${t.id}')" class="action-icon flex items-center justify-center text-gray-500 hover:text-white transition-colors">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="window.deleteTrade('${t.id}')" class="text-gray-500 hover:text-rose-500 transition-colors">
+                    <button onclick="window.deleteTrade('${t.id}')" class="action-icon flex items-center justify-center text-gray-500 hover:text-rose-500 transition-colors">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -1106,15 +1483,21 @@ function updateChart(all, viewData) {
     }
     
     const ctx = document.getElementById('equity-chart').getContext('2d');
+    
+    // Get Dynamic Colors
+    const style = getComputedStyle(document.body);
+    const primary = style.getPropertyValue('--primary').trim() || '#d946ef';
+    const primaryRgb = style.getPropertyValue('--primary-rgb').trim() || '217, 70, 239';
+
     if (chartInstance) chartInstance.destroy();
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: { datasets: [{ 
-            data: pts, borderColor: '#d946ef', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#d946ef', fill: true,
+            data: pts, borderColor: primary, borderWidth: 3, pointRadius: 4, pointBackgroundColor: primary, fill: true,
             backgroundColor: (c) => { 
                 const g = c.chart.ctx.createLinearGradient(0, 0, 0, 400); 
-                g.addColorStop(0, 'rgba(217, 70, 239, 0.2)'); 
-                g.addColorStop(1, 'rgba(217, 70, 239, 0)'); 
+                g.addColorStop(0, `rgba(${primaryRgb}, 0.2)`); 
+                g.addColorStop(1, `rgba(${primaryRgb}, 0)`); 
                 return g; 
             },
             tension: 0.15 
@@ -1166,6 +1549,10 @@ window.initPickers = () => {
     renderMonthDropdown();
     
     // Close listeners
+    // Initialize Analytics Picker
+    renderAnalyticsYearDropdown();
+    document.getElementById('analytics-year-label').textContent = analyticsYear;
+
     document.addEventListener('click', (e) => {
         if (!document.getElementById('year-picker-container').contains(e.target)) {
             document.getElementById('year-picker-dropdown').classList.add('hidden');
@@ -1173,7 +1560,36 @@ window.initPickers = () => {
         if (!document.getElementById('month-picker-container').contains(e.target)) {
             document.getElementById('month-picker-dropdown').classList.add('hidden');
         }
+        if (!document.getElementById('analytics-year-picker-container').contains(e.target)) {
+            document.getElementById('analytics-year-picker-dropdown').classList.add('hidden');
+        }
     });
+};
+
+// Analytics Year Picker Logic
+window.toggleAnalyticsYearPicker = () => document.getElementById('analytics-year-picker-dropdown').classList.toggle('hidden');
+window.renderAnalyticsYearDropdown = () => {
+    const currentY = new Date().getFullYear();
+    const startY = currentY - 2;
+    const endY = currentY + 1;
+    let html = '';
+    for (let y = endY; y >= startY; y--) {
+        const isSelected = String(y) === String(analyticsYear);
+        html += `
+            <div onclick="selectAnalyticsYear('${y}')" 
+                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-theme-primary-20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-theme-primary' : ''}">
+                <span>${y}</span>
+                ${isSelected ? '<i class="fas fa-check text-theme-primary text-[10px]"></i>' : ''}
+            </div>`;
+    }
+    document.getElementById('analytics-year-picker-dropdown').innerHTML = html;
+};
+window.selectAnalyticsYear = (y) => {
+    analyticsYear = Number(y);
+    document.getElementById('analytics-year-label').textContent = y;
+    document.getElementById('analytics-year-picker-dropdown').classList.add('hidden');
+    renderAnalyticsYearDropdown();
+    refreshUI(); // Re-render analytics charts
 };
 
 // Year Picker
@@ -1188,9 +1604,9 @@ window.renderYearDropdown = () => {
         const isSelected = String(y) === String(selected);
         html += `
             <div onclick="selectYear('${y}')" 
-                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-purple-500/20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-purple-400' : ''}">
+                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-theme-primary-20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-theme-primary' : ''}">
                 <span>${y}</span>
-                ${isSelected ? '<i class="fas fa-check text-purple-500 text-[10px]"></i>' : ''}
+                ${isSelected ? '<i class="fas fa-check text-theme-primary text-[10px]"></i>' : ''}
             </div>`;
     }
     document.getElementById('year-picker-dropdown').innerHTML = html;
@@ -1213,9 +1629,9 @@ window.renderMonthDropdown = () => {
         const isSelected = val === String(selected);
         html += `
             <div onclick="selectMonth('${val}')" 
-                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-purple-500/20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-purple-400' : ''}">
+                 class="px-4 py-2 text-xs font-bold text-gray-300 hover:bg-theme-primary-20 hover:text-white cursor-pointer transition-colors flex justify-between items-center rounded-lg mb-1 ${isSelected ? 'bg-white/5 text-theme-primary' : ''}">
                 <span>${m}月</span>
-                ${isSelected ? '<i class="fas fa-check text-purple-500 text-[10px]"></i>' : ''}
+                ${isSelected ? '<i class="fas fa-check text-theme-primary text-[10px]"></i>' : ''}
             </div>`;
     }
     document.getElementById('month-picker-dropdown').innerHTML = html;
@@ -1357,7 +1773,7 @@ document.getElementById('chart-mode-all').onclick = () => {
 function updateChartModeUI() {
     const btnView = document.getElementById('chart-mode-view');
     const btnAll = document.getElementById('chart-mode-all');
-    const activeClass = 'bg-purple-500 text-black shadow-lg shadow-purple-500/20';
+    const activeClass = 'bg-theme-primary text-black shadow-lg shadow-theme-primary-sm';
     const inactiveClass = 'text-gray-400 hover:text-white bg-transparent shadow-none';
     const baseClass = 'px-3 py-1 text-[10px] font-black rounded-md transition-all';
     
@@ -1501,14 +1917,14 @@ function renderVideos() {
         if (!videoId) return;
         
         const card = document.createElement('div');
-        card.className = 'bg-[#0a0a15] rounded-2xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all group relative hover:-translate-y-1 hover:shadow-2xl';
+        card.className = 'bg-[#0a0a15] rounded-2xl overflow-hidden border border-white/5 hover:border-theme-primary-50 transition-all group relative hover:-translate-y-1 hover:shadow-2xl';
         
         // Changed: Opens in new tab instead of modal
         card.innerHTML = `
             <a href="${video.url}" target="_blank" class="block aspect-video relative overflow-hidden cursor-pointer">
                 <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'">
                 <div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
-                    <div class="w-12 h-12 rounded-full bg-purple-600/90 flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100 shadow-lg shadow-purple-600/50">
+                    <div class="w-12 h-12 rounded-full bg-theme-primary flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100 shadow-lg shadow-theme-primary">
                         <i class="fas fa-external-link-alt text-white ml-1"></i>
                     </div>
                 </div>
@@ -1517,7 +1933,7 @@ function renderVideos() {
                 <h4 class="text-white font-bold text-sm line-clamp-2 leading-relaxed mb-2">${video.title || 'Untitled Video'}</h4>
                 <div class="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
                     <span class="text-[10px] text-gray-500 font-mono uppercase">Youtube</span>
-                    <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider">WATCH NOW</span>
+                    <span class="text-[10px] text-theme-primary font-bold uppercase tracking-wider">WATCH NOW</span>
                 </div>
             </div>
         `;
@@ -1527,6 +1943,7 @@ function renderVideos() {
     </script>
 </body>
 </html></html>
+
 
 
 
