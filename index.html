@@ -397,6 +397,142 @@
         .hover\:animate-jelly:hover {
             animation: jelly 0.5s both;
         }
+
+        /* Balance Card Special Styles */
+        .balance-card-special {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15), rgba(var(--secondary-rgb), 0.05));
+            border: 1px solid rgba(var(--primary-rgb), 0.4);
+            box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.15);
+        }
+        /* 数字流光动画 - 增强版 */
+        .balance-value-text {
+            background: linear-gradient(
+                90deg, 
+                var(--primary) 0%, 
+                #ffffff 50%, 
+                var(--primary) 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine-flow-horizontal 3s linear infinite;
+            filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.5));
+        }
+
+        /* Light Mode Overrides for Balance Card */
+        html[data-theme-mode="light"] .balance-card-special {
+            background: linear-gradient(135deg, #ffffff, rgba(var(--primary-rgb), 0.08));
+            border-color: rgba(var(--primary-rgb), 0.3);
+            box-shadow: 0 8px 16px rgba(var(--primary-rgb), 0.1);
+        }
+        html[data-theme-mode="light"] .balance-value-text {
+            background: linear-gradient(
+                90deg, 
+                var(--primary) 0%, 
+                #111827 50%, 
+                var(--primary) 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            filter: none;
+            font-weight: 900;
+        }
+
+        /* =========================================
+           LIGHT MODE OVERRIDES (全界面浅色主题适配)
+           ========================================= */
+        html[data-theme-mode="light"] body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        /* 覆盖视频背景，使用浅色遮罩 */
+        html[data-theme-mode="light"] #video-overlay {
+            background: rgba(240, 242, 245, 0.46) !important;
+        }
+
+        /* 组件背景变白 */
+        html[data-theme-mode="light"] .component-bg {
+            background-color: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 顶部导航 */
+        html[data-theme-mode="light"] header {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            border-color: rgba(0,0,0,0.05) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 文字颜色强制覆盖 */
+        html[data-theme-mode="light"] .text-white { color: #111827 !important; }
+        html[data-theme-mode="light"] .text-gray-300 { color: #4b5563 !important; }
+        html[data-theme-mode="light"] .text-gray-400 { color: #6b7280 !important; }
+        html[data-theme-mode="light"] .text-gray-500 { color: #9ca3af !important; }
+        
+        /* 边框与分割线 */
+        html[data-theme-mode="light"] .border-white\/5 { border-color: rgba(0,0,0,0.06) !important; }
+        html[data-theme-mode="light"] .border-white\/10 { border-color: rgba(0,0,0,0.1) !important; }
+        html[data-theme-mode="light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0,0,0,0.06) !important; }
+
+        /* 背景色工具类覆盖 */
+        html[data-theme-mode="light"] .bg-white\/5 { background-color: rgba(0,0,0,0.05) !important; }
+        html[data-theme-mode="light"] .bg-black\/40 { background-color: rgba(255,255,255,0.6) !important; border-color: rgba(0,0,0,0.1) !important; }
+        html[data-theme-mode="light"] .bg-\[\#111122\] { background-color: #ffffff !important; border-color: #e5e7eb !important; }
+        html[data-theme-mode="light"] .bg-\[\#1a1a2e\] { background-color: #f3f4f6 !important; border-color: #e5e7eb !important; }
+        html[data-theme-mode="light"] .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.05) !important; }
+
+        /* 输入框适配 */
+        html[data-theme-mode="light"] .input-dark,
+        html[data-theme-mode="light"] input, 
+        html[data-theme-mode="light"] select {
+            background-color: #ffffff !important;
+            border-color: #e5e7eb !important;
+            color: #111827 !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        html[data-theme-mode="light"] .bg-\[\#05050a\] { background-color: #ffffff !important; }
+        html[data-theme-mode="light"] .border-\[\#3d3d5c\] { border-color: #e5e7eb !important; }
+
+        /* Flatpickr 日历浅色适配 */
+        html[data-theme-mode="light"] .flatpickr-calendar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(0,0,0,0.1) !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+        html[data-theme-mode="light"] .flatpickr-months .flatpickr-month,
+        html[data-theme-mode="light"] .flatpickr-current-month .flatpickr-monthDropdown-months,
+        html[data-theme-mode="light"] .flatpickr-current-month input.cur-year,
+        html[data-theme-mode="light"] .flatpickr-time .flatpickr-time-separator, 
+        html[data-theme-mode="light"] .flatpickr-time .flatpickr-am-pm {
+            color: #111827 !important; fill: #111827 !important;
+        }
+        html[data-theme-mode="light"] .flatpickr-day { color: #4b5563 !important; }
+        html[data-theme-mode="light"] .flatpickr-day:hover { background: #f3f4f6 !important; color: #111827 !important; border-color: #e5e7eb !important; }
+        html[data-theme-mode="light"] .flatpickr-time { border-top: 1px solid #e5e7eb !important; }
+        html[data-theme-mode="light"] .flatpickr-time input { color: #111827 !important; }
+
+        /* 登录页特殊处理 */
+        html[data-theme-mode="light"] .login-box-glow::after {
+            background: rgba(255, 255, 255, 0.85);
+        }
+        
+        /* 滚动条 */
+        html[data-theme-mode="light"] ::-webkit-scrollbar-thumb { background: #d1d5db; }
+        html[data-theme-mode="light"] ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+
+        /* 导航链接 */
+        html[data-theme-mode="light"] .nav-link { color: #6b7280; }
+        html[data-theme-mode="light"] .nav-link:hover, html[data-theme-mode="light"] .nav-link.active { color: #111827; }
+
+        /* 日历格子 */
+        html[data-theme-mode="light"] .day-empty { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.05); color: #9ca3af; }
     </style>
 
 </head>
@@ -507,62 +643,108 @@
                         </div>
 
                         <div class="flex flex-col justify-center space-y-2">
-                            <div class="space-y-1">
-                                <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Target</label>
-                                <div class="flex items-center relative overflow-visible group cursor-default">
-                                    <span class="text-theme-primary font-black text-2xl mr-1 italic opacity-80">$</span>
-                                    <span id="dashboard-target-display" class="font-display text-4xl italic text-liquid-gold py-0 leading-normal block select-none pr-2 hover:scale-105 transition-transform origin-left cursor-pointer">20,000</span>
+                            <!-- New Balance Display -->
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Current Balance</label>
+                                <div class="flex items-center">
+                                    <span class="text-theme-primary font-black text-lg mr-1 italic opacity-80">$</span>
+                                    <span id="dashboard-balance-display" class="font-display text-2xl italic text-white leading-none">0.00</span>
                                 </div>
                             </div>
-                            <div class="pt-2 border-t border-white/5">
-                                <p id="remaining-label" class="text-[10px] text-gray-400 italic font-medium tracking-tight">AI 正在解析...</p>
+                            
+                            <div class="space-y-0.5 pt-2 border-t border-white/5">
+                                <label class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Target</label>
+                                <div class="flex items-center relative overflow-visible group cursor-default">
+                                    <span class="text-theme-primary font-black text-lg mr-1 italic opacity-80">$</span>
+                                    <span id="dashboard-target-display" class="font-display text-2xl italic text-liquid-gold py-0 leading-normal block select-none pr-2 hover:scale-105 transition-transform origin-left cursor-pointer">20,000</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-1">
+                                <p id="remaining-label" class="text-[9px] text-gray-400 italic font-medium tracking-tight">AI 正在解析...</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Crypto Stack -->
-                <div class="xl:col-span-2 flex flex-col gap-3 h-full">
-                    <!-- BTC -->
-                    <div id="btcusdt" class="flex-1 component-bg rounded-xl p-3 shadow-lg relative overflow-hidden flex flex-col justify-center border-l-4 border-transparent hover:border-l-[#F7931A] group">
-                        <div class="flex justify-between items-center z-10 relative">
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">BTC</span>
-                                <div id="btc-price" class="text-lg font-black tracking-tighter text-white transition-colors duration-300">0.00</div>
-                            </div>
-                            <div class="text-right">
-                                <div id="btc-change" class="text-[10px] font-bold px-2 py-1 rounded bg-white/5">--%</div>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-bitcoin absolute -right-6 -bottom-6 text-[6rem] text-[#F7931A] opacity-10 group-hover:opacity-20 transition-all group-hover:rotate-12 pointer-events-none"></i>
-                    </div>
+                <div class="xl:col-span-2 h-full">
+                    <div class="component-bg rounded-3xl p-0 shadow-lg border border-white/5 h-full flex flex-col relative overflow-hidden group">
+                        <!-- iOS Widget Background Blur Effect -->
+                        <div class="absolute inset-0 bg-white/5 backdrop-blur-xl z-0"></div>
+                        
+                        <!-- Header (Optional title, hidden to match iOS widget style, or kept for context) -->
+                        <!-- <div class="relative z-10 px-4 pt-3 pb-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Market Watch</div> -->
 
-                    <!-- ETH -->
-                    <div id="ethusdt" class="flex-1 component-bg rounded-xl p-3 shadow-lg relative overflow-hidden flex flex-col justify-center border-l-4 border-transparent hover:border-l-[#627EEA] group">
-                        <div class="flex justify-between items-center z-10 relative">
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ETH</span>
-                                <div id="eth-price" class="text-lg font-black tracking-tighter text-white transition-colors duration-300">0.00</div>
+                        <!-- List Container -->
+                        <div class="relative z-10 flex flex-col divide-y divide-white/5 h-full">
+                            
+                            <!-- BTC Row -->
+                            <div id="btcusdt-row" class="flex-1 flex items-center px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer">
+                                <!-- Icon -->
+                                <div class="w-8 h-8 rounded-full bg-[#F7931A] flex items-center justify-center mr-2 shrink-0 shadow-md">
+                                    <i class="fa-brands fa-bitcoin text-white text-base"></i>
+                                </div>
+                                <!-- Name -->
+                                <div class="flex flex-col mr-auto">
+                                    <span class="text-sm font-bold text-white leading-tight">BTC</span>
+                                    <span class="text-[9px] font-medium text-gray-400">Bitcoin</span>
+                                </div>
+                                <!-- Sparkline (Canvas) -->
+                                <div class="w-20 h-8 mx-1 hidden md:block">
+                                    <canvas id="btc-sparkline" width="80" height="32"></canvas>
+                                </div>
+                                <!-- Price -->
+                                <div class="flex flex-col items-end min-w-[60px]">
+                                    <span id="btc-price" class="text-sm font-bold text-white tabular-nums tracking-tight">0.00</span>
+                                    <span id="btc-change" class="text-[10px] font-bold">--%</span>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <div id="eth-change" class="text-[10px] font-bold px-2 py-1 rounded bg-white/5">--%</div>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-ethereum absolute -right-6 -bottom-6 text-[6rem] text-[#627EEA] opacity-10 group-hover:opacity-20 transition-all group-hover:rotate-12 pointer-events-none"></i>
-                    </div>
 
-                    <!-- DOGE -->
-                    <div id="dogeusdt" class="flex-1 component-bg rounded-xl p-3 shadow-lg relative overflow-hidden flex flex-col justify-center border-l-4 border-transparent hover:border-l-[#C2A633] group">
-                        <div class="flex justify-between items-center z-10 relative">
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">DOGE</span>
-                                <div id="doge-price" class="text-lg font-black tracking-tighter text-white transition-colors duration-300">0.00</div>
+                            <!-- ETH Row -->
+                            <div id="ethusdt-row" class="flex-1 flex items-center px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer">
+                                <!-- Icon -->
+                                <div class="w-8 h-8 rounded-full bg-[#627EEA] flex items-center justify-center mr-2 shrink-0 shadow-md">
+                                    <i class="fa-brands fa-ethereum text-white text-base"></i>
+                                </div>
+                                <!-- Name -->
+                                <div class="flex flex-col mr-auto">
+                                    <span class="text-sm font-bold text-white leading-tight">ETH</span>
+                                    <span class="text-[9px] font-medium text-gray-400">Ethereum</span>
+                                </div>
+                                <!-- Sparkline -->
+                                <div class="w-20 h-8 mx-1 hidden md:block">
+                                    <canvas id="eth-sparkline" width="80" height="32"></canvas>
+                                </div>
+                                <!-- Price -->
+                                <div class="flex flex-col items-end min-w-[60px]">
+                                    <span id="eth-price" class="text-sm font-bold text-white tabular-nums tracking-tight">0.00</span>
+                                    <span id="eth-change" class="text-[10px] font-bold">--%</span>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <div id="doge-change" class="text-[10px] font-bold px-2 py-1 rounded bg-white/5">--%</div>
+
+                            <!-- SOL Row -->
+                            <div id="dogeusdt-row" class="flex-1 flex items-center px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer">
+                                <!-- Icon -->
+                                <div class="w-8 h-8 rounded-full bg-[#C2A633] flex items-center justify-center mr-2 shrink-0 shadow-md">
+                                    <i class="fa-solid fa-paw text-white text-[10px]"></i>
+                                </div>
+                                <!-- Name -->
+                                <div class="flex flex-col mr-auto">
+                                    <span class="text-sm font-bold text-white leading-tight">DOGE</span>
+                                    <span class="text-[9px] font-medium text-gray-400">Dogecoin</span>
+                                </div>
+                                <!-- Sparkline -->
+                                <div class="w-20 h-8 mx-1 hidden md:block">
+                                    <canvas id="doge-sparkline" width="80" height="32"></canvas>
+                                </div>
+                                <!-- Price -->
+                                <div class="flex flex-col items-end min-w-[60px]">
+                                    <span id="doge-price" class="text-sm font-bold text-white tabular-nums tracking-tight">0.00</span>
+                                    <span id="doge-change" class="text-[10px] font-bold">--%</span>
+                                </div>
                             </div>
                         </div>
-                        <i class="fa-solid fa-paw absolute -right-6 -bottom-6 text-[6rem] text-[#C2A633] opacity-10 group-hover:opacity-20 transition-all group-hover:rotate-12 pointer-events-none"></i>
                     </div>
                 </div>
 
@@ -739,7 +921,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Monthly PnL Chart -->
-                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[320px]">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
                             <span>Monthly PnL (盈亏)</span>
                             <i class="fas fa-chart-bar text-emerald-500"></i>
@@ -750,7 +932,7 @@
                     </div>
 
                     <!-- Monthly ROI Chart -->
-                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[320px]">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
                             <span>Monthly ROI (收益率)</span>
                             <i class="fas fa-percentage text-blue-500"></i>
@@ -761,7 +943,7 @@
                     </div>
 
                     <!-- Monthly Win Rate Chart -->
-                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[320px]">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
                             <span>Monthly Win Rate (胜率)</span>
                             <i class="fas fa-trophy text-yellow-500"></i>
@@ -772,7 +954,7 @@
                     </div>
 
                     <!-- Monthly Trade Count Chart -->
-                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[400px]">
+                    <div class="p-6 rounded-3xl component-bg border border-white/5 shadow-xl flex flex-col h-[320px]">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
                             <span>Monthly Trades (交易数)</span>
                             <i class="fas fa-list-ol text-purple-500"></i>
@@ -819,6 +1001,21 @@
                             <button onclick="window.setTheme('orange')" class="group relative p-4 rounded-xl border border-white/10 hover:border-orange-500 transition-all bg-[#1a1a2e] flex flex-col items-center gap-3">
                                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-600 shadow-lg group-hover:scale-110 transition-transform"></div>
                                 <span class="text-xs font-bold text-gray-400 group-hover:text-white">Sunset Orange</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Display Mode Settings -->
+                    <div class="pt-8 border-t border-white/5">
+                        <h3 class="text-lg font-bold text-white mb-6 flex items-center"><i class="fas fa-adjust mr-3 text-theme-primary"></i>Display Mode / 显示模式</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="window.setMode('dark')" id="btn-mode-dark" class="group relative p-4 rounded-xl border border-white/10 hover:border-theme-primary transition-all bg-[#1a1a2e] flex items-center justify-center gap-3">
+                                <i class="fas fa-moon text-xl text-indigo-400"></i>
+                                <span class="text-sm font-bold text-gray-400 group-hover:text-white">Dark Mode (暗色)</span>
+                            </button>
+                            <button onclick="window.setMode('light')" id="btn-mode-light" class="group relative p-4 rounded-xl border border-white/10 hover:border-theme-primary transition-all bg-[#1a1a2e] flex items-center justify-center gap-3">
+                                <i class="fas fa-sun text-xl text-amber-400"></i>
+                                <span class="text-sm font-bold text-gray-400 group-hover:text-white">Light Mode (浅色)</span>
                             </button>
                         </div>
                     </div>
@@ -909,8 +1106,38 @@
     <script>
         const symbols = ['btcusdt', 'ethusdt', 'dogeusdt'];
         const lastPrices = {};
+        // Store 30 days of historical close prices
+        const sparklineHistory = {
+            btcusdt: [],
+            ethusdt: [],
+            dogeusdt: []
+        };
+        const sparklineCharts = {};
+
         let ws = null;
         let reconnectTimeout = null;
+        
+        // Fetch Historical Data (7 Days Hourly Candles)
+        async function fetchHistory() {
+            for (const symbol of symbols) {
+                try {
+                    // Try to fetch from Binance API (public)
+                    // limit=168 (7 days * 24 hours), interval=1h
+                    // Using hourly data provides a more detailed "weekly" view than just 7 daily points
+                    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=1h&limit=168`);
+                    const data = await res.json();
+                    // kline format: [time, open, high, low, close, ...]
+                    const closes = data.map(k => parseFloat(k[4]));
+                    sparklineHistory[symbol] = closes;
+                } catch (e) {
+                    console.warn(`Failed to fetch history for ${symbol}, using mock data`, e);
+                    // Fallback to mock data (approx 168 points)
+                    const basePrice = symbol === 'btcusdt' ? 90000 : symbol === 'ethusdt' ? 3000 : 0.38;
+                    sparklineHistory[symbol] = Array(168).fill(0).map((_, i) => basePrice * (1 + (Math.sin(i/10) * 0.05)));
+                }
+            }
+            initSparklines();
+        }
 
         function initWebSocket() {
             if (reconnectTimeout) clearTimeout(reconnectTimeout);
@@ -927,6 +1154,10 @@
 
             ws.onopen = () => {
                 console.log('Market Data Connected');
+                // Fetch history first, then render
+                if (sparklineHistory.btcusdt.length === 0) {
+                    fetchHistory();
+                }
             };
 
             ws.onmessage = (event) => {
@@ -943,6 +1174,7 @@
                     const changePercent = data.P;
                     
                     updatePriceUI(symbol, price, rawPrice, changePercent);
+                    updateSparkline(symbol, rawPrice);
                 } catch (err) {
                     console.error("Data parse error", err);
                 }
@@ -956,6 +1188,68 @@
                 console.log('Market Data Disconnected. Reconnecting...');
                 scheduleReconnect();
             };
+        }
+
+        function initSparklines() {
+            symbols.forEach(symbol => {
+                const coinPrefix = symbol.replace('usdt', '');
+                const ctx = document.getElementById(`${coinPrefix}-sparkline`)?.getContext('2d');
+                if (!ctx) return;
+
+                if (sparklineCharts[symbol]) sparklineCharts[symbol].destroy();
+
+                sparklineCharts[symbol] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array(sparklineHistory[symbol].length).fill(''),
+                        datasets: [{
+                            data: sparklineHistory[symbol],
+                            borderColor: '#ef4444', 
+                            borderWidth: 1.5,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false } // Min/Max will be auto-calculated by Chart.js or we can set it
+                        },
+                        animation: {
+                            duration: 0 // Disable animation for init
+                        }
+                    }
+                });
+                
+                // Initial color set based on trend
+                const first = sparklineHistory[symbol][0];
+                const last = sparklineHistory[symbol][sparklineHistory[symbol].length - 1];
+                sparklineCharts[symbol].data.datasets[0].borderColor = last >= first ? '#10b981' : '#ef4444';
+                sparklineCharts[symbol].update();
+            });
+        }
+
+        function updateSparkline(symbol, price) {
+            const chart = sparklineCharts[symbol];
+            if (chart && sparklineHistory[symbol].length > 0) {
+                // Update the LAST point in the array (Realtime Daily Close Simulation)
+                // Instead of shifting, we just update the tip to reflect current price vs history
+                const lastIndex = sparklineHistory[symbol].length - 1;
+                sparklineHistory[symbol][lastIndex] = price;
+
+                chart.data.datasets[0].data = sparklineHistory[symbol];
+                
+                // Update Color
+                const first = sparklineHistory[symbol][0];
+                const isPositive = price >= first;
+                chart.data.datasets[0].borderColor = isPositive ? '#10b981' : '#ef4444';
+                
+                chart.update('none');
+            }
         }
 
         function scheduleReconnect() {
@@ -974,30 +1268,36 @@
 
             if (!priceEl) return;
 
-            // 价格颜色跳动效果
+            // Price Flash Animation (Green/Red)
             if (lastPrices[symbol] && rawPrice !== lastPrices[symbol]) {
-                const colorClass = rawPrice > lastPrices[symbol] ? 'text-emerald-400' : 'text-rose-500';
+                const isUp = rawPrice > lastPrices[symbol];
+                const colorClass = isUp ? 'text-emerald-400' : 'text-rose-500';
+                
+                // Remove default white and add flash color
                 priceEl.classList.remove('text-white', 'text-emerald-400', 'text-rose-500');
                 priceEl.classList.add(colorClass);
                 
-                // 500ms 后恢复白色
+                // Revert to white after 600ms
                 setTimeout(() => {
-                     priceEl.classList.remove('text-emerald-400', 'text-rose-500');
-                     priceEl.classList.add('text-white');
-                }, 800);
+                     if (priceEl) { // Check if element still exists
+                         priceEl.classList.remove('text-emerald-400', 'text-rose-500');
+                         priceEl.classList.add('text-white');
+                     }
+                }, 600);
             }
             
-            priceEl.innerText = displayPrice;
+            priceEl.innerText = '$' + displayPrice;
             lastPrices[symbol] = rawPrice;
 
             // 涨跌幅样式
             const isPositive = parseFloat(change) >= 0;
             if (changeEl) {
-                changeEl.innerText = `${isPositive ? '+' : ''}${parseFloat(change).toFixed(2)}%`;
-                changeEl.style.color = isPositive ? '#10b981' : '#f43f5e';
-                changeEl.style.backgroundColor = isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)';
+                changeEl.innerText = `${parseFloat(change).toFixed(2)}%`;
+                changeEl.style.color = isPositive ? '#10b981' : '#ef4444'; // Green or Red Text Only
+                changeEl.style.backgroundColor = 'transparent'; // No background
             }
         }
+
 
         // Handle visibility change (reconnect when tab comes back)
         document.addEventListener('visibilitychange', () => {
@@ -1010,8 +1310,9 @@
 
         // Initial Start
         initWebSocket();
+    </script>
 
-
+    <script>
     window.setTheme = (themeName) => {
         const themes = {
             purple: { primary: '#d946ef', primaryRgb: '217, 70, 239', secondary: '#a855f7', secondaryRgb: '168, 85, 247', accent: '#f0abfc' },
@@ -1035,9 +1336,41 @@
         if (typeof refreshUI === 'function') refreshUI();
     };
 
+    window.setMode = (mode) => {
+        document.documentElement.setAttribute('data-theme-mode', mode);
+        localStorage.setItem('jinmu-mode', mode);
+        
+        // Update Buttons
+        const btnDark = document.getElementById('btn-mode-dark');
+        const btnLight = document.getElementById('btn-mode-light');
+        if(btnDark && btnLight) {
+            const activeClass = 'border-theme-primary bg-theme-primary-10';
+            const inactiveClass = 'border-white/10 bg-[#1a1a2e]';
+            
+            if(mode === 'dark') {
+                btnDark.className = btnDark.className.replace(inactiveClass, activeClass).replace('bg-[#1a1a2e]', 'bg-theme-primary-10');
+                btnLight.className = btnLight.className.replace(activeClass, inactiveClass).replace('bg-theme-primary-10', 'bg-[#1a1a2e]');
+                // Force reset specific styles
+                btnDark.classList.add('border-theme-primary');
+                btnLight.classList.remove('border-theme-primary');
+            } else {
+                btnLight.className = btnLight.className.replace(inactiveClass, activeClass).replace('bg-[#1a1a2e]', 'bg-theme-primary-10');
+                btnDark.className = btnDark.className.replace(activeClass, inactiveClass).replace('bg-theme-primary-10', 'bg-[#1a1a2e]');
+                btnLight.classList.add('border-theme-primary');
+                btnDark.classList.remove('border-theme-primary');
+            }
+        }
+
+        if (typeof refreshUI === 'function') refreshUI();
+    };
+
     // Initialize Theme
     const savedTheme = localStorage.getItem('jinmu-theme') || 'purple';
     window.setTheme(savedTheme);
+    
+    // Initialize Mode
+    const savedMode = localStorage.getItem('jinmu-mode') || 'dark';
+    window.setMode(savedMode);
     
     </script>
 
@@ -1209,7 +1542,7 @@ function refreshUI() {
     });
 
     updateGoalProgress(allTrades);
-    updateMetricCards(allTrades); 
+    updateMetricCards(allTrades, filtered); 
     
     // Sync Calendar Widget Month (if it exists)
     const calSelect = document.getElementById('calendar-month-select');
@@ -1287,6 +1620,13 @@ function updateAnalyticsCharts(all) {
     const countData = labels.map(k => stats[k].total);
 
     // Helper for Chart Config
+    const isLight = document.documentElement.getAttribute('data-theme-mode') === 'light';
+    const baseTextColor = isLight ? '#374151' : '#fff';
+    const axisColor = isLight ? '#6b7280' : '#9ca3af';
+    const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+    const tooltipBg = isLight ? '#ffffff' : '#111122';
+    const tooltipText = isLight ? '#111827' : '#ffffff';
+
     const createConfig = (label, data, colorCallback, unit = '') => ({
         type: 'bar',
         data: {
@@ -1307,18 +1647,22 @@ function updateAnalyticsCharts(all) {
             plugins: {
                 legend: { display: false },
                 datalabels: {
-                    color: '#fff',
+                    color: baseTextColor,
                     font: { weight: '900', size: 13, family: 'Inter' },
                     anchor: 'end',
                     align: 'end',
                     offset: -4,
                     textShadowBlur: 4,
-                    textShadowColor: 'rgba(0,0,0,0.8)',
+                    textShadowColor: isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
                     formatter: (val) => val === 0 ? '' : (unit === '$' && val > 0 ? '+' : '') + val.toFixed(unit === '' ? 0 : 2) + unit
                 },
                 tooltip: { 
                     callbacks: { label: (c) => `${c.raw.toFixed(2)}${unit}` },
-                    backgroundColor: '#111122',
+                    backgroundColor: tooltipBg,
+                    titleColor: tooltipText,
+                    bodyColor: tooltipText,
+                    borderColor: gridColor,
+                    borderWidth: 1,
                     titleFont: { size: 12 },
                     bodyFont: { size: 14, weight: 'bold' }
                 }
@@ -1332,10 +1676,10 @@ function updateAnalyticsCharts(all) {
                 }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#9ca3af', font: {size: 11, weight: 'bold'} } },
+                x: { grid: { display: false }, ticks: { color: axisColor, font: {size: 11, weight: 'bold'} } },
                 y: { 
-                    grid: { color: 'rgba(255,255,255,0.05)' }, 
-                    ticks: { color: '#6b7280', font: {size: 11, weight: 'bold'} },
+                    grid: { color: gridColor }, 
+                    ticks: { color: axisColor, font: {size: 11, weight: 'bold'} },
                     grace: '10%' 
                 }
             }
@@ -1384,17 +1728,36 @@ function updateGoalProgress(all) {
     
     // Update Dashboard Display
     const targetDisplay = document.getElementById('dashboard-target-display');
+    const balanceDisplay = document.getElementById('dashboard-balance-display');
+    
     if (targetDisplay) targetDisplay.textContent = target.toLocaleString();
+    if (balanceDisplay) balanceDisplay.textContent = currentEquity.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
     document.getElementById('remaining-label').textContent = remaining > 0 ? `距目标还差 $${remaining.toLocaleString()}` : 'GOAL REACHED / 目标已达成';
     document.getElementById('remaining-label').className = remaining > 0 ? 'text-[10px] text-gray-400 italic font-bold' : 'text-[10px] text-emerald-400 font-black animate-pulse';
 }
 
-function updateMetricCards(all) {
+function updateMetricCards(all, viewData) {
     const initial = config.initialCapital;
     let currentEquity = initial;
     let maxEquity = initial;
     let maxDD = 0, totalProfit = 0, totalLoss = 0, winCount = 0, lossCount = 0, totalR = 0;
+    
+    // Calculate PnL for the View (Year)
+    let currentViewPnL = 0;
+    
+    // We want Year PnL now, not Month PnL.
+    // The passed 'viewData' is filtered by month (from refreshUI logic).
+    // So we need to calculate PnL from 'all' trades for the current selected year.
+    const selectedYear = Number(document.getElementById('global-year').value) || new Date().getFullYear();
+    
+    all.forEach(t => {
+        const d = new Date(t.date);
+        if (d.getFullYear() === selectedYear) {
+            currentViewPnL += t.profit;
+        }
+    });
+
     all.forEach(t => {
         currentEquity += t.profit;
         totalR += t.r;
@@ -1408,22 +1771,40 @@ function updateMetricCards(all) {
     const pf = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
     const roi = initial > 0 ? ((currentEquity - initial) / initial) * 100 : 0;
     
+    // 1. Calculate View Stats (Selected Month Data)
+    // Removed duplicate calculation logic since we passed viewData directly
+
     const metrics = [
-        { label: '账户总资产', val: `${currentEquity.toFixed(2)}`, sub: '当前余额 (Balance)', cls: 'text-white' },
+        { label: '年收益盈亏', val: `${currentViewPnL >= 0 ? '+' : ''}${currentViewPnL.toFixed(0)}`, sub: '本年盈亏 (Year PnL)', cls: currentViewPnL >= 0 ? 'text-emerald-400' : 'text-rose-400' },
         { label: '统计胜率', val: `${wr.toFixed(1)}%`, sub: `${winCount}胜 / ${lossCount}负`, cls: 'text-theme-primary' },
         { label: '盈亏系数 PF', val: pf.toFixed(2), sub: '盈亏比 (Factor)', cls: pf >= 1.5 ? 'text-emerald-400' : 'text-amber-400' },
         { label: '极限回撤 DD', val: `${maxDD.toFixed(1)}%`, sub: '最大回撤 (Drawdown)', cls: 'text-rose-400' },
         { label: '单笔均值 R', val: `${(totalR/Math.max(1,all.length)).toFixed(2)}R`, sub: '平均R值 (Avg R)', cls: 'text-indigo-400' },
         { label: '总收益率 ROI', val: `${roi > 0 ? '+' : ''}${roi.toFixed(2)}%`, sub: '总回报率 (Return)', cls: roi >= 0 ? 'text-emerald-500' : 'text-rose-500' },
-        { label: '核心净利润', val: `${(currentEquity - initial).toFixed(2)}`, sub: '净利润 (Net Profit)', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
+        { label: '核心净利润', val: `${(currentEquity - initial).toFixed(0)}`, sub: '净利润 (Net Profit)', cls: (currentEquity >= initial) ? 'text-emerald-400' : 'text-rose-400' },
         { label: '总交易数', val: all.length, sub: '总笔数 (Count)', cls: 'text-gray-400' }
     ];
-    document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+    document.getElementById('metrics-grid').innerHTML = metrics.map((m, index) => {
+        // Special styling for the first card (Monthly PnL)
+        if (index === 0) {
+            return `
+            <div class="metric-card balance-card-special p-4 rounded-2xl component-bg flex flex-col justify-center h-full relative">
+                <p class="text-xs md:text-sm uppercase text-theme-primary font-black tracking-widest mb-2 relative z-10 flex items-center">
+                    <i class="fas fa-calendar-check mr-2"></i> ${m.label}
+                </p>
+                <p class="text-xl md:text-3xl font-black balance-value-text relative z-10 font-display italic tracking-wide" style="${m.val.startsWith('-') ? 'background:linear-gradient(90deg, #f43f5e 0%, #fff 50%, #f43f5e 100%); -webkit-background-clip: text;' : ''}">${m.val}</p>
+                <p class="text-[10px] md:text-xs text-gray-400 mt-2 uppercase font-bold tracking-tight relative z-10">
+                    ${m.sub}
+                </p>
+            </div>`;
+        }
+        return `
         <div class="metric-card p-4 rounded-2xl component-bg border border-white/5 flex flex-col justify-center h-full">
             <p class="text-[10px] md:text-xs uppercase text-gray-500 font-black tracking-widest mb-2">${m.label}</p>
             <p class="text-xl md:text-2xl font-black ${m.cls}">${m.val}</p>
             <p class="text-[10px] md:text-xs text-gray-600 mt-2 uppercase font-black tracking-tight">${m.sub}</p>
-        </div>`).join('');
+        </div>`
+    }).join('');
 }
 
 function renderCalendar(data) {
@@ -1592,6 +1973,12 @@ function updateChart(all, viewData) {
     const style = getComputedStyle(document.body);
     const primary = style.getPropertyValue('--primary').trim() || '#d946ef';
     const primaryRgb = style.getPropertyValue('--primary-rgb').trim() || '217, 70, 239';
+    
+    const isLight = document.documentElement.getAttribute('data-theme-mode') === 'light';
+    const axisColor = isLight ? '#6b7280' : '#4b5563';
+    const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)';
+    const tooltipBg = isLight ? '#ffffff' : '#111122';
+    const tooltipText = isLight ? '#111827' : '#ffffff';
 
     if (chartInstance) chartInstance.destroy();
     chartInstance = new Chart(ctx, {
@@ -1608,10 +1995,22 @@ function updateChart(all, viewData) {
         }] },
         options: { 
             responsive: true, maintainAspectRatio: false, 
-            plugins: { legend: { display: false }, tooltip: { padding: 12, backgroundColor: '#111122', titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 14, weight: 'black' } } },
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    padding: 12, 
+                    backgroundColor: tooltipBg, 
+                    titleColor: tooltipText,
+                    bodyColor: tooltipText,
+                    borderColor: gridColor,
+                    borderWidth: 1,
+                    titleFont: { size: 12, weight: 'bold' }, 
+                    bodyFont: { size: 14, weight: 'black' } 
+                } 
+            },
             scales: { 
-                x: { type: 'time', grid: { display: false }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } }, 
-                y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#4b5563', font: {size: 10, weight: 'bold'} } } 
+                x: { type: 'time', grid: { display: false }, ticks: { color: axisColor, font: {size: 10, weight: 'bold'} } }, 
+                y: { grid: { color: gridColor }, ticks: { color: axisColor, font: {size: 10, weight: 'bold'} } } 
             } 
         }
     });
@@ -2047,6 +2446,7 @@ function renderVideos() {
     </script>
 </body>
 </html></html>
+
 
 
 
