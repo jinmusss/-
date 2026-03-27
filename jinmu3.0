@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JINMU ALWAYS WIN - 专业交易分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #0d0d18; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+        .neon-glow { box-shadow: 0 0 10px rgba(0,220,255,0.4); }
+        .cyber-button { background-image: linear-gradient(90deg, #00d4ff,#8338ec); color: white; transition: all 0.2s; cursor: pointer; }
+        .cyber-button:hover { box-shadow: 0 0 15px rgba(131,56,236,0.6); transform: translateY(-1px); }
+        .component-bg { background-color: #1a1a2e; border: 1px solid #2d2d4c; }
+        .modal-overlay { background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 50; }
+        input, select, textarea { border: 1px solid #3f3f6e !important; border-radius: 0.75rem; }
+        .time-filter-btn { transition: all 0.3s; border: 1px solid #2d2d4c; }
+        .time-filter-btn.active { background: rgba(0,212,255,0.1); border-color: #00d4ff; color: #00d4ff; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d0d18; }
+        ::-webkit-scrollbar-thumb { background: #2d2d4c; border-radius: 10px; }
+        .error-toast { background: #ef4444; color: white; padding: 12px 24px; border-radius: 8px; position: fixed; bottom: 20px; right: 20px; z-index: 100; display: none; }
+    </style>
+</head>
+<body class="selection:bg-cyan-600 selection:text-black">
+    <div id="error-toast" class="error-toast shadow-2xl items-center space-x-2">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="error-message">连接失败</span>
+    </div>
+
+    <div id="app" class="p-4 md:p-8 max-w-7xl mx-auto w-full flex-grow">
+        <header class="mb-8 border-b border-cyan-400/20 pb-6 flex justify-between items-center flex-wrap gap-4">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-chart-pie text-4xl text-cyan-400 neon-glow"></i>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wider text-white"><span class="text-cyan-400">JINMU</span> PRO ANALYTICS</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Professional Grade Trading Edge v3.0</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 text-sm">
+                <div class="bg-[#1a1a2e] px-4 py-2 rounded-xl border border-[#2d2d4c] flex flex-col">
+                    <label class="text-[10px] text-gray-400 uppercase">初始资金</label>
+                    <div class="flex items-center">
+                        <span class="text-cyan-400 mr-1">$</span>
+                        <input type="number" id="initial-capital" value="10000" class="w-20 bg-transparent border-none p-0 text-white font-bold focus:ring-0" />
+                    </div>
+                </div>
+                <div id="user-info" class="flex flex-col items-end">
+                    <span id="user-id-display" class="text-xs font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">UID: 连接中...</span>
+                    <span id="connection-status" class="text-[10px] text-gray-500 mt-1 uppercase">Cloud Sync</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 核心数据指标 -->
+            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                <!-- 指标将由 JS 动态生成 -->
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- 资产曲线与时间筛选 -->
+                <div class="lg:col-span-2 p-6 rounded-2xl component-bg shadow-2xl">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <h3 class="text-lg font-bold text-gray-100 flex items-center">
+                            <i class="fas fa-wave-square mr-2 text-pink-500"></i>净值增长轨迹
+                        </h3>
+                        <div class="flex bg-[#0d0d18] p-1 rounded-lg border border-[#2d2d4c]" id="time-filters">
+                            <button data-range="all" class="time-filter-btn active px-3 py-1 text-xs rounded-md">全部</button>
+                            <button data-range="7d" class="time-filter-btn px-3 py-1 text-xs rounded-md">7天</button>
+                            <button data-range="30d" class="time-filter-btn px-3 py-1 text-xs rounded-md">30天</button>
+                            <button data-range="month" class="time-filter-btn px-3 py-1 text-xs rounded-md">本月</button>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full">
+                        <canvas id="equity-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 操作与盈亏分布 -->
+                <div class="p-6 rounded-2xl component-bg shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-gray-100 flex items-center">
+                            <i class="fas fa-terminal mr-2 text-yellow-400"></i>交易执行
+                        </h3>
+                        <button onclick="window.openModal()" class="cyber-button w-full py-4 rounded-xl font-bold flex items-center justify-center space-x-2 mb-4">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>新增交易记录</span>
+                        </button>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="window.exportData()" class="bg-gray-800 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-300 uppercase font-bold">
+                                <i class="fas fa-file-export mr-1"></i> 导出 JSON
+                            </button>
+                            <button onclick="window.triggerImport()" class="bg-gray-800 hover:bg-gray-700 text-[10px] py-2 rounded-lg text-gray-300 uppercase font-bold">
+                                <i class="fas fa-file-import mr-1"></i> 导入 JSON
+                            </button>
+                            <input type="file" id="import-file" class="hidden" accept=".json" onchange="window.importData(event)" />
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-700 pt-4 mt-4">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-xs text-gray-400 uppercase">胜率分布</span>
+                            <span id="winrate-percent" class="text-xl font-black text-emerald-400">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden flex">
+                            <div id="win-bar" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%"></div>
+                            <div id="loss-bar" class="bg-rose-500 h-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] mt-2 text-gray-500">
+                            <span>盈利: <span id="stat-wins" class="text-emerald-400">0</span></span>
+                            <span>亏损: <span id="stat-losses" class="text-rose-400">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交易日志矩阵 -->
+            <div class="p-6 rounded-2xl component-bg shadow-2xl overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-100 flex items-center">
+                        <i class="fas fa-database mr-2 text-cyan-400"></i>交易日志矩阵
+                        <span id="trade-count-badge" class="ml-3 text-xs bg-[#252542] text-gray-400 px-2 py-1 rounded-md">0 条</span>
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="text-left text-xs uppercase text-gray-500 border-b border-gray-800">
+                                <th class="px-4 py-3">时间</th>
+                                <th class="px-4 py-3">交易对</th>
+                                <th class="px-4 py-3">方向</th>
+                                <th class="px-4 py-3">盈亏 ($)</th>
+                                <th class="px-4 py-3">R 风险比</th>
+                                <th class="px-4 py-3">TV 分析</th>
+                                <th class="px-4 py-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trade-log-body" class="divide-y divide-gray-800/50 text-sm"></tbody>
+                    </table>
+                    <div id="empty-state" class="py-20 text-center text-gray-600 hidden">
+                        <i class="fas fa-ghost text-4xl mb-3 block"></i>
+                        暂无符合当前时间段的数据。
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="trade-modal" class="fixed inset-0 hidden flex justify-center items-center modal-overlay">
+        <div class="bg-[#1a1a2e] border border-[#2d2d4c] p-8 rounded-2xl w-full max-w-lg shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-xl font-bold text-white">记录交易细节</h3>
+                <button onclick="window.closeModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form id="trade-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase">交易对 (Symbol)</label>
+                        <input id="trade-pair" type="text" placeholder="e.g. BTCUSDT" required class="w-full p-3 bg-[#0d0d18] text-white focus:ring-1 focus:ring-cyan-500 outline-none" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase">方向 (Side)</label>
+                        <select id="trade-direction" class="w-full p-3 bg-[#0d0d18] text-white outline-none">
+                            <option value="Long">做多 (LONG)</option>
+                            <option value="Short">做空 (SHORT)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase">盈亏 ($)</label>
+                        <input id="trade-profit" type="number" step="0.01" required class="w-full p-3 bg-[#0d0d18] text-white outline-none" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase">风险报酬比 (R)</label>
+                        <input id="trade-r" type="number" step="0.1" required class="w-full p-3 bg-[#0d0d18] text-white outline-none" />
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block uppercase">交易时间</label>
+                    <input id="trade-date" type="datetime-local" required class="w-full p-3 bg-[#0d0d18] text-white outline-none" />
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block uppercase">TradingView 图表链接 (可选)</label>
+                    <input id="trade-tv-link" type="url" placeholder="https://www.tradingview.com/x/..." class="w-full p-3 bg-[#0d0d18] text-white outline-none" />
+                </div>
+                <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold mt-4 shadow-lg">确认保存并同步</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDhzGgJ-Jjb6Ouztk2aV3WvPHimEJ1wagU",
+            authDomain: "jinmu-c0549.firebaseapp.com",
+            projectId: "jinmu-c0549",
+            storageBucket: "jinmu-c0549.firebasestorage.app",
+            messagingSenderId: "433198268542",
+            appId: "1:433198268542:web:e3a1bb8aedd22c4db8982f"
+        };
+        const appId = 'jinmu-trading-v3';
+
+        const init = async () => {
+            let allTrades = [];
+            let currentFilter = 'all';
+            let chartInstance = null;
+            let db = null;
+            let currentUser = null;
+            let useLocalStorageFallback = false;
+
+            const activateLocalStorage = () => {
+                useLocalStorageFallback = true;
+                currentUser = { uid: 'local-session' };
+                document.getElementById('user-id-display').textContent = `UID: LOCAL_USER`;
+                document.getElementById('connection-status').textContent = "LocalStorage Mode";
+                document.getElementById('connection-status').className = "text-[10px] text-yellow-500 mt-1 uppercase";
+                loadLocalTrades();
+            };
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        document.getElementById('user-id-display').textContent = `UID: ${user.uid.substring(0,8)}...`;
+                        document.getElementById('connection-status').textContent = "Cloud Active";
+                        document.getElementById('connection-status').className = "text-[10px] text-emerald-400 mt-1 uppercase";
+                        setupFirestoreListener(user.uid);
+                    } else {
+                        try { await signInAnonymously(auth); } catch { activateLocalStorage(); }
+                    }
+                });
+            } catch { activateLocalStorage(); }
+
+            function setupFirestoreListener(uid) {
+                onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'trades'), (snap) => {
+                    allTrades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    applyFiltersAndUpdate();
+                }, () => activateLocalStorage());
+            }
+
+            function loadLocalTrades() {
+                const saved = localStorage.getItem('jinmu_trades_v3');
+                allTrades = saved ? JSON.parse(saved) : [];
+                applyFiltersAndUpdate();
+            }
+
+            function applyFiltersAndUpdate() {
+                allTrades.sort((a, b) => new Date(a.date) - new Date(b.date));
+                let filtered = [...allTrades];
+                const now = new Date();
+                
+                if (currentFilter === '7d') {
+                    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    filtered = allTrades.filter(t => new Date(t.date) >= sevenDaysAgo);
+                } else if (currentFilter === '30d') {
+                    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    filtered = allTrades.filter(t => new Date(t.date) >= thirtyDaysAgo);
+                } else if (currentFilter === 'month') {
+                    filtered = allTrades.filter(t => {
+                        const d = new Date(t.date);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    });
+                }
+                updateUI(filtered);
+            }
+
+            function updateUI(filteredTrades) {
+                const initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
+                const logBody = document.getElementById('trade-log-body');
+                logBody.innerHTML = '';
+                
+                if (filteredTrades.length === 0) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                } else {
+                    document.getElementById('empty-state').classList.add('hidden');
+                }
+
+                let currentEquity = initialCapital;
+                let wins = 0, losses = 0, totalProfit = 0, totalLoss = 0, maxDrawdown = 0, peak = initialCapital;
+                const equityData = [{ x: filteredTrades.length > 0 ? new Date(filteredTrades[0].date) : new Date(), y: initialCapital }];
+
+                filteredTrades.forEach(trade => {
+                    const isProfit = trade.profit >= 0;
+                    if (isProfit) { wins++; totalProfit += trade.profit; } 
+                    else { losses++; totalLoss += Math.abs(trade.profit); }
+
+                    currentEquity += trade.profit;
+                    equityData.push({ x: new Date(trade.date), y: currentEquity });
+                    
+                    // 计算回撤
+                    if (currentEquity > peak) peak = currentEquity;
+                    const dd = ((peak - currentEquity) / peak) * 100;
+                    if (dd > maxDrawdown) maxDrawdown = dd;
+
+                    // 渲染表格
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-white/5 border-b border-gray-800/50";
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 text-[10px] text-gray-500 font-mono">${new Date(trade.date).toLocaleString()}</td>
+                        <td class="px-4 py-4 font-bold">${trade.pair}</td>
+                        <td class="px-4 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${trade.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${trade.direction}</span></td>
+                        <td class="px-4 py-4 font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">${isProfit ? '+' : ''}${trade.profit.toFixed(2)}</td>
+                        <td class="px-4 py-4 text-gray-400">${trade.r} R</td>
+                        <td class="px-4 py-4">
+                            <button onclick="window.openTV('${trade.pair}', '${trade.tvLink || ''}')" class="text-xs text-cyan-400 hover:underline"><i class="fas fa-external-link-alt mr-1"></i>分析</button>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                            <button onclick="window.editTrade('${trade.id}')" class="text-gray-500 hover:text-cyan-400 mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="window.deleteTrade('${trade.id}')" class="text-gray-500 hover:text-rose-500"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    logBody.appendChild(tr);
+                });
+
+                // 计算专业指标
+                const winRate = filteredTrades.length > 0 ? (wins / filteredTrades.length * 100) : 0;
+                const profitFactor = totalLoss === 0 ? totalProfit : (totalProfit / totalLoss);
+                const avgTrade = filteredTrades.length > 0 ? (totalProfit - totalLoss) / filteredTrades.length : 0;
+
+                renderMetrics([
+                    { label: '账户余额', value: `$${currentEquity.toFixed(2)}`, color: 'text-white' },
+                    { label: '胜率', value: `${winRate.toFixed(1)}%`, color: 'text-cyan-400' },
+                    { label: '盈亏比 (PF)', value: profitFactor.toFixed(2), color: 'text-yellow-400' },
+                    { label: '最大回撤', value: `${maxDrawdown.toFixed(2)}%`, color: 'text-rose-400' },
+                    { label: '平均盈亏', value: `$${avgTrade.toFixed(2)}`, color: avgTrade >= 0 ? 'text-emerald-400' : 'text-rose-400' },
+                    { label: '净利润', value: `$${(currentEquity - initialCapital).toFixed(2)}`, color: (currentEquity - initialCapital) >= 0 ? 'text-emerald-400' : 'text-rose-400' }
+                ]);
+
+                document.getElementById('winrate-percent').textContent = `${winRate.toFixed(1)}%`;
+                document.getElementById('stat-wins').textContent = wins;
+                document.getElementById('stat-losses').textContent = losses;
+                document.getElementById('win-bar').style.width = `${winRate}%`;
+                document.getElementById('loss-bar').style.width = `${100 - winRate}%`;
+                document.getElementById('trade-count-badge').textContent = `${filteredTrades.length} 条`;
+                updateChart(equityData);
+            }
+
+            function renderMetrics(items) {
+                document.getElementById('metrics-grid').innerHTML = items.map(item => `
+                    <div class="p-4 rounded-xl component-bg border-l-4 border-cyan-500/30 shadow-inner">
+                        <p class="text-[10px] uppercase text-gray-500 tracking-widest font-bold mb-1">${item.label}</p>
+                        <p class="text-xl font-black ${item.color}">${item.value}</p>
+                    </div>`).join('');
+            }
+
+            function updateChart(data) {
+                const ctx = document.getElementById('equity-chart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: [{ data: data, borderColor: '#00d4ff', borderWidth: 3, fill: true, backgroundColor: 'rgba(0,212,255,0.08)', tension: 0.2, pointRadius: 3, pointHoverRadius: 6 }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, 
+                        scales: { 
+                            x: { type: 'time', grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } }, 
+                            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 10 } } } 
+                        }
+                    }
+                });
+            }
+
+            // 时间筛选点击
+            document.querySelectorAll('.time-filter-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.range;
+                    applyFiltersAndUpdate();
+                };
+            });
+
+            // TradingView 链接逻辑
+            window.openTV = (pair, link) => {
+                if (link) window.open(link, '_blank');
+                else {
+                    const cleanPair = pair.replace(/[^a-zA-Z0-9]/g, '');
+                    window.open(`https://www.tradingview.com/chart/?symbol=BINANCE:${cleanPair}`, '_blank');
+                }
+            };
+
+            window.openModal = () => {
+                document.getElementById('trade-form').reset();
+                document.getElementById('edit-id').value = '';
+                document.getElementById('modal-title').textContent = '记录新交易';
+                document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('trade-modal').classList.remove('hidden');
+            };
+
+            window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+
+            window.deleteTrade = async (id) => {
+                if (!confirm('确定彻底删除该记录吗？')) return;
+                if (useLocalStorageFallback) {
+                    allTrades = allTrades.filter(t => t.id !== id);
+                    localStorage.setItem('jinmu_trades_v3', JSON.stringify(allTrades));
+                    applyFiltersAndUpdate();
+                } else {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'trades', id));
+                }
+            };
+
+            window.editTrade = (id) => {
+                const t = allTrades.find(x => x.id === id);
+                if (!t) return;
+                document.getElementById('edit-id').value = t.id;
+                document.getElementById('trade-pair').value = t.pair;
+                document.getElementById('trade-direction').value = t.direction;
+                document.getElementById('trade-profit').value = t.profit;
+                document.getElementById('trade-r').value = t.r;
+                document.getElementById('trade-date').value = t.date;
+                document.getElementById('trade-tv-link').value = t.tvLink || '';
+                document.getElementById('modal-title').textContent = '编辑交易细节';
+                document.getElementById('trade-modal').classList.remove('hidden');
+            };
+
+            document.getElementById('trade-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const tradeData = {
+                    pair: document.getElementById('trade-pair').value.toUpperCase(),
+                    direction: document.getElementById('trade-direction').value,
+                    profit: parseFloat(document.getElementById('trade-profit').value),
+                    r: parseFloat(document.getElementById('trade-r').value),
+                    date: document.getElementById('trade-date').value,
+                    tvLink: document.getElementById('trade-tv-link').value,
+                    updatedAt: new Date().toISOString()
+                };
+                const editId = document.getElementById('edit-id').value;
+                try {
+                    if (useLocalStorageFallback) {
+                        if (editId) {
+                            const idx = allTrades.findIndex(t => t.id === editId);
+                            allTrades[idx] = { ...tradeData, id: editId };
+                        } else {
+                            allTrades.push({ ...tradeData, id: Date.now().toString() });
+                        }
+                        localStorage.setItem('jinmu_trades_v3', JSON.stringify(allTrades));
+                        applyFiltersAndUpdate();
+                    } else {
+                        const path = ['artifacts', appId, 'users', currentUser.uid, 'trades'];
+                        if (editId) await updateDoc(doc(db, ...path, editId), tradeData);
+                        else await addDoc(collection(db, ...path), tradeData);
+                    }
+                    window.closeModal();
+                } catch { activateLocalStorage(); }
+            };
+
+            window.exportData = () => {
+                const blob = new Blob([JSON.stringify(allTrades, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `jinmu_pro_export_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+            };
+            window.triggerImport = () => document.getElementById('import-file').click();
+            window.importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    try {
+                        const data = JSON.parse(re.target.result);
+                        if (confirm(`准备导入 ${data.length} 条记录，这会覆盖现有数据，确定吗？`)) {
+                            allTrades = data;
+                            localStorage.setItem('jinmu_trades_v3', JSON.stringify(allTrades));
+                            applyFiltersAndUpdate();
+                        }
+                    } catch { showError("无效的 JSON 文件"); }
+                };
+                reader.readAsText(file);
+            };
+
+            document.getElementById('initial-capital').addEventListener('input', applyFiltersAndUpdate);
+        };
+
+        window.onload = init;
+    </script>
+</body>
+</html>
