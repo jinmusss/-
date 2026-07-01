@@ -1567,6 +1567,16 @@
                     <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                 </div>
 
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Strategy / 策略</label>
+                    <input id="trade-strategy" type="text" placeholder="Breakout / Retest..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Tags / 标签</label>
+                    <input id="trade-tags" type="text" placeholder="trend,risk,review" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
+                </div>
+
                 <div class="col-span-2 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Review Notes / 复盘备注</label>
                     <textarea id="trade-notes" rows="3" placeholder="进场理由、执行问题、复盘结论..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none resize-none"></textarea>
@@ -2451,12 +2461,20 @@ function renderTradeList(filteredData) {
         const pnlSign = t.profit >= 0 ? '+' : '';
         const note = (t.notes || '').trim();
         const noteHtml = note ? `<p class="mt-1 text-[11px] text-gray-500 leading-snug" style="white-space: normal; max-width: 260px;">${escapeHTML(note)}</p>` : '';
+        const strategy = (t.strategy || '').trim();
+        const tags = String(t.tags || '').split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 3);
+        const metaHtml = (strategy || tags.length > 0) ? `
+            <div class="mt-2 flex flex-wrap gap-1.5" style="white-space: normal; max-width: 280px;">
+                ${strategy ? `<span class="px-2 py-0.5 rounded-md bg-theme-primary-10 text-theme-primary text-[10px] font-black">${escapeHTML(strategy)}</span>` : ''}
+                ${tags.map(tag => `<span class="px-2 py-0.5 rounded-md bg-white/5 text-gray-400 text-[10px] font-bold">#${escapeHTML(tag)}</span>`).join('')}
+            </div>` : '';
 
         return `
         <tr class="trade-row border-b border-white/5 hover:bg-white/5 transition-colors">
             <td class="px-4 py-4 text-gray-400 font-mono">${new Date(t.date).toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
             <td class="px-4 py-4">
                 <div class="font-bold text-white tracking-tight">${escapeHTML(t.pair)}</div>
+                ${metaHtml}
                 ${noteHtml}
             </td>
             <td class="px-4 py-4 text-center">
@@ -2931,9 +2949,11 @@ document.getElementById('trade-form').onsubmit = async (e) => {
         direction: document.getElementById('trade-direction').value,
         profit: parseFloat(document.getElementById('trade-profit').value),
         tvLink: document.getElementById('trade-tv-link').value,
+        strategy: document.getElementById('trade-strategy').value.trim(),
+        tags: document.getElementById('trade-tags').value.trim(),
         notes: document.getElementById('trade-notes').value.trim(),
         // Defaults for removed fields
-        qty: 0, entry: 0, exit: 0, fee: 0, r: 0, strategy: "", tags: ""
+        qty: 0, entry: 0, exit: 0, fee: 0, r: 0
     };
     const eid = document.getElementById('edit-id').value;
     if (eid) await updateDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', eid), trade);
@@ -2954,6 +2974,8 @@ window.editTrade = (id) => {
     document.getElementById('trade-direction').value = t.direction;
     document.getElementById('trade-profit').value = t.profit;
     document.getElementById('trade-tv-link').value = t.tvLink || "";
+    document.getElementById('trade-strategy').value = t.strategy || "";
+    document.getElementById('trade-tags').value = t.tags || "";
     document.getElementById('trade-notes').value = t.notes || "";
     
     if (!datePickerInstance) {
