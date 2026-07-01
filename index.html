@@ -1566,7 +1566,12 @@
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Chart Link / 图表链接</label>
                     <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                 </div>
-                
+
+                <div class="col-span-2 space-y-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Review Notes / 复盘备注</label>
+                    <textarea id="trade-notes" rows="3" placeholder="进场理由、执行问题、复盘结论..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none resize-none"></textarea>
+                </div>
+
                 <div class="col-span-2 pt-4">
                     <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-theme-primary">保存</button>
                 </div>
@@ -1881,16 +1886,16 @@ function buildDemoTrades() {
     const m = now.getMonth();
     const makeDate = (monthOffset, day, hour, minute) => new Date(y, m + monthOffset, day, hour, minute).toISOString();
     return [
-        { id: 'demo-001', pair: 'BTCUSDT', direction: 'Long', date: makeDate(0, 2, 9, 20), profit: 420, r: 1.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Breakout', tags: 'demo,trend', tvLink: 'https://www.tradingview.com/chart/' },
-        { id: 'demo-002', pair: 'ETHUSDT', direction: 'Short', date: makeDate(0, 4, 14, 10), profit: -180, r: -0.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Liquidity Sweep', tags: 'demo,risk', tvLink: '' },
-        { id: 'demo-003', pair: 'SOLUSDT', direction: 'Long', date: makeDate(0, 7, 10, 45), profit: 760, r: 2.2, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Retest', tags: 'demo,setup-a', tvLink: 'https://www.tradingview.com/chart/' },
-        { id: 'demo-004', pair: 'BTCUSDT', direction: 'Short', date: makeDate(0, 10, 21, 15), profit: 310, r: 1.1, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Range Fade', tags: 'demo', tvLink: '' },
-        { id: 'demo-005', pair: 'ETHUSDT', direction: 'Long', date: makeDate(0, 13, 8, 35), profit: -95, r: -0.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Continuation', tags: 'demo,review', tvLink: '' },
-        { id: 'demo-006', pair: 'DOGEUSDT', direction: 'Long', date: makeDate(0, 16, 16, 5), profit: 255, r: 0.9, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Momentum', tags: 'demo', tvLink: '' },
-        { id: 'demo-007', pair: 'ETHUSDT', direction: 'Short', date: makeDate(-1, 18, 11, 50), profit: 640, r: 1.8, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal', tags: 'demo,last-month', tvLink: '' },
-        { id: 'demo-008', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-1, 24, 19, 30), profit: -260, r: -1.0, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Invalidation', tags: 'demo,last-month', tvLink: '' },
-        { id: 'demo-009', pair: 'SOLUSDT', direction: 'Short', date: makeDate(-2, 9, 13, 15), profit: 520, r: 1.6, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Mean Revert', tags: 'demo,history', tvLink: '' },
-        { id: 'demo-010', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-2, 20, 15, 40), profit: 980, r: 2.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'HTF Trend', tags: 'demo,history', tvLink: 'https://www.tradingview.com/chart/' }
+        { id: 'demo-001', pair: 'BTCUSDT', direction: 'Long', date: makeDate(0, 2, 9, 20), profit: 420, r: 1.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Breakout', tags: 'demo,trend', tvLink: 'https://www.tradingview.com/chart/', notes: '突破后回踩确认，止损上移及时。' },
+        { id: 'demo-002', pair: 'ETHUSDT', direction: 'Short', date: makeDate(0, 4, 14, 10), profit: -180, r: -0.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Liquidity Sweep', tags: 'demo,risk', tvLink: '', notes: '入场偏早，等待收线会更稳。' },
+        { id: 'demo-003', pair: 'SOLUSDT', direction: 'Long', date: makeDate(0, 7, 10, 45), profit: 760, r: 2.2, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Retest', tags: 'demo,setup-a', tvLink: 'https://www.tradingview.com/chart/', notes: '计划内交易，分批止盈执行不错。' },
+        { id: 'demo-004', pair: 'BTCUSDT', direction: 'Short', date: makeDate(0, 10, 21, 15), profit: 310, r: 1.1, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Range Fade', tags: 'demo', tvLink: '', notes: '' },
+        { id: 'demo-005', pair: 'ETHUSDT', direction: 'Long', date: makeDate(0, 13, 8, 35), profit: -95, r: -0.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Continuation', tags: 'demo,review', tvLink: '', notes: '没有等到量能确认，属于低质量入场。' },
+        { id: 'demo-006', pair: 'DOGEUSDT', direction: 'Long', date: makeDate(0, 16, 16, 5), profit: 255, r: 0.9, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Momentum', tags: 'demo', tvLink: '', notes: '' },
+        { id: 'demo-007', pair: 'ETHUSDT', direction: 'Short', date: makeDate(-1, 18, 11, 50), profit: 640, r: 1.8, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal', tags: 'demo,last-month', tvLink: '', notes: '形态清晰，仓位控制符合计划。' },
+        { id: 'demo-008', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-1, 24, 19, 30), profit: -260, r: -1.0, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Invalidation', tags: 'demo,last-month', tvLink: '', notes: '止损执行到位，亏损可接受。' },
+        { id: 'demo-009', pair: 'SOLUSDT', direction: 'Short', date: makeDate(-2, 9, 13, 15), profit: 520, r: 1.6, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Mean Revert', tags: 'demo,history', tvLink: '', notes: '' },
+        { id: 'demo-010', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-2, 20, 15, 40), profit: 980, r: 2.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'HTF Trend', tags: 'demo,history', tvLink: 'https://www.tradingview.com/chart/', notes: '大周期方向一致，耐心持仓带来主要收益。' }
     ];
 }
 
@@ -2396,13 +2401,23 @@ function renderCalendar(data) {
     document.getElementById('calendar-heatmap').innerHTML = html;
 }
 
+function escapeHTML(value = '') {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
 function renderTradeList(filteredData) {
     const search = document.getElementById('table-search')?.value.toUpperCase() || "";
     // filter-status was removed in HTML, so we ignore it or add it back to toolbar if needed.
     // The new toolbar has strategy/pair.
     
     const list = filteredData.filter(t => {
-        const matchSearch = (t.pair + t.strategy + t.tags).toUpperCase().includes(search);
+        const matchSearch = (t.pair + t.strategy + t.tags + (t.notes || '')).toUpperCase().includes(search);
         return matchSearch;
     });
     
@@ -2430,14 +2445,20 @@ function renderTradeList(filteredData) {
     empty.classList.add('hidden');
     
     body.innerHTML = list.slice().reverse().map(t => {
-        const tvLink = t.tvLink || `https://www.tradingview.com/chart/?symbol=${t.pair.replace('/','')}`;
+        const tvLink = (t.tvLink || '').trim();
+        const safeTvLink = /^https?:\/\//i.test(tvLink) ? tvLink : '';
         const pnlClass = t.profit >= 0 ? 'text-emerald-400' : 'text-rose-400';
         const pnlSign = t.profit >= 0 ? '+' : '';
-        
+        const note = (t.notes || '').trim();
+        const noteHtml = note ? `<p class="mt-1 text-[11px] text-gray-500 leading-snug" style="white-space: normal; max-width: 260px;">${escapeHTML(note)}</p>` : '';
+
         return `
         <tr class="trade-row border-b border-white/5 hover:bg-white/5 transition-colors">
             <td class="px-4 py-4 text-gray-400 font-mono">${new Date(t.date).toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
-            <td class="px-4 py-4 font-bold text-white tracking-tight">${t.pair}</td>
+            <td class="px-4 py-4">
+                <div class="font-bold text-white tracking-tight">${escapeHTML(t.pair)}</div>
+                ${noteHtml}
+            </td>
             <td class="px-4 py-4 text-center">
                 <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${t.direction === 'Long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
                     ${t.direction}
@@ -2446,7 +2467,7 @@ function renderTradeList(filteredData) {
             <td class="px-4 py-4 text-right font-bold text-base ${pnlClass}">${pnlSign}${t.profit.toFixed(2)}</td>
             <td class="px-4 py-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
-                    ${t.tvLink ? `<a href="${t.tvLink}" target="_blank" class="action-icon flex items-center justify-center text-gray-500 hover:text-theme-primary transition-colors" title="Chart"><i class="fas fa-chart-line"></i></a>` : ''}
+                    ${safeTvLink ? `<a href="${escapeHTML(safeTvLink)}" target="_blank" rel="noopener noreferrer" class="action-icon flex items-center justify-center text-gray-500 hover:text-theme-primary transition-colors" title="Chart"><i class="fas fa-chart-line"></i></a>` : ''}
                     <button onclick="window.editTrade('${t.id}')" class="action-icon flex items-center justify-center text-gray-500 hover:text-white transition-colors">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -2778,7 +2799,8 @@ window.processImport = (input) => {
                         r: parseFloat(row['R']) || 0,
                         strategy: row['Strategy'] || '',
                         tags: row['Tags'] || '',
-                        tvLink: '' // 默认为空
+                        notes: row['Notes'] || row['Note'] || row['Review'] || '',
+                        tvLink: row['Chart'] || row['TvLink'] || ''
                     };
 
                     // 简单逻辑检查
@@ -2806,7 +2828,7 @@ window.exportToCSV = () => {
     const filtered = allTrades.filter(t => {
         const d = new Date(t.date);
         const matchDate = d.getFullYear() === y && (d.getMonth() + 1) === m;
-        const matchSearch = (t.pair + t.strategy + (t.tags||"")).toUpperCase().includes(search);
+        const matchSearch = (t.pair + t.strategy + (t.tags||"") + (t.notes || '')).toUpperCase().includes(search);
         return matchDate && matchSearch;
     });
 
@@ -2826,7 +2848,9 @@ window.exportToCSV = () => {
         Fee: t.fee,
         R: t.r,
         Strategy: t.strategy,
-        Tags: t.tags
+        Tags: t.tags,
+        Notes: t.notes || '',
+        Chart: t.tvLink || ''
     }));
 
     const csv = Papa.unparse(csvData);
@@ -2907,6 +2931,7 @@ document.getElementById('trade-form').onsubmit = async (e) => {
         direction: document.getElementById('trade-direction').value,
         profit: parseFloat(document.getElementById('trade-profit').value),
         tvLink: document.getElementById('trade-tv-link').value,
+        notes: document.getElementById('trade-notes').value.trim(),
         // Defaults for removed fields
         qty: 0, entry: 0, exit: 0, fee: 0, r: 0, strategy: "", tags: ""
     };
@@ -2929,6 +2954,7 @@ window.editTrade = (id) => {
     document.getElementById('trade-direction').value = t.direction;
     document.getElementById('trade-profit').value = t.profit;
     document.getElementById('trade-tv-link').value = t.tvLink || "";
+    document.getElementById('trade-notes').value = t.notes || "";
     
     if (!datePickerInstance) {
          datePickerInstance = flatpickr("#trade-date", {
