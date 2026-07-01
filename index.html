@@ -472,22 +472,54 @@
                 height: auto !important;
                 min-height: 0 !important;
             }
+            #account-growth-card {
+                min-height: 11.5rem !important;
+                padding: 1.15rem !important;
+            }
+            #account-growth-card .account-card-header,
+            #account-card-body {
+                position: relative;
+                z-index: 1;
+            }
+            #account-growth-title {
+                display: block;
+                max-width: 100%;
+                line-height: 1.2;
+                white-space: nowrap;
+                letter-spacing: 0.18em !important;
+                font-size: 0.72rem !important;
+            }
             #account-card-body {
                 align-items: center;
-                flex-direction: row;
-                justify-content: flex-start;
-                gap: 1rem;
+                display: grid !important;
+                grid-template-columns: 92px minmax(0, 1fr);
+                justify-content: stretch;
+                gap: 0.9rem;
+                min-height: 8rem;
+            }
+            #account-progress {
+                width: 92px;
+                height: 92px;
+                min-width: 92px;
+                overflow: visible;
             }
             #account-card-body .progress-ring {
                 width: 92px;
                 height: 92px;
+                overflow: visible;
+            }
+            #account-values {
+                min-width: 0;
+                overflow: hidden;
             }
             #dashboard-balance-display,
             #dashboard-target-display {
                 font-size: 1.75rem !important;
+                line-height: 1.05 !important;
             }
             #remaining-label {
                 max-width: 12rem;
+                line-height: 1.35;
             }
             #metrics-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -499,6 +531,15 @@
             }
             #dashboard-bottom-grid .component-bg {
                 border-radius: 1.25rem !important;
+            }
+            #account-growth-card > .absolute {
+                top: 0 !important;
+                right: 0 !important;
+                width: 7rem !important;
+                height: 7rem !important;
+                opacity: 0.55;
+                z-index: 0;
+                pointer-events: none;
             }
             .calendar-grid {
                 height: auto;
@@ -520,6 +561,27 @@
             }
             #trade-form > * {
                 grid-column: 1 / -1 !important;
+            }
+        }
+
+        @media (max-width: 374px) {
+            #account-growth-title {
+                font-size: 0.66rem !important;
+                letter-spacing: 0.12em !important;
+            }
+            #account-card-body {
+                grid-template-columns: 84px minmax(0, 1fr);
+                gap: 0.75rem;
+            }
+            #account-progress,
+            #account-card-body .progress-ring {
+                width: 84px;
+                height: 84px;
+                min-width: 84px;
+            }
+            #dashboard-balance-display,
+            #dashboard-target-display {
+                font-size: 1.55rem !important;
             }
         }
 
@@ -897,15 +959,15 @@
             <!-- 顶层：目标进度与设置 + 专业指标 -->
             <div id="dashboard-top-grid" class="grid grid-cols-1 xl:grid-cols-12 gap-6 shrink-0 h-auto min-h-[220px] mb-8 relative z-10">
                 <!-- Account Growth Tracker -->
-                <div class="xl:col-span-3 p-5 rounded-3xl component-bg border border-theme-primary-20 relative overflow-hidden shadow-2xl flex flex-col justify-between">
+                <div id="account-growth-card" class="xl:col-span-3 p-5 rounded-3xl component-bg border border-theme-primary-20 relative overflow-hidden shadow-2xl flex flex-col justify-between">
                     <div class="absolute -right-10 -top-10 w-40 h-40 bg-theme-primary-5 blur-3xl rounded-full"></div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-theme-primary font-black uppercase tracking-[0.25em]">Account Growth</span>
+                    <div class="account-card-header flex items-center justify-between mb-2">
+                        <span id="account-growth-title" class="text-xs text-theme-primary font-black uppercase tracking-[0.25em]">Account Growth</span>
                         <i class="fas fa-radar text-gray-700"></i>
                     </div>
-                    
+
                     <div id="account-card-body" class="flex flex-row items-center gap-6 h-full justify-center">
-                        <div class="relative flex items-center justify-center shrink-0 group">
+                        <div id="account-progress" class="relative flex items-center justify-center shrink-0 group">
                             <div class="absolute inset-0 bg-theme-primary-10 blur-2xl rounded-full scale-0 group-hover:scale-110 transition-transform duration-700"></div>
                             <svg class="progress-ring relative" width="110" height="110">
                                 <circle class="text-white/5" stroke-width="8" stroke="currentColor" fill="transparent" r="48" cx="55" cy="55"/>
@@ -916,7 +978,7 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col justify-center space-y-2">
+                        <div id="account-values" class="flex flex-col justify-center space-y-2">
                             <!-- New Balance Display -->
                             <div class="space-y-0.5">
                                 <label class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Current Balance</label>
