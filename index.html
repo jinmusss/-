@@ -249,6 +249,36 @@
             border-radius: 1.25rem;
             background: rgba(255, 255, 255, 0.025);
         }
+        .demo-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(var(--primary-rgb), 0.28);
+            background: rgba(var(--primary-rgb), 0.1);
+            color: #e5e7eb;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .demo-badge {
+            display: none;
+            border: 1px solid rgba(var(--primary-rgb), 0.35);
+            color: var(--primary);
+            background: rgba(var(--primary-rgb), 0.1);
+            border-radius: 999px;
+            padding: 0.25rem 0.55rem;
+            font-size: 0.62rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        body.is-demo-mode .demo-banner,
+        body.is-demo-mode .demo-badge {
+            display: flex;
+        }
         body.is-syncing #last-sync-time {
             color: var(--primary);
             opacity: 1;
@@ -393,6 +423,9 @@
             #header-actions > .h-8 {
                 display: none;
             }
+            #demo-badge {
+                display: none !important;
+            }
             #header-actions #btn-logout {
                 width: 2.75rem;
                 height: 2.75rem;
@@ -455,6 +488,11 @@
                 overflow: visible !important;
                 padding-right: 0 !important;
                 gap: 1rem;
+            }
+            .demo-banner {
+                align-items: flex-start;
+                flex-direction: column;
+                font-size: 0.7rem;
             }
             #view-dashboard {
                 height: auto !important;
@@ -892,6 +930,9 @@
                     <input type="password" id="auth-password" required class="w-full pl-10 p-5 rounded-2xl input-dark" placeholder="密码">
                 </div>
                 <button type="submit" class="cyber-button w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg hover:shadow-theme-primary">进入</button>
+                <button type="button" id="btn-demo" class="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm border border-theme-primary-50 bg-theme-primary-10 text-theme-primary hover:bg-theme-primary hover:!text-black transition-all">
+                    <i class="fas fa-play mr-2"></i> 体验 Demo
+                </button>
                 <button type="button" id="btn-register" class="w-full text-gray-400 text-xs hover:text-theme-primary transition-colors">注册</button>
             </form>
             </div>
@@ -932,6 +973,7 @@
                     </span>
                     <span id="last-sync-time" class="text-[9px] text-gray-500 font-mono mt-0.5 opacity-60">Waiting...</span>
                 </div>
+                <span id="demo-badge" class="demo-badge">Demo</span>
                 <div class="h-8 w-[1px] bg-white/10"></div>
                 <button id="btn-logout" class="text-gray-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-power-off text-lg"></i>
@@ -948,6 +990,10 @@
         </nav>
 
         <!-- Secondary Toolbar Removed -->
+        <div id="demo-banner" class="demo-banner">
+            <span><i class="fas fa-circle-info text-theme-primary mr-2"></i>Demo 模式正在使用样例交易数据，适合预览完整界面。</span>
+            <span class="text-gray-400">录入、导入、删除和设置修改不会写入数据库。</span>
+        </div>
 
         <!-- Scrollable Content Area -->
         <main class="flex-grow overflow-y-auto pr-2 space-y-8 scroll-smooth" id="content-container">
@@ -1730,6 +1776,73 @@ let analyticsYear = new Date().getFullYear();
 let viewMode = 'month';
 let chartMode = 'all';
 let unsubscribeTrades = null;
+let demoMode = false;
+
+const DEMO_CONFIG = { initialCapital: 25000, targetCapital: 100000 };
+
+function buildDemoTrades() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const makeDate = (monthOffset, day, hour, minute) => new Date(y, m + monthOffset, day, hour, minute).toISOString();
+    return [
+        { id: 'demo-001', pair: 'BTCUSDT', direction: 'Long', date: makeDate(0, 2, 9, 20), profit: 420, r: 1.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Breakout', tags: 'demo,trend', tvLink: 'https://www.tradingview.com/chart/' },
+        { id: 'demo-002', pair: 'ETHUSDT', direction: 'Short', date: makeDate(0, 4, 14, 10), profit: -180, r: -0.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Liquidity Sweep', tags: 'demo,risk', tvLink: '' },
+        { id: 'demo-003', pair: 'SOLUSDT', direction: 'Long', date: makeDate(0, 7, 10, 45), profit: 760, r: 2.2, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Retest', tags: 'demo,setup-a', tvLink: 'https://www.tradingview.com/chart/' },
+        { id: 'demo-004', pair: 'BTCUSDT', direction: 'Short', date: makeDate(0, 10, 21, 15), profit: 310, r: 1.1, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Range Fade', tags: 'demo', tvLink: '' },
+        { id: 'demo-005', pair: 'ETHUSDT', direction: 'Long', date: makeDate(0, 13, 8, 35), profit: -95, r: -0.4, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Continuation', tags: 'demo,review', tvLink: '' },
+        { id: 'demo-006', pair: 'DOGEUSDT', direction: 'Long', date: makeDate(0, 16, 16, 5), profit: 255, r: 0.9, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Momentum', tags: 'demo', tvLink: '' },
+        { id: 'demo-007', pair: 'ETHUSDT', direction: 'Short', date: makeDate(-1, 18, 11, 50), profit: 640, r: 1.8, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal', tags: 'demo,last-month', tvLink: '' },
+        { id: 'demo-008', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-1, 24, 19, 30), profit: -260, r: -1.0, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Invalidation', tags: 'demo,last-month', tvLink: '' },
+        { id: 'demo-009', pair: 'SOLUSDT', direction: 'Short', date: makeDate(-2, 9, 13, 15), profit: 520, r: 1.6, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Mean Revert', tags: 'demo,history', tvLink: '' },
+        { id: 'demo-010', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-2, 20, 15, 40), profit: 980, r: 2.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'HTF Trend', tags: 'demo,history', tvLink: 'https://www.tradingview.com/chart/' }
+    ];
+}
+
+function setAppVisible(visible) {
+    document.getElementById('video-overlay').style.opacity = visible ? '1' : '0';
+    document.getElementById('auth-view').classList.toggle('hidden-view', visible);
+    document.getElementById('main-view').classList.toggle('hidden-view', !visible);
+}
+
+function setupConfigInputs() {
+    document.getElementById('initial-capital').value = config.initialCapital;
+    document.getElementById('target-capital').value = config.targetCapital;
+}
+
+function enterDemoMode() {
+    if (unsubscribeTrades) unsubscribeTrades();
+    demoMode = true;
+    document.body.classList.add('is-demo-mode');
+    document.body.classList.remove('is-syncing');
+    setAppVisible(true);
+    document.getElementById('user-display-name').textContent = 'DEMO MODE';
+    const syncTimeEl = document.getElementById('last-sync-time');
+    if (syncTimeEl) syncTimeEl.textContent = 'Sample Data';
+    config = { ...DEMO_CONFIG };
+    setupConfigInputs();
+    allTrades = buildDemoTrades();
+    initPickers();
+    populateFilters();
+    renderVideos();
+    window.switchView('dashboard');
+    refreshUI();
+}
+
+function exitDemoMode() {
+    demoMode = false;
+    document.body.classList.remove('is-demo-mode', 'is-syncing');
+    allTrades = [];
+    config = { initialCapital: 10000, targetCapital: 20000 };
+    setupConfigInputs();
+    setAppVisible(false);
+}
+
+function guardDemoWrite(actionLabel = '此操作') {
+    if (!demoMode) return false;
+    alert(`${actionLabel}在 Demo 模式下不可用。登录后才能保存真实数据。`);
+    return true;
+}
 
 // --- LEARN MODULE CONFIGURATION ---
 // MODIFY THIS ARRAY TO CHANGE VIDEOS
@@ -1772,18 +1885,19 @@ initAuth();
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        document.getElementById('video-overlay').style.opacity = '1';
-        document.getElementById('auth-view').classList.add('hidden-view');
-        document.getElementById('main-view').classList.remove('hidden-view');
+        demoMode = false;
+        document.body.classList.remove('is-demo-mode');
+        setAppVisible(true);
         document.getElementById('user-display-name').textContent = (user.email ? user.email.split('@')[0] : 'USER').toUpperCase();
+        config = { initialCapital: 10000, targetCapital: 20000 };
+        setupConfigInputs();
         
         // 1. 获取独立配置
         const configRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'config');
         const configSnap = await getDoc(configRef);
         if (configSnap.exists()) {
             config = { ...config, ...configSnap.data() };
-            document.getElementById('initial-capital').value = config.initialCapital;
-            document.getElementById('target-capital').value = config.targetCapital;
+            setupConfigInputs();
         }
 
         const now = new Date();
@@ -1812,9 +1926,8 @@ onAuthStateChanged(auth, async (user) => {
         renderVideos();
 
     } else {
-        document.getElementById('video-overlay').style.opacity = '0';
-        document.getElementById('main-view').classList.add('hidden-view');
-        document.getElementById('auth-view').classList.remove('hidden-view');
+        if (demoMode) return;
+        setAppVisible(false);
         document.body.classList.remove('is-syncing');
         if (unsubscribeTrades) unsubscribeTrades();
     }
@@ -1848,9 +1961,13 @@ function populateFilters() {
 }
 
 const saveConfig = async () => {
-    if (!auth.currentUser) return;
     config.initialCapital = parseFloat(document.getElementById('initial-capital').value) || 10000;
     config.targetCapital = parseFloat(document.getElementById('target-capital').value) || 20000;
+    if (demoMode) {
+        refreshUI();
+        return;
+    }
+    if (!auth.currentUser) return;
     await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'config'), config);
     refreshUI();
 };
@@ -2491,10 +2608,15 @@ window.selectMonth = (m, refresh = true) => {
 // --- Import / Export Logic (Chinese Comments) ---
 
 window.triggerImport = () => {
+    if (guardDemoWrite('CSV 导入')) return;
     document.getElementById('import-file').click();
 };
 
 window.processImport = (input) => {
+    if (guardDemoWrite('CSV 导入')) {
+        input.value = '';
+        return;
+    }
     const file = input.files[0];
     if (!file) return;
 
@@ -2653,6 +2775,7 @@ window.closeModal = () => document.getElementById('trade-modal').classList.add('
 
 document.getElementById('trade-form').onsubmit = async (e) => {
     e.preventDefault();
+    if (guardDemoWrite('保存交易')) return;
     if (!auth.currentUser) return;
     
     // Construct Date from Flatpickr
@@ -2675,7 +2798,8 @@ document.getElementById('trade-form').onsubmit = async (e) => {
     window.closeModal();
 };
 
-window.deleteTrade = async (id) => { 
+window.deleteTrade = async (id) => {
+    if (guardDemoWrite('删除交易')) return;
     if(confirm("确定要删除这条记录吗？")) 
         await deleteDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'trades', id)); 
 };
@@ -2714,7 +2838,14 @@ document.getElementById('btn-register').onclick = async () => {
         await createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value); 
     } catch (err) { alert("注册失败: " + err.message); }
 };
-document.getElementById('btn-logout').onclick = () => signOut(auth);
+document.getElementById('btn-demo').onclick = enterDemoMode;
+document.getElementById('btn-logout').onclick = () => {
+    if (demoMode) {
+        exitDemoMode();
+        return;
+    }
+    signOut(auth);
+};
 
 const calcRiskAmount = document.getElementById('calc-risk-amount');
 const calcRiskPercent = document.getElementById('calc-risk-percent');
