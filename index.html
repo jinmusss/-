@@ -1407,7 +1407,7 @@
                         </div>
                         <span id="be-discipline-summary" class="text-[11px] text-gray-500 font-bold"></span>
                     </div>
-                    <div id="be-discipline-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                    <div id="be-discipline-grid" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
                     <div id="be-discipline-advice" class="mt-4 rounded-2xl border border-white/5 bg-black/20 p-4 text-sm text-gray-300 leading-relaxed"></div>
                     <div id="be-discipline-empty" class="hidden empty-panel py-8 text-center mt-4">
                         <i class="fas fa-shield text-theme-primary text-2xl mb-3"></i>
@@ -1616,6 +1616,39 @@
                     <input id="trade-tags" type="text" placeholder="trend,risk,review" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                 </div>
 
+                <div class="col-span-2 p-4 rounded-2xl border border-white/10 bg-white/[0.025] space-y-4">
+                    <div>
+                        <p class="text-[10px] text-theme-primary font-black uppercase tracking-[0.25em]">Trade Checklist / 交易前清单</p>
+                        <p class="text-[11px] text-gray-500 mt-1">入场前先把计划写死，减少盘中被浮盈情绪带走。</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-structure" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">分型结构成立</span>
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-entry" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">入场在计划区</span>
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-stop" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">止损基于结构失效</span>
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-target" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">原目标提前写好</span>
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-rr" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">计划盈亏比不低于 2R</span>
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl bg-black/20 border border-white/5 p-3 cursor-pointer">
+                            <input id="trade-check-no-early-be" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
+                            <span class="text-xs text-gray-300 font-bold">已承诺不因害怕回吐提前保本</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="col-span-2 p-4 rounded-2xl border border-theme-primary-20 bg-theme-primary-5 space-y-4">
                     <div>
                         <p class="text-[10px] text-theme-primary font-black uppercase tracking-[0.25em]">BE Discipline / 保本纪律</p>
@@ -1630,6 +1663,17 @@
                             <input id="trade-be-stopped" type="checkbox" class="w-4 h-4 accent-[var(--primary)]">
                             <span class="text-xs text-gray-300 font-bold">最终被保本扫掉</span>
                         </label>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">BE Reason / 推保本原因</label>
+                        <select id="trade-be-reason" class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
+                            <option value="">未推保本 / 不适用</option>
+                            <option value="structure-confirmed">新分型结构确认</option>
+                            <option value="htf-change">高级别结构改变</option>
+                            <option value="news-risk">重大消息风险</option>
+                            <option value="fear-giveback">害怕回吐利润</option>
+                            <option value="other">其他原因</option>
+                        </select>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="space-y-1">
@@ -1976,7 +2020,11 @@ function buildDemoTrades() {
         { id: 'demo-008', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-1, 24, 19, 30), profit: -260, r: -1.0, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal Model', tags: 'demo,last-month', tvLink: '', notes: '止损执行到位，亏损可接受。', beMoved: false, beTriggerR: 0, beStopped: false, targetReachedAfterBE: false, plannedTargetR: 2.0 },
         { id: 'demo-009', pair: 'SOLUSDT', direction: 'Short', date: makeDate(-2, 9, 13, 15), profit: 0, r: 0, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal Model', tags: 'demo,history,be', tvLink: '', notes: '提前保本，后续到达原计划止盈。', beMoved: true, beTriggerR: 1.2, beStopped: true, targetReachedAfterBE: true, plannedTargetR: 2.6 },
         { id: 'demo-010', pair: 'BTCUSDT', direction: 'Long', date: makeDate(-2, 20, 15, 40), profit: 980, r: 2.7, qty: 0, entry: 0, exit: 0, fee: 0, strategy: 'Fractal Model', tags: 'demo,history', tvLink: 'https://www.tradingview.com/chart/', notes: '大周期方向一致，耐心持仓带来主要收益。', beMoved: false, beTriggerR: 0, beStopped: false, targetReachedAfterBE: false, plannedTargetR: 2.7 }
-    ];
+    ].map(t => ({
+        checklist: { structure: true, entry: true, stop: true, target: true, rr: true, noEarlyBE: !t.targetReachedAfterBE },
+        beReason: t.beMoved ? (t.targetReachedAfterBE ? 'fear-giveback' : 'structure-confirmed') : '',
+        ...t
+    }));
 }
 
 function setAppVisible(visible) {
@@ -2370,12 +2418,24 @@ function renderBEDiscipline(all) {
     const earlyBE = beTrades.filter(t => (Number(t.beTriggerR) || 0) > 0 && (Number(t.beTriggerR) || 0) < 1.8);
     const stoppedBE = beTrades.filter(t => !!t.beStopped);
     const harmfulBE = beTrades.filter(t => !!t.beStopped && !!t.targetReachedAfterBE);
+    const trackedTrades = yearTrades.filter(t => t.checklist || t.beMoved);
+    const scoredTrades = trackedTrades.map(t => ({ trade: t, score: calculateDisciplineScore(t) }));
+    const avgScore = scoredTrades.length
+        ? scoredTrades.reduce((sum, item) => sum + item.score, 0) / scoredTrades.length
+        : 0;
+    const fearGiveback = beTrades.filter(t => t.beReason === 'fear-giveback');
     const missedR = harmfulBE.reduce((sum, t) => sum + (Number(t.plannedTargetR) || 0), 0);
     const avgTrigger = beTrades.length
         ? beTrades.reduce((sum, t) => sum + (Number(t.beTriggerR) || 0), 0) / beTrades.length
         : 0;
+    const reasonCounts = beTrades.reduce((acc, t) => {
+        const reason = t.beReason || 'not-recorded';
+        acc[reason] = (acc[reason] || 0) + 1;
+        return acc;
+    }, {});
+    const topReason = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0];
 
-    if (yearTrades.length === 0 || beTrades.length === 0) {
+    if (yearTrades.length === 0 || (beTrades.length === 0 && scoredTrades.length === 0)) {
         grid.innerHTML = '';
         advice.textContent = '';
         empty.classList.remove('hidden');
@@ -2384,10 +2444,11 @@ function renderBEDiscipline(all) {
     }
 
     empty.classList.add('hidden');
-    if (summary) summary.textContent = `${beTrades.length}/${yearTrades.length} 笔交易推过保本`;
+    if (summary) summary.textContent = `纪律均分 ${avgScore.toFixed(0)} · ${beTrades.length}/${yearTrades.length} 笔推过保本`;
 
     const cards = [
-        { label: '推保本次数', value: beTrades.length, sub: `${((beTrades.length / yearTrades.length) * 100).toFixed(1)}% of trades`, cls: 'text-white' },
+        { label: '纪律均分', value: avgScore.toFixed(0), sub: 'execution score', cls: avgScore >= 85 ? 'text-emerald-400' : avgScore >= 70 ? 'text-amber-300' : 'text-rose-400' },
+        { label: '害怕回吐', value: fearGiveback.length, sub: 'emotional BE', cls: fearGiveback.length ? 'text-rose-400' : 'text-emerald-400' },
         { label: '提前保本', value: earlyBE.length, sub: '< +1.8R', cls: earlyBE.length ? 'text-amber-300' : 'text-emerald-400' },
         { label: '扫后到原TP', value: harmfulBE.length, sub: 'bad habit hits', cls: harmfulBE.length ? 'text-rose-400' : 'text-emerald-400' },
         { label: '估算错失R', value: `${missedR.toFixed(1)}R`, sub: 'planned target R', cls: missedR > 0 ? 'text-rose-400' : 'text-emerald-400' }
@@ -2403,12 +2464,44 @@ function renderBEDiscipline(all) {
 
     const harmfulRate = beTrades.length ? (harmfulBE.length / beTrades.length) * 100 : 0;
     if (harmfulBE.length >= 2 || harmfulRate >= 30) {
-        advice.innerHTML = `<span class="text-rose-300 font-black">主要问题：</span>你有 ${harmfulBE.length} 笔交易被保本扫掉后到达原计划 TP，估算错失 ${missedR.toFixed(1)}R。建议把规则写死：价格未达到 +1.8R 前，不允许因为“害怕回吐”推保本；只有出现新的分型结构确认，才允许移动止损。`;
+        advice.innerHTML = `<span class="text-rose-300 font-black">主要问题：</span>你有 ${harmfulBE.length} 笔交易被保本扫掉后到达原计划 TP，估算错失 ${missedR.toFixed(1)}R。纪律均分 ${avgScore.toFixed(0)}。建议把规则写死：价格未达到 +1.8R 前，不允许因为“害怕回吐”推保本；只有出现新的分型结构确认，才允许移动止损。`;
+    } else if (fearGiveback.length > 0) {
+        advice.innerHTML = `<span class="text-rose-300 font-black">情绪信号：</span>今年有 ${fearGiveback.length} 笔推保本原因记录为“害怕回吐利润”。下次出现这个原因时，不移动止损，先截图并等待一根完整 K 线确认。`;
     } else if (earlyBE.length > 0) {
         advice.innerHTML = `<span class="text-amber-300 font-black">提醒：</span>今年有 ${earlyBE.length} 笔交易在 +1.8R 前推过保本。你的平均推保本位置是 ${avgTrigger.toFixed(1)}R，建议继续记录“推保本理由”，区分结构保护和情绪保护。`;
     } else {
-        advice.innerHTML = `<span class="text-emerald-300 font-black">执行良好：</span>当前记录里没有明显的提前保本损耗。继续保持：止损移动必须基于分型结构变化，而不是浮盈后的心理舒适感。`;
+        const reasonText = topReason ? `最常见推保本原因：${formatBEReason(topReason[0])}。` : '';
+        advice.innerHTML = `<span class="text-emerald-300 font-black">执行良好：</span>当前记录里没有明显的提前保本损耗。${reasonText}继续保持：止损移动必须基于分型结构变化，而不是浮盈后的心理舒适感。`;
     }
+}
+
+function calculateDisciplineScore(t) {
+    let score = 100;
+    const checklist = t.checklist;
+    if (checklist) {
+        ['structure', 'entry', 'stop', 'target', 'rr', 'noEarlyBE'].forEach(key => {
+            if (!checklist[key]) score -= 8;
+        });
+    } else {
+        score -= 20;
+    }
+    const beTrigger = Number(t.beTriggerR) || 0;
+    if (t.beMoved && beTrigger > 0 && beTrigger < 1.8) score -= 15;
+    if (t.beReason === 'fear-giveback') score -= 20;
+    if (t.beStopped && t.targetReachedAfterBE) score -= 25;
+    return Math.max(0, Math.min(100, score));
+}
+
+function formatBEReason(reason) {
+    const labels = {
+        'structure-confirmed': '新分型结构确认',
+        'htf-change': '高级别结构改变',
+        'news-risk': '重大消息风险',
+        'fear-giveback': '害怕回吐利润',
+        'other': '其他原因',
+        'not-recorded': '未记录'
+    };
+    return labels[reason] || '未记录';
 }
 
 function renderStrategyPerformance(all) {
@@ -2660,6 +2753,7 @@ function renderTradeList(filteredData) {
         const beHtml = t.beMoved ? `
             <div class="mt-2 flex flex-wrap gap-1.5" style="white-space: normal; max-width: 280px;">
                 <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 text-[10px] font-black">BE${beTrigger ? ` @${beTrigger.toFixed(1)}R` : ''}</span>
+                ${t.beReason ? `<span class="px-2 py-0.5 rounded-md bg-white/5 text-gray-400 text-[10px] font-bold">${escapeHTML(formatBEReason(t.beReason))}</span>` : ''}
                 ${t.beStopped ? '<span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 text-[10px] font-black">保本扫掉</span>' : ''}
                 ${beBadOutcome ? '<span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 text-[10px] font-black">扫后到TP</span>' : ''}
             </div>` : '';
@@ -2974,6 +3068,26 @@ function parseCSVBool(value) {
     return ['true', 'yes', '1', 'y', '是'].includes(String(value || '').trim().toLowerCase());
 }
 
+function getChecklistFromForm() {
+    return {
+        structure: document.getElementById('trade-check-structure').checked,
+        entry: document.getElementById('trade-check-entry').checked,
+        stop: document.getElementById('trade-check-stop').checked,
+        target: document.getElementById('trade-check-target').checked,
+        rr: document.getElementById('trade-check-rr').checked,
+        noEarlyBE: document.getElementById('trade-check-no-early-be').checked
+    };
+}
+
+function setChecklistForm(checklist = {}) {
+    document.getElementById('trade-check-structure').checked = !!checklist.structure;
+    document.getElementById('trade-check-entry').checked = !!checklist.entry;
+    document.getElementById('trade-check-stop').checked = !!checklist.stop;
+    document.getElementById('trade-check-target').checked = !!checklist.target;
+    document.getElementById('trade-check-rr').checked = !!checklist.rr;
+    document.getElementById('trade-check-no-early-be').checked = !!checklist.noEarlyBE;
+}
+
 window.processImport = (input) => {
     if (guardDemoWrite('CSV 导入')) {
         input.value = '';
@@ -3028,7 +3142,16 @@ window.processImport = (input) => {
                         beTriggerR: parseFloat(row['BETriggerR']) || 0,
                         beStopped: parseCSVBool(row['BEStopped']),
                         targetReachedAfterBE: parseCSVBool(row['TargetReachedAfterBE']),
-                        plannedTargetR: parseFloat(row['PlannedTargetR']) || 0
+                        plannedTargetR: parseFloat(row['PlannedTargetR']) || 0,
+                        beReason: row['BEReason'] || '',
+                        checklist: {
+                            structure: parseCSVBool(row['CheckStructure']),
+                            entry: parseCSVBool(row['CheckEntry']),
+                            stop: parseCSVBool(row['CheckStop']),
+                            target: parseCSVBool(row['CheckTarget']),
+                            rr: parseCSVBool(row['CheckRR']),
+                            noEarlyBE: parseCSVBool(row['CheckNoEarlyBE'])
+                        }
                     };
 
                     // 简单逻辑检查
@@ -3083,7 +3206,14 @@ window.exportToCSV = () => {
         BETriggerR: t.beTriggerR || '',
         BEStopped: t.beStopped ? 'TRUE' : 'FALSE',
         TargetReachedAfterBE: t.targetReachedAfterBE ? 'TRUE' : 'FALSE',
-        PlannedTargetR: t.plannedTargetR || ''
+        PlannedTargetR: t.plannedTargetR || '',
+        BEReason: t.beReason || '',
+        CheckStructure: t.checklist?.structure ? 'TRUE' : 'FALSE',
+        CheckEntry: t.checklist?.entry ? 'TRUE' : 'FALSE',
+        CheckStop: t.checklist?.stop ? 'TRUE' : 'FALSE',
+        CheckTarget: t.checklist?.target ? 'TRUE' : 'FALSE',
+        CheckRR: t.checklist?.rr ? 'TRUE' : 'FALSE',
+        CheckNoEarlyBE: t.checklist?.noEarlyBE ? 'TRUE' : 'FALSE'
     }));
 
     const csv = Papa.unparse(csvData);
@@ -3172,6 +3302,8 @@ document.getElementById('trade-form').onsubmit = async (e) => {
         beStopped: document.getElementById('trade-be-stopped').checked,
         targetReachedAfterBE: document.getElementById('trade-target-reached-after-be').checked,
         plannedTargetR: parseFloat(document.getElementById('trade-planned-target-r').value) || 0,
+        beReason: document.getElementById('trade-be-reason').value,
+        checklist: getChecklistFromForm(),
         // Defaults for removed fields
         qty: 0, entry: 0, exit: 0, fee: 0, r: 0
     };
@@ -3202,6 +3334,8 @@ window.editTrade = (id) => {
     document.getElementById('trade-be-stopped').checked = !!t.beStopped;
     document.getElementById('trade-target-reached-after-be').checked = !!t.targetReachedAfterBE;
     document.getElementById('trade-planned-target-r').value = t.plannedTargetR || "";
+    document.getElementById('trade-be-reason').value = t.beReason || "";
+    setChecklistForm(t.checklist || {});
     
     if (!datePickerInstance) {
          datePickerInstance = flatpickr("#trade-date", {
