@@ -380,6 +380,20 @@
             overflow-y: auto;
             padding-right: 0.35rem;
         }
+        .trade-advanced-section {
+            display: none;
+        }
+        .trade-advanced-section.is-open {
+            display: contents;
+        }
+        .trade-submit-bar {
+            position: sticky;
+            bottom: -1px;
+            z-index: 5;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            background: linear-gradient(180deg, rgba(17, 17, 34, 0), #111122 35%);
+        }
 
         /* Responsive layout hardening */
         html, body { overflow-x: hidden; }
@@ -1628,6 +1642,17 @@
                     <input id="trade-tv-link" type="url" placeholder="TradingView URL..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
                 </div>
 
+                <div class="col-span-2">
+                    <button type="button" id="btn-toggle-trade-advanced" class="w-full flex items-center justify-between p-3 rounded-2xl border border-white/10 bg-white/[0.025] text-left hover:border-theme-primary-50 transition-all">
+                        <span>
+                            <span class="block text-xs text-white font-black">纪律记录 / Advanced Journal</span>
+                            <span id="trade-advanced-summary" class="block text-[11px] text-gray-500 mt-1">策略、标签、交易前清单、保本纪律</span>
+                        </span>
+                        <i id="trade-advanced-icon" class="fas fa-chevron-down text-theme-primary transition-transform"></i>
+                    </button>
+                </div>
+
+                <div id="trade-advanced-section" class="trade-advanced-section">
                 <div class="col-span-1 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Strategy / 策略</label>
                     <input id="trade-strategy" type="text" placeholder="Breakout / Retest..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none">
@@ -1712,13 +1737,14 @@
                         </label>
                     </div>
                 </div>
+                </div>
 
                 <div class="col-span-2 space-y-1">
                     <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Review Notes / 复盘备注</label>
                     <textarea id="trade-notes" rows="3" placeholder="进场理由、执行问题、复盘结论..." class="w-full p-3 bg-[#05050a] text-white rounded-xl border border-[#3d3d5c] text-sm focus:border-theme-primary outline-none resize-none"></textarea>
                 </div>
 
-                <div class="col-span-2 pt-4">
+                <div class="col-span-2 trade-submit-bar">
                     <button type="submit" class="cyber-button w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-theme-primary">保存</button>
                 </div>
             </form>
@@ -3276,9 +3302,35 @@ function updateChartModeUI() {
 // Flatpickr Instance
 let datePickerInstance = null;
 
+function setTradeAdvancedOpen(open) {
+    const section = document.getElementById('trade-advanced-section');
+    const icon = document.getElementById('trade-advanced-icon');
+    const summary = document.getElementById('trade-advanced-summary');
+    if (!section) return;
+    section.classList.toggle('is-open', open);
+    if (icon) icon.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    if (summary) summary.textContent = open ? '正在记录纪律细节' : '策略、标签、交易前清单、保本纪律';
+}
+
+function hasAdvancedTradeData(t = {}) {
+    const checklist = t.checklist || {};
+    return !!(
+        t.strategy ||
+        t.tags ||
+        t.beMoved ||
+        t.beStopped ||
+        t.targetReachedAfterBE ||
+        t.beReason ||
+        t.beTriggerR ||
+        t.plannedTargetR ||
+        Object.values(checklist).some(Boolean)
+    );
+}
+
 window.openModal = () => {
     document.getElementById('trade-form').reset();
     document.getElementById('edit-id').value = "";
+    setTradeAdvancedOpen(false);
     
     // Initialize or Update Flatpickr
     const now = new Date();
@@ -3299,6 +3351,11 @@ window.openModal = () => {
     document.getElementById('trade-modal').classList.remove('hidden');
 };
 window.closeModal = () => document.getElementById('trade-modal').classList.add('hidden');
+
+document.getElementById('btn-toggle-trade-advanced').onclick = () => {
+    const section = document.getElementById('trade-advanced-section');
+    setTradeAdvancedOpen(!section.classList.contains('is-open'));
+};
 
 document.getElementById('trade-form').onsubmit = async (e) => {
     e.preventDefault();
@@ -3358,6 +3415,7 @@ window.editTrade = (id) => {
     document.getElementById('trade-planned-target-r').value = t.plannedTargetR || "";
     document.getElementById('trade-be-reason').value = t.beReason || "";
     setChecklistForm(t.checklist || {});
+    setTradeAdvancedOpen(hasAdvancedTradeData(t));
     
     if (!datePickerInstance) {
          datePickerInstance = flatpickr("#trade-date", {
