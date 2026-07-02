@@ -359,6 +359,35 @@
         }
         .modal-animate { animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
+        #trade-modal {
+            overflow: hidden;
+        }
+        .trade-modal-panel {
+            --trade-modal-size: min(860px, calc(100vw - 2rem), calc(100dvh - 2rem));
+            width: var(--trade-modal-size) !important;
+            max-width: none !important;
+            height: var(--trade-modal-size);
+            max-height: calc(100dvh - 2rem);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .trade-modal-panel > .flex:first-child {
+            flex-shrink: 0;
+        }
+        #trade-form {
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+        }
+
+        @media (min-width: 1024px) {
+            #trade-modal {
+                justify-content: flex-end !important;
+                padding-right: clamp(1.5rem, 7vw, 7rem) !important;
+            }
+        }
+
         /* Responsive layout hardening */
         html, body { overflow-x: hidden; }
         #main-view, #content-container, .view-section { min-width: 0; }
